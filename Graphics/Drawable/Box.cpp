@@ -3,6 +3,8 @@
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include "Cube.h"
 #include "Sphere.h"
+#include "Prism.h"
+#include "Plane.h"
 
 Box::Box(Graphics& gfx,
 	std::mt19937& rng,
@@ -30,7 +32,32 @@ Box::Box(Graphics& gfx,
 		{
 			dx::XMFLOAT3 pos;
 		};
-		auto model = Sphere::MakeTesselated<Vertex>(4, 12);
+		//auto model = Sphere::MakeTesselated<Vertex>(12, 12);
+
+		enum class ModelType { Sphere, Box, Prism, Plane };
+
+		// ·£´ý ¸ðµ¨ Å¸ÀÔ ¼±ÅÃ
+		std::uniform_int_distribution<int> modelDist(0, 3);
+		ModelType selectedModel = static_cast<ModelType>(modelDist(rng));
+
+		decltype(Sphere::MakeTesselated<Vertex>(12, 12)) model;
+
+		switch (selectedModel)
+		{
+		case ModelType::Sphere:
+			model = Sphere::MakeTesselated<Vertex>(12, 12);
+			break;
+		case ModelType::Box:
+			model = Cube::Make<Vertex>();
+			break;
+		case ModelType::Prism:
+			model = Prism::Make<Vertex>();
+			break;
+		case ModelType::Plane:
+			model = Plane::Make<Vertex>();
+			break;
+		}
+
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));		// add vertex data
 
 		// add shader data
@@ -98,7 +125,7 @@ void Box::Update(float dt) noexcept	// update angle per deltatime
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
 	return 
-		//DirectX::XMLoadFloat3x3(&mt) *
+		DirectX::XMLoadFloat3x3(&mt) *
 		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
 		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *				
 		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *	// rotate around world origin

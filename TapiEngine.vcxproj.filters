@@ -93,6 +93,12 @@
     <ClCompile Include="Graphics\Drawable\Box.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\IBindable\Texture.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\Sampler.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -191,6 +197,12 @@
     <ClInclude Include="Graphics\Drawable\Cone.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\IBindable\Texture.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\Sampler.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc">
@@ -216,11 +228,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\VertexShader.hlsl">
-      <Filter>리소스 파일\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\PixelShader.hlsl">
-      <Filter>리소스 파일\Shaders</Filter>
-    </FxCompile>
+    <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
+    <FxCompile Include="Shaders\ColorBlendVS.hlsl" />
+    <FxCompile Include="Shaders\ColorIndexPS.hlsl" />
+    <FxCompile Include="Shaders\ColorIndexVS.hlsl" />
+    <FxCompile Include="Shaders\TextureVS.hlsl" />
+    <FxCompile Include="Shaders\TexturePS.hlsl" />
   </ItemGroup>
 </Project>

@@ -148,6 +148,8 @@
     <ClCompile Include="Graphics\IBindable\IndexBuffer.cpp" />
     <ClCompile Include="Graphics\IBindable\InputLayout.cpp" />
     <ClCompile Include="Graphics\IBindable\PixelShader.cpp" />
+    <ClCompile Include="Graphics\IBindable\Sampler.cpp" />
+    <ClCompile Include="Graphics\IBindable\Texture.cpp" />
     <ClCompile Include="Graphics\IBindable\Topology.cpp" />
     <ClCompile Include="Graphics\IBindable\TransformCBuf.cpp" />
     <ClCompile Include="Graphics\IBindable\VertexBuffer.cpp" />
@@ -180,6 +182,8 @@
     <ClInclude Include="Graphics\IBindable\IndexBuffer.h" />
     <ClInclude Include="Graphics\IBindable\InputLayout.h" />
     <ClInclude Include="Graphics\IBindable\PixelShader.h" />
+    <ClInclude Include="Graphics\IBindable\Sampler.h" />
+    <ClInclude Include="Graphics\IBindable\Texture.h" />
     <ClInclude Include="Graphics\IBindable\Topology.h" />
     <ClInclude Include="Graphics\IBindable\TransformCBuf.h" />
     <ClInclude Include="Graphics\IBindable\VertexBuffer.h" />
@@ -240,6 +244,22 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\TexturePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\TextureVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
