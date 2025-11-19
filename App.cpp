@@ -1,7 +1,7 @@
 #include "App.h"
 
 App::App():
-	wnd (800, 600, "TapiEngine v0.1")
+	wnd (800, 600, "TapiEngine v0.2")
 {
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -12,13 +12,26 @@ App::App():
 
 	drawables.reserve(nDrawables);
 
+	// Example: Create 8 textured boxes
 	for (auto i = 0; i < 8; i++)
+	{
+		// Create a TexturedBox instead of a Box
+		// Ensure the path exists relative to the running executable!
+		drawables.push_back(std::make_unique<TexturedBox>(
+			wnd.Gfx(), rng, adist,
+			ddist, odist, rdist,
+			L"Graphics\\Textures\\obama.jpg" // Pass the texture path here
+		));
+	}
+
+	/*for (auto i = 0; i < 8; i++)
 	{
 		drawables.push_back(std::make_unique<Box>(
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
-	}
+	}*/
+
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 100.0f));
 }
 

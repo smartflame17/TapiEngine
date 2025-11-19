@@ -143,6 +143,7 @@
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
     <ClCompile Include="Graphics\Drawable\Box.cpp" />
     <ClCompile Include="Graphics\Drawable\Drawable.cpp" />
+    <ClCompile Include="Graphics\Drawable\TexturedBox.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\IBindable\IBindable.cpp" />
     <ClCompile Include="Graphics\IBindable\IndexBuffer.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Graphics\Drawable\Plane.h" />
     <ClInclude Include="Graphics\Drawable\Prism.h" />
     <ClInclude Include="Graphics\Drawable\Sphere.h" />
+    <ClInclude Include="Graphics\Drawable\TexturedBox.h" />
     <ClInclude Include="Graphics\IBindable\ConstantBuffers.h" />
     <ClInclude Include="Graphics\Drawable\Drawable.h" />
     <ClInclude Include="Graphics\IBindable\IBindable.h" />

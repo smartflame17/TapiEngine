@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Tools/Timer.h"
 #include "Graphics/Drawable/Box.h"
+#include "Graphics/Drawable/TexturedBox.h"
 
 #define TARGET_FPS 60.0f
 
