@@ -37,7 +37,7 @@ public:
 		const char* GetType() const noexcept override;
 	};
 
-	Graphics(HWND hWnd);
+	Graphics(HWND hWnd, int width, int height);
 
 	// Singleton stuff (no copy or move)
 	Graphics(const Graphics&) = delete;
@@ -65,6 +65,9 @@ public:
 		_aligned_free(p);
 	}
 private:
+	int width;
+	int height;
+
 	DirectX::XMMATRIX projection = DirectX::XMMATRIX();								// projection matrix
 
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice = nullptr;

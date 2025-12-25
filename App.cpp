@@ -13,7 +13,7 @@ App::App():
 	drawables.reserve(nDrawables);
 
 	// Example: Create 8 textured boxes
-	for (auto i = 0; i < 8; i++)
+	for (auto i = 0; i < 24; i++)
 	{
 		// Create a TexturedBox instead of a Box
 		// Ensure the path exists relative to the running executable!
