@@ -84,8 +84,12 @@ void App::Update(float dt)
 	}
 
 	// show imgui demo window
-	if (showDemoWindow)
-		ImGui::ShowDemoWindow(&showDemoWindow);
+	if (wnd.Gfx().IsImGuiEnabled())
+	{
+		if (showDemoWindow)
+			ImGui::ShowDemoWindow(&showDemoWindow);
+	}
+	
 	/*
 	// Draw Sprites and Text
 	wnd.Gfx().pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, // Or your preferred sort mode
