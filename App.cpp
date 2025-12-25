@@ -1,4 +1,7 @@
 #include "App.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
 
 App::App():
 	wnd (800, 600, "TapiEngine v0.2")
@@ -36,7 +39,9 @@ App::App():
 }
 
 App::~App()
-{ }
+{
+
+}
 
 int App::Begin()
 {
@@ -63,32 +68,25 @@ int App::Begin()
 	}
 }
 
+// Run per-frame update
 void App::Update(float dt)
 {
-	wnd.Gfx().ClearBuffer(0.4f, 0.2f, 1.0f);
+	if (wnd.kbd.IsKeyPressed(VK_SPACE))
+		wnd.Gfx().EnableImGui();
+	else
+		wnd.Gfx().DisableImGui();
+
+	wnd.Gfx().BeginFrame(0.4f, 0.2f, 1.0f);
 	for (auto& b : drawables)
 	{
 		b->Update(dt);
 		b->Draw(wnd.Gfx());
 	}
-	
-	// Process all pending mouse events
-	/*while (!wnd.mouse.isEmpty())
-	{
-		const auto e = wnd.mouse.Read();
-		switch (e.GetType())
-		{
-		case Mouse::Event::Type::WheelUp:
-			zpos += 1.0f;
-			break;
-		case Mouse::Event::Type::WheelDown:
-			zpos -= 1.0f;
-			break;
-		}
-	}
 
-	wnd.Gfx().DrawTest(timer.Peek(), wnd.mouse.GetPosX() / 400.0f - 1.0f, -wnd.mouse.GetPosY() / 300.0f + 1.0f, zpos);*/
-
+	// show imgui demo window
+	if (showDemoWindow)
+		ImGui::ShowDemoWindow(&showDemoWindow);
+	/*
 	// Draw Sprites and Text
 	wnd.Gfx().pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, // Or your preferred sort mode
 		nullptr,                          // Use default BlendState (alpha blend)
@@ -98,7 +96,6 @@ void App::Update(float dt)
 	);
 	wnd.Gfx().pSpriteFont->DrawString(wnd.Gfx().pSpriteBatch.get(), L"Hello, DirectXTK!", DirectX::XMFLOAT2(300, 400), DirectX::Colors::PaleVioletRed);
 	wnd.Gfx().pSpriteBatch->End();
-
-
+	*/
 	wnd.Gfx().Endframe();
 }

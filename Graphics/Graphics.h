@@ -43,14 +43,18 @@ public:
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
 
-	~Graphics() = default;
+	~Graphics();
 
 	void Endframe();	// flips front-back buffer
-	void ClearBuffer(float r, float g, float b) noexcept;
+	void BeginFrame(float r, float g, float b) noexcept;		// does beginning of frame stuff (clears buffer, imgui stuff etc)
 	void DrawIndexed(UINT count) noexcept(!IS_DEBUG);
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;		// Sets final projection matrix after all calculation for a single frame is done
 	DirectX::XMMATRIX GetProjection() const noexcept;
 	void DrawTest(float angle, float x, float y, float z);
+
+	void EnableImGui() noexcept;
+	void DisableImGui() noexcept;
+	bool IsImGuiEnabled() const noexcept;
 
 	ID3D11DepthStencilState* GetDepthStencilState();
 
@@ -65,6 +69,7 @@ public:
 		_aligned_free(p);
 	}
 private:
+	bool isImGuiEnabled = true;
 	int width;
 	int height;
 

@@ -1,6 +1,9 @@
 #include "Window.h"
 #include <sstream>
 #include "resource.h"
+#include "imgui/imgui_impl_win32.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Window Class Stuff
 Window::WindowClass Window::WindowClass::wndClass;
@@ -67,11 +70,15 @@ Window::Window(int width, int height, const char* name):
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 
+	// init imgui impl
+	ImGui_ImplWin32_Init(hWnd); // if future projects use multiple windows, need to modify this to handle multiple windows
+
 	// create graphics object after handle initialized
 	pGfx = std::make_unique<Graphics>(hWnd, width, height);
 }
 
 Window::~Window() {
+	ImGui_ImplWin32_Shutdown();
 	DestroyWindow(hWnd);
 }
 
@@ -127,6 +134,9 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+		return true;
+
 	switch (msg) {
 	case WM_CLOSE:
 		PostQuitMessage(0);

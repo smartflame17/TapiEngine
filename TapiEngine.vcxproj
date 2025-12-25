@@ -156,6 +156,8 @@
     <ClCompile Include="Graphics\IBindable\VertexBuffer.cpp" />
     <ClCompile Include="Graphics\IBindable\VertexShader.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\ImguiManager.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
@@ -196,7 +198,9 @@
     <ClInclude Include="Graphics\IBindable\TransformCBuf.h" />
     <ClInclude Include="Graphics\IBindable\VertexBuffer.h" />
     <ClInclude Include="Graphics\IBindable\VertexShader.h" />
+    <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\ImguiManager.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h" />
     <ClInclude Include="imgui\imgui_internal.h" />

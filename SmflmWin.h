@@ -7,19 +7,19 @@
 #ifndef FULL_WINTARD
 #define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
+//#define NOSYSMETRICS
+//#define NOMENUS
+//#define NOICONS
 #define NOSYSCOMMANDS
 #define NORASTEROPS
 #define OEMRESOURCE
 #define NOATOM
-#define NOCLIPBOARD
+//#define NOCLIPBOARD
 #define NOCOLOR
-#define NOCTLMGR
+//#define NOCTLMGR
 #define NODRAWTEXT
 #define NOKERNEL
-#define NONLS
+//#define NONLS		// national language support - we need this later for imgui implementation
 #define NOMEMMGR
 #define NOMETAFILE
 #define NOOPENFILE
@@ -30,7 +30,7 @@
 #define NOWH
 #define NOCOMM
 #define NOKANJI
-#define NOHELP
+//#define NOHELP
 #define NOPROFILER
 #define NODEFERWINDOWPOS
 #define NOMCX

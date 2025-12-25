@@ -2,6 +2,7 @@
 #include "../IBindable/IBindableBase.h"
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include "Cube.h"
+#include "Cone.h"
 
 TexturedBox::TexturedBox(Graphics& gfx,
 	std::mt19937& rng,
@@ -79,6 +80,5 @@ DirectX::XMMATRIX TexturedBox::GetTransformXM() const noexcept
 	return DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
 		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
 		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
-		DirectX::XMMatrixScaling(4.0f, 4.0f, 4.0f) *
 		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }

@@ -2,6 +2,8 @@
 #include "../ErrorHandling/dxerr.h"
 #include "../ErrorHandling/GraphicsExceptionMacros.h"
 #include <sstream>
+#include "../imgui/imgui_impl_dx11.h"
+#include "../imgui/imgui_impl_win32.h"
 
 #pragma comment(lib,"d3d11.lib")		// tell linker about d3d library
 #pragma comment(lib, "D3DCompiler.lib")	// for compiling hlsl shader at runtime
@@ -128,10 +130,25 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	vp.TopLeftX = 0.0f;
 	vp.TopLeftY = 0.0f;
 	pContext->RSSetViewports(1u, &vp);
+
+	// init imgui for directx11
+	ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
+}
+
+Graphics::~Graphics()
+{
+	// shutdown imgui for directx11
+	ImGui_ImplDX11_Shutdown();
 }
 
 void Graphics::Endframe()
 {
+	if (isImGuiEnabled)
+	{
+		// render imgui draw data
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
 	HRESULT hr;
 	if (FAILED(hr = pSwap->Present(1u, 0u)))
 	{
@@ -142,8 +159,15 @@ void Graphics::Endframe()
 	}
 }
 
-void Graphics::ClearBuffer(float r, float g, float b) noexcept
+void Graphics::BeginFrame(float r, float g, float b) noexcept
 {
+	// imgui begin frame
+	if (isImGuiEnabled)
+	{
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
 	const float color[] = { r, g, b, 1.0f };
 	pContext->ClearRenderTargetView(pTarget.Get(), color);	// clear back buffer with specified color
 	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);	// clear depth buffer to 1.0f (max depth)
@@ -372,6 +396,21 @@ void Graphics::DrawTest(float angle, float x, float y, float z)
 ID3D11DepthStencilState* Graphics::GetDepthStencilState()
 {
 	return pDSState.Get();
+}
+
+void Graphics::EnableImGui() noexcept
+{
+	isImGuiEnabled = true;
+}
+
+void Graphics::DisableImGui() noexcept
+{
+	isImGuiEnabled = false;
+}
+
+bool Graphics::IsImGuiEnabled() const noexcept
+{
+	return isImGuiEnabled;
 }
 
 //////////////// Exception handling ////////////////
