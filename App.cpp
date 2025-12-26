@@ -71,7 +71,7 @@ int App::Begin()
 // Run per-frame update
 void App::Update(float dt)
 {
-	if (wnd.kbd.IsKeyPressed(VK_SPACE))
+	if (wnd.kbd.IsKeyPressed(VK_TAB))
 		wnd.Gfx().EnableImGui();
 	else
 		wnd.Gfx().DisableImGui();

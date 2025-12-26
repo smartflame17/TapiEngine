@@ -136,7 +136,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
-
+	const auto imio = ImGui::GetIO();
 	switch (msg) {
 	case WM_CLOSE:
 		PostQuitMessage(0);
@@ -145,6 +145,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		// ----------- Keyboard Message Handling ----------- //
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:		//SYSKEY handling to hande the ALT(VK_MENU) key, thanks bill gates for the intuitive interface
+
+		// stifle keyboard message when imgui is using keyboard input
+		if (imio.WantCaptureKeyboard)
+			break;
+
 		if (!(lParam & 0x40000000) || kbd.IsAutoRepeatEnabled()) {	// bit 30 of lParam is 1 if previously held down (autorepeat), 
 			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
 		}
@@ -152,10 +157,18 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
+		// stifle keyboard message when imgui is using keyboard input
+		if (imio.WantCaptureKeyboard)
+			break;
+
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 
 	case WM_CHAR:		// both standard messages and WM_CHAR is sent when a ASCII-correspondant key is pressed
+		// stifle keyboard message when imgui is using keyboard input
+		if (imio.WantCaptureKeyboard)
+			break;
+
 		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
 
@@ -166,6 +179,10 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		
 		// ---------- Mouse message Handling ---------- //
 	case WM_MOUSEMOVE: {
+		// stifle mouse message when imgui is using mouse input
+		if (imio.WantCaptureMouse)
+			break;
+
 		const POINTS pt = MAKEPOINTS(lParam);
 		// if Mouse is in client region, we log the entry to buffer and capture the mouse to handle it
 		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height) {
@@ -188,36 +205,50 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	}
 	case WM_LBUTTONDOWN: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnLeftPressed(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONDOWN: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnRightPressed(pt.x, pt.y);
 		break;
 	}
 	case WM_MBUTTONDOWN: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnMiddlePressed(pt.x, pt.y);
 		break;
 	}
 	case WM_LBUTTONUP: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnLeftReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONUP: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnRightReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_MBUTTONUP: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnMiddleReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_MOUSEWHEEL: {
+		if (imio.WantCaptureMouse)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
 		mouse.OnWheelDelta(pt.x, pt.y, delta);
