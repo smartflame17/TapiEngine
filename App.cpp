@@ -4,7 +4,7 @@
 #include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (800, 600, "TapiEngine v0.2"),
+	wnd (800, 600, "TapiEngine v0.3"),
 	light(wnd.Gfx())
 {
 	std::mt19937 rng(std::random_device{}());
@@ -29,7 +29,7 @@ App::App():
 		));
 	}
 	*/
-	for (auto i = 0; i < 8; i++)
+	for (auto i = 0; i < 120; i++)
 	{
 		drawables.push_back(std::make_unique<Box>(
 			wnd.Gfx(), rng, adist,

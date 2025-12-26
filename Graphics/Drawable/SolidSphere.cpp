@@ -37,6 +37,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
+	AddBind(std::make_unique<TransformCbuf>(gfx, *this));	// the transformation constant buffer is non-static (different per object)
 }
 
 DirectX::XMMATRIX SolidSphere::GetTransformXM() const noexcept

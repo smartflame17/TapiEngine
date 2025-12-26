@@ -40,4 +40,5 @@ void PointLight::Bind(Graphics& gfx) const noexcept
 	PointLightCbuf cbufData;
 	cbufData.pos = pos;
 	cbuf.Update(gfx, cbufData);
+	cbuf.Bind(gfx);
 }
