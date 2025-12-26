@@ -48,8 +48,13 @@ public:
 	void Endframe();	// flips front-back buffer
 	void BeginFrame(float r, float g, float b) noexcept;		// does beginning of frame stuff (clears buffer, imgui stuff etc)
 	void DrawIndexed(UINT count) noexcept(!IS_DEBUG);
+
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;		// Sets final projection matrix after all calculation for a single frame is done
 	DirectX::XMMATRIX GetProjection() const noexcept;
+
+	void SetCamera(DirectX::FXMMATRIX cam) noexcept;			// Sets camera matrix for the frame
+	DirectX::XMMATRIX GetCamera() const noexcept;
+
 	void DrawTest(float angle, float x, float y, float z);
 
 	void EnableImGui() noexcept;
@@ -74,6 +79,7 @@ private:
 	int height;
 
 	DirectX::XMMATRIX projection = DirectX::XMMATRIX();								// projection matrix
+	DirectX::XMMATRIX camera = DirectX::XMMATRIX();									// camera matrix
 
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice = nullptr;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap = nullptr;
@@ -81,6 +87,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTarget = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState = nullptr;
+
 public:
 	std::unique_ptr<DirectX::SpriteBatch> pSpriteBatch;
 	std::unique_ptr<DirectX::SpriteFont> pSpriteFont;

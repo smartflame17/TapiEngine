@@ -141,6 +141,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ErrorHandling\dxerr.cpp" />
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
+    <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\Drawable\Box.cpp" />
     <ClCompile Include="Graphics\Drawable\Drawable.cpp" />
     <ClCompile Include="Graphics\Drawable\TexturedBox.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="ErrorHandling\GraphicsExceptionMacros.h" />
     <ClInclude Include="ErrorHandling\SmflmException.h" />
     <ClInclude Include="ErrorHandling\WindowExceptionMacros.h" />
+    <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\Drawable\Box.h" />
     <ClInclude Include="Graphics\Drawable\Cone.h" />
     <ClInclude Include="Graphics\Drawable\Cube.h" />

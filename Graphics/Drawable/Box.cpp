@@ -124,10 +124,9 @@ void Box::Update(float dt) noexcept	// update angle per deltatime
 
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
-	return 
+	return
 		DirectX::XMLoadFloat3x3(&mt) *
 		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
-		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *				
-		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *	// rotate around world origin
-		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);			// move it away from camera (set at origin)
+		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
+		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi);
 }

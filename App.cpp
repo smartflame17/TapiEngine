@@ -77,19 +77,23 @@ void App::Update(float dt)
 		wnd.Gfx().DisableImGui();
 
 	wnd.Gfx().BeginFrame(0.4f, 0.2f, 1.0f);
+	wnd.Gfx().SetCamera(cam.GetViewMatrix());
 	for (auto& b : drawables)
 	{
 		b->Update(dt);
 		b->Draw(wnd.Gfx());
 	}
 
-	// show imgui demo window
+	// show imgui
 	if (wnd.Gfx().IsImGuiEnabled())
 	{
 		if (showDemoWindow)
 			ImGui::ShowDemoWindow(&showDemoWindow);
+
+		cam.SpawnControlWindow();
 	}
 	
+
 	/*
 	// Draw Sprites and Text
 	wnd.Gfx().pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, // Or your preferred sort mode
