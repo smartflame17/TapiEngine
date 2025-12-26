@@ -27,6 +27,29 @@ public:
 			);
 		}
 	}
+	// face-independent vertices with normals set to zero
+	void SetNormalsIndependentFlat() noexcept(!IS_DEBUG)
+	{
+		assert(indices.size() % 3 == 0 && indices.size() > 0);
+		for (size_t i = 0; i < indices.size(); i += 3)
+		{
+			auto& v0 = vertices[indices[i + 0]];
+			auto& v1 = vertices[indices[i + 1]];
+			auto& v2 = vertices[indices[i + 2]];
+			const DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&v0.pos);
+			const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
+			const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
+			const DirectX::XMVECTOR normal = DirectX::XMVector3Normalize(
+				DirectX::XMVector3Cross(
+					DirectX::XMVectorSubtract(p1, p0),
+					DirectX::XMVectorSubtract(p2, p0)
+				)
+			);
+			DirectX::XMStoreFloat3(&v0.n, normal);
+			DirectX::XMStoreFloat3(&v1.n, normal);
+			DirectX::XMStoreFloat3(&v2.n, normal);
+		}
+	}
 
 public:
 	std::vector<T> vertices;

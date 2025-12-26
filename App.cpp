@@ -4,7 +4,8 @@
 #include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (800, 600, "TapiEngine v0.2")
+	wnd (800, 600, "TapiEngine v0.2"),
+	light(wnd.Gfx())
 {
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -15,6 +16,7 @@ App::App():
 
 	drawables.reserve(nDrawables);
 
+	/*
 	// Example: Create 8 textured boxes
 	for (auto i = 0; i < 24; i++)
 	{
@@ -26,14 +28,14 @@ App::App():
 			L"Graphics\\Textures\\obama.jpg" // Pass the texture path here
 		));
 	}
-
-	/*for (auto i = 0; i < 8; i++)
+	*/
+	for (auto i = 0; i < 8; i++)
 	{
 		drawables.push_back(std::make_unique<Box>(
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
-	}*/
+	}
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 100.0f));
 }
@@ -71,27 +73,19 @@ int App::Begin()
 // Run per-frame update
 void App::Update(float dt)
 {
-	if (wnd.kbd.IsKeyPressed(VK_TAB))
-		wnd.Gfx().EnableImGui();
-	else
-		wnd.Gfx().DisableImGui();
-
-	wnd.Gfx().BeginFrame(0.4f, 0.2f, 1.0f);
+	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
 	wnd.Gfx().SetCamera(cam.GetViewMatrix());
+	light.Bind(wnd.Gfx());
 	for (auto& b : drawables)
 	{
 		b->Update(dt);
 		b->Draw(wnd.Gfx());
 	}
+	light.Draw(wnd.Gfx());
 
 	// show imgui
-	if (wnd.Gfx().IsImGuiEnabled())
-	{
-		if (showDemoWindow)
-			ImGui::ShowDemoWindow(&showDemoWindow);
-
-		cam.SpawnControlWindow();
-	}
+	cam.SpawnControlWindow();
+	light.SpawnControlWindow();
 	
 
 	/*

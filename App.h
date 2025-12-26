@@ -4,6 +4,7 @@
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
 #include "Graphics/Drawable/TexturedBox.h"
+#include "Graphics/Lighting/PointLight.h"
 #include "imgui/ImguiManager.h"
 #define TARGET_FPS 60.0f
 
@@ -20,6 +21,7 @@ private:
 	Window wnd;
 	Timer timer;
 	Camera cam;
+	PointLight light;
 	std::vector<std::unique_ptr<class Drawable>> drawables;
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;

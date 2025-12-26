@@ -129,6 +129,12 @@
     <ClCompile Include="Graphics\Camera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Lighting\PointLight.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Drawable\SolidSphere.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -266,6 +272,12 @@
     <ClInclude Include="Graphics\Camera.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Lighting\PointLight.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Drawable\SolidSphere.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc">
@@ -297,5 +309,9 @@
     <FxCompile Include="Shaders\ColorIndexVS.hlsl" />
     <FxCompile Include="Shaders\TextureVS.hlsl" />
     <FxCompile Include="Shaders\TexturePS.hlsl" />
+    <FxCompile Include="Shaders\PhongPS.hlsl" />
+    <FxCompile Include="Shaders\PhongVS.hlsl" />
+    <FxCompile Include="Shaders\SolidVS.hlsl" />
+    <FxCompile Include="Shaders\SolidPS.hlsl" />
   </ItemGroup>
 </Project>

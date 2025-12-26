@@ -43,9 +43,8 @@ public:
 
 	// 24-vertex cube (independent faces). 
 	// Allows each face to have its own normal/texture coordinates.
-	// Template V must support .pos (XMFLOAT3) and .tex (XMFLOAT2)
 	template<class V>
-	static IndexedTriangleList<V> MakeTextured()
+	static IndexedTriangleList<V> MakeIndependent()
 	{
 		namespace dx = DirectX;
 		constexpr float side = 1.0f / 2.0f;
@@ -53,46 +52,45 @@ public:
 		std::vector<V> vertices(24);
 
 		// Lambda to set pos and tex easily
-		auto SetVert = [&vertices](int i, float x, float y, float z, float u, float v) {
+		auto SetVert = [&vertices](int i, float x, float y, float z) {
 			vertices[i].pos = dx::XMFLOAT3(x, y, z);
-			vertices[i].tex = dx::XMFLOAT2(u, v);
 			};
 
 		// Front Face
-		SetVert(0, -side, -side, -side, 0.0f, 1.0f);
-		SetVert(1, -side, side, -side, 0.0f, 0.0f);
-		SetVert(2, side, side, -side, 1.0f, 0.0f);
-		SetVert(3, side, -side, -side, 1.0f, 1.0f);
+		SetVert(0, -side, -side, -side);
+		SetVert(1, -side, side, -side);
+		SetVert(2, side, side, -side);
+		SetVert(3, side, -side, -side);
 
 		// Right Face
-		SetVert(4, side, -side, -side, 0.0f, 1.0f);
-		SetVert(5, side, side, -side, 0.0f, 0.0f);
-		SetVert(6, side, side, side, 1.0f, 0.0f);
-		SetVert(7, side, -side, side, 1.0f, 1.0f);
+		SetVert(4, side, -side, -side);
+		SetVert(5, side, side, -side);
+		SetVert(6, side, side, side);
+		SetVert(7, side, -side, side);
 
 		// Back Face
-		SetVert(8, side, -side, side, 0.0f, 1.0f);
-		SetVert(9, side, side, side, 0.0f, 0.0f);
-		SetVert(10, -side, side, side, 1.0f, 0.0f);
-		SetVert(11, -side, -side, side, 1.0f, 1.0f);
+		SetVert(8, side, -side, side);
+		SetVert(9, side, side, side);
+		SetVert(10, -side, side, side);
+		SetVert(11, -side, -side, side);
 
 		// Left Face
-		SetVert(12, -side, -side, side, 0.0f, 1.0f);
-		SetVert(13, -side, side, side, 0.0f, 0.0f);
-		SetVert(14, -side, side, -side, 1.0f, 0.0f);
-		SetVert(15, -side, -side, -side, 1.0f, 1.0f);
+		SetVert(12, -side, -side, side);
+		SetVert(13, -side, side, side);
+		SetVert(14, -side, side, -side);
+		SetVert(15, -side, -side, -side);
 
 		// Top Face
-		SetVert(16, -side, side, -side, 0.0f, 1.0f);
-		SetVert(17, -side, side, side, 0.0f, 0.0f);
-		SetVert(18, side, side, side, 1.0f, 0.0f);
-		SetVert(19, side, side, -side, 1.0f, 1.0f);
+		SetVert(16, -side, side, -side);
+		SetVert(17, -side, side, side);
+		SetVert(18, side, side, side);
+		SetVert(19, side, side, -side);
 
 		// Bottom Face
-		SetVert(20, -side, -side, side, 0.0f, 1.0f);
-		SetVert(21, -side, -side, -side, 0.0f, 0.0f);
-		SetVert(22, side, -side, -side, 1.0f, 0.0f);
-		SetVert(23, side, -side, side, 1.0f, 1.0f);
+		SetVert(20, -side, -side, side);
+		SetVert(21, -side, -side, -side);
+		SetVert(22, side, -side, -side);
+		SetVert(23, side, -side, side);
 
 		return{
 			std::move(vertices),{

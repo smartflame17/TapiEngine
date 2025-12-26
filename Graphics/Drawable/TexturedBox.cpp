@@ -34,7 +34,7 @@ TexturedBox::TexturedBox(Graphics& gfx,
 		};
 
 		// Generate a cube with 24 vertices (4 per face) for independent texturing
-		auto model = Cube::MakeTextured<Vertex>();
+		auto model = Cube::MakeIndependent<Vertex>();
 
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
 		AddStaticBind(std::make_unique<Texture>(gfx, texturePath));
