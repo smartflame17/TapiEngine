@@ -10,8 +10,8 @@ static const float diffuseIntensity = 1.0f;
 
 // light attenuation parameters
 static const float attConst = 1.0f;
-static const float attLinear = 1.0f;
-static const float attQuad = 1.0f;
+static const float attLinear = 0.045f;
+static const float attQuad = 0.0075f;
 
 float4 main(float3 worldPos: POSITION, float3 n : NORMAL) : SV_TARGET
 {
@@ -24,7 +24,7 @@ float4 main(float3 worldPos: POSITION, float3 n : NORMAL) : SV_TARGET
     const float att = attConst + attLinear * distance + attQuad * distance * distance;
     
     //diffuse
-    const float3 diffuse = diffuseIntensity * diffuseColor * max(dot(n, L), 0.0f) * att;
+    const float3 diffuse = diffuseIntensity * diffuseColor * max(dot(n, L), 0.0f) / att;
     
     return float4(saturate(diffuse + ambientColor), 1.0f);
 }

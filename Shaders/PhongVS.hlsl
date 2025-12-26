@@ -1,7 +1,7 @@
 cbuffer CBuf
 {
-    matrix model;
     matrix modelViewProj;
+    matrix model;
 };
 
 struct VSOut
