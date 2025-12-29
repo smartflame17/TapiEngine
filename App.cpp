@@ -12,9 +12,12 @@ App::App():
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
 
-	// set distinct starting positions so the switch is obvious
+	// set editor cam starting position
 	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+
+	// Mouse cursor start position
+	lastMouseX = wnd.mouse.GetPosX();
+	lastMouseY = wnd.mouse.GetPosY();
 }
 
 App::~App()
@@ -41,6 +44,8 @@ void App::ResetSimulation()
 			ddist, odist, rdist, bdist
 		));
 	}
+
+	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
 }
 
 int App::Begin()
@@ -72,6 +77,8 @@ int App::Begin()
 void App::Update(float dt)
 {
 	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
+	HandleInput(dt);
+	
 	// --- UI Logic ---
 	if (ImGui::Begin("Simulation Control"))
 	{
@@ -106,11 +113,7 @@ void App::Update(float dt)
 	}
 	ImGui::End();
 
-	// --- Mode & Camera Logic ---
-	// Select the active camera based on mode
-	Camera& activeCam = isPlayMode ? gameCam : editorCam;
-
-	wnd.Gfx().SetCamera(activeCam.GetViewMatrix());
+	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
 	light.Bind(wnd.Gfx());
 
 	// --- Simulation Update & Draw ---
@@ -125,7 +128,7 @@ void App::Update(float dt)
 
 	// show imgui
 	imgui.StatWindow();
-	activeCam.SpawnControlWindow();
+	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
 	
 
@@ -141,4 +144,63 @@ void App::Update(float dt)
 	wnd.Gfx().pSpriteBatch->End();
 	*/
 	wnd.Gfx().Endframe();
+}
+
+void App::HandleInput(float dt)
+{
+	// --- Input Handling & Camera Control ---
+	activeCam = isPlayMode ? &gameCam : &editorCam;
+	const float camSpeed = 12.0f * dt;
+	const float rotateSpeed = 0.004f;
+
+	// Mouse Input Polling
+	const Mouse::Event e = wnd.mouse.Read();
+
+	if (e.GetType() == Mouse::Event::Type::WheelUp)
+		activeCam->Translate({ 0.0f, 0.0f, camSpeed * 3.0f }); // Zoom in (move forward)
+	else if (e.GetType() == Mouse::Event::Type::WheelDown)
+		activeCam->Translate({ 0.0f, 0.0f, -camSpeed * 3.0f }); // Zoom out (move backward)
+
+
+	const int curMouseX = wnd.mouse.GetPosX();
+	const int curMouseY = wnd.mouse.GetPosY();
+	const int mouseDx = curMouseX - lastMouseX;
+	const int mouseDy = curMouseY - lastMouseY;
+
+	if (wnd.mouse.IsLeftPressed())
+	{
+		// Holding left click + moving: standard fps style looking
+		activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
+	}
+
+	if (wnd.mouse.IsMiddlePressed())
+	{
+		// Holding middle click + moving: move up / down (relative to view, stored in local Y)
+		activeCam->Translate({ (float)mouseDx * camSpeed * 0.1f, 0.0f, 0.0f });
+		activeCam->Translate({ 0.0f, -(float)mouseDy * camSpeed * 0.1f, 0.0f });
+	}
+
+	lastMouseX = curMouseX;
+	lastMouseY = curMouseY;
+
+	// Keyboard Input (WASD / Arrows)
+	DirectX::XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
+	if (wnd.kbd.IsKeyPressed('W') || wnd.kbd.IsKeyPressed(VK_UP))
+	{
+		translation.z += camSpeed;
+	}
+	if (wnd.kbd.IsKeyPressed('S') || wnd.kbd.IsKeyPressed(VK_DOWN))
+	{
+		translation.z -= camSpeed;
+	}
+	if (wnd.kbd.IsKeyPressed('A') || wnd.kbd.IsKeyPressed(VK_LEFT))
+	{
+		translation.x -= camSpeed;
+	}
+	if (wnd.kbd.IsKeyPressed('D') || wnd.kbd.IsKeyPressed(VK_RIGHT))
+	{
+		translation.x += camSpeed;
+	}
+	activeCam->Translate(translation);
+
 }

@@ -9,6 +9,10 @@ public:
 	void SetRotation(float pitch, float yaw, float roll) noexcept;
 	void Reset() noexcept;
 
+	// helpers to move/rotate camera with mouse/keyboard
+	void Translate(DirectX::XMFLOAT3 translation) noexcept;
+	void Rotate(float dx, float dy) noexcept;
+
 	void SpawnControlWindow() noexcept;	// imgui window for controlling camera
 
 private:
