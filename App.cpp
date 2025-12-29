@@ -4,31 +4,36 @@
 #include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (800, 600, "TapiEngine v0.3"),
+	wnd (1280, 720, "TapiEngine v0.3"),
 	light(wnd.Gfx())
 {
+	// Initialize scene objects
+	ResetSimulation();
+
+	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
+
+	// set distinct starting positions so the switch is obvious
+	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
+	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+}
+
+App::~App()
+{
+
+}
+
+void App::ResetSimulation()
+{
+	drawables.clear();
+	drawables.reserve(nDrawables);
+
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
 	std::uniform_real_distribution<float> ddist(0.0f, 3.1415f * 2.0f);
 	std::uniform_real_distribution<float> odist(0.0f, 3.1415f * 0.3f);
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
-	std::uniform_real_distribution<float> bdist{ 0.4f,3.0f };
+	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
-	drawables.reserve(nDrawables);
-
-	/*
-	// Example: Create 8 textured boxes
-	for (auto i = 0; i < 24; i++)
-	{
-		// Create a TexturedBox instead of a Box
-		// Ensure the path exists relative to the running executable!
-		drawables.push_back(std::make_unique<TexturedBox>(
-			wnd.Gfx(), rng, adist,
-			ddist, odist, rdist,
-			L"Graphics\\Textures\\obama.jpg" // Pass the texture path here
-		));
-	}
-	*/
 	for (auto i = 0; i < 120; i++)
 	{
 		drawables.push_back(std::make_unique<Box>(
@@ -36,13 +41,6 @@ App::App():
 			ddist, odist, rdist, bdist
 		));
 	}
-
-	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 100.0f));
-}
-
-App::~App()
-{
-
 }
 
 int App::Begin()
@@ -74,17 +72,60 @@ int App::Begin()
 void App::Update(float dt)
 {
 	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
-	wnd.Gfx().SetCamera(cam.GetViewMatrix());
+	// --- UI Logic ---
+	if (ImGui::Begin("Simulation Control"))
+	{
+		// Play/Pause Button
+		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
+		if (ImGui::Button(playBtnLabel))
+		{
+			if (!isPlayMode)
+			{
+				isPlayMode = true;
+				isPaused = false;
+			}
+			else
+			{
+				isPaused = !isPaused;
+			}
+		}
+
+		ImGui::SameLine();
+		// Stop Button
+		ImGui::BeginDisabled(!isPlayMode);
+		if (ImGui::Button("Stop"))
+		{
+			if (isPlayMode)
+			{
+				isPlayMode = false;
+				isPaused = false;
+				ResetSimulation();
+			}
+		}
+		ImGui::EndDisabled();
+	}
+	ImGui::End();
+
+	// --- Mode & Camera Logic ---
+	// Select the active camera based on mode
+	Camera& activeCam = isPlayMode ? gameCam : editorCam;
+
+	wnd.Gfx().SetCamera(activeCam.GetViewMatrix());
 	light.Bind(wnd.Gfx());
+
+	// --- Simulation Update & Draw ---
 	for (auto& b : drawables)
 	{
-		b->Update(dt);
+		if (isPlayMode && !isPaused)
+			b->Update(dt);
+		
 		b->Draw(wnd.Gfx());
 	}
 	light.Draw(wnd.Gfx());
 
 	// show imgui
-	cam.SpawnControlWindow();
+	imgui.StatWindow();
+	activeCam.SpawnControlWindow();
 	light.SpawnControlWindow();
 	
 
