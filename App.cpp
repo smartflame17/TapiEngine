@@ -14,6 +14,7 @@ App::App():
 
 	// set editor cam starting position
 	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
+	activeCam = &editorCam;
 
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
@@ -51,8 +52,6 @@ void App::ResetSimulation()
 int App::Begin()
 {
 	// Define timestep and init timer
-	const float dt = 1.0f / TARGET_FPS;
-	float accumulator = 0.0f;
 	timer.Mark();
 
 	// If ecode has value (some event handling)
@@ -67,18 +66,49 @@ int App::Begin()
 		// run the update logic in fixed steps.
 		while (accumulator >= dt)
 		{
-			Update(dt);
+			HandleInput(dt);
+
+			// Step Physics
+			if (isPlayMode && !isPaused)
+			{
+				physicsWorld.Update(dt);
+			}
+			
+			// Additional Game logic here...
+
 			accumulator -= dt;
 		}
+
+		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
+		const float alpha = accumulator / dt;
+		RenderFrame(alpha);
 	}
 }
 
 // Run per-frame update
-void App::Update(float dt)
+void App::RenderFrame(float alpha)
 {
 	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
-	HandleInput(dt);
 	
+	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
+	light.Bind(wnd.Gfx());
+
+	// --- Simulation Update & Draw ---
+	for (size_t i = 0; i < drawables.size(); i++)
+	{
+		// Assuming your drawables or game objects hold a reference to a RigidBody
+		// auto& rb = myGameObjects[i].rigidBody;
+
+		// Get the SMOOTH interpolated transform
+		// Matrix transform = rb->GetInterpolatedTransform(alpha);
+		if (isPlayMode && !isPaused)
+			drawables[i]->Update(dt); // Update logic if needed
+
+		// Pass this transform to your drawable's Draw method
+		drawables[i]->Draw(wnd.Gfx());
+	}
+	light.Draw(wnd.Gfx());
+
 	// --- UI Logic ---
 	if (ImGui::Begin("Simulation Control"))
 	{
@@ -113,24 +143,10 @@ void App::Update(float dt)
 	}
 	ImGui::End();
 
-	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
-	light.Bind(wnd.Gfx());
-
-	// --- Simulation Update & Draw ---
-	for (auto& b : drawables)
-	{
-		if (isPlayMode && !isPaused)
-			b->Update(dt);
-		
-		b->Draw(wnd.Gfx());
-	}
-	light.Draw(wnd.Gfx());
-
 	// show imgui
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
-	
 
 	/*
 	// Draw Sprites and Text

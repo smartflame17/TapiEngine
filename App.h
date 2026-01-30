@@ -5,6 +5,7 @@
 #include "Graphics/Drawable/Box.h"
 #include "Graphics/Drawable/TexturedBox.h"
 #include "Graphics/Lighting/PointLight.h"
+#include "Physics/PhysicsWorld.h"
 #include "imgui/ImguiManager.h"
 #define TARGET_FPS 120.0f
 
@@ -16,6 +17,7 @@ public:
 	int Begin();	// handles message pump between windows and the app
 private:
 	void Update(float dt);	// called per frame
+	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
 	void ResetSimulation();	// resets camera, light, and all drawables to initial state
 
 	void HandleInput(float dt); // handles input per frame
@@ -42,4 +44,10 @@ private:
 	// Input state
 	int lastMouseX = 0;
 	int lastMouseY = 0;
+
+	// Physics
+	Physics::PhysicsWorld physicsWorld;
+
+	const float dt = 1.0f / TARGET_FPS;
+	float accumulator = 0.0f;
 };
