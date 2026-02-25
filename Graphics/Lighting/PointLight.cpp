@@ -3,7 +3,7 @@
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
-	cbuf(gfx),
+	cbuf(gfx, 1u),
 	mesh(gfx, radius)
 {
 }
@@ -37,7 +37,7 @@ void PointLight::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 
 void PointLight::Bind(Graphics& gfx) const noexcept
 {
-	PointLightCbuf cbufData;
+	auto cbufData = lightData;
 	cbufData.pos = pos;
 	cbuf.Update(gfx, cbufData);
 	cbuf.Bind(gfx);

@@ -15,10 +15,26 @@ private:
 	struct PointLightCbuf
 	{
 		DirectX::XMFLOAT3 pos;
-		float padding;	// align to 16 bytes
+		float diffuseIntensity = 1.0f;
+		DirectX::XMFLOAT3 ambient;
+		float attConst = 1.0f;
+		DirectX::XMFLOAT3 diffuseColor;
+		float attLinear = 0.045f;
+		float attQuad = 0.0075f;
+		DirectX::XMFLOAT3 padding;
 	};
 private:
 	DirectX::XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f };
+	PointLightCbuf lightData = {
+		{ 0.0f, 0.0f, 0.0f },
+		1.0f,
+		{ 0.1f, 0.1f, 0.1f },
+		1.0f,
+		{ 1.0f, 1.0f, 1.0f },
+		0.045f,
+		0.0075f,
+		{ 0.0f, 0.0f, 0.0f }
+	};
 	mutable PixelConstantBuffer<PointLightCbuf> cbuf;
 	mutable SolidSphere mesh;
 };
