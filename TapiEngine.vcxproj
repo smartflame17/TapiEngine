@@ -144,6 +144,7 @@
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\Drawable\Box.cpp" />
     <ClCompile Include="Graphics\Drawable\Drawable.cpp" />
+    <ClCompile Include="Graphics\Drawable\Mesh.cpp" />
     <ClCompile Include="Graphics\Drawable\SolidSphere.cpp" />
     <ClCompile Include="Graphics\Drawable\TexturedBox.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Graphics\Drawable\Cube.h" />
     <ClInclude Include="Graphics\Drawable\DrawableBase.h" />
     <ClInclude Include="Graphics\Drawable\IndexedTriangleList.h" />
+    <ClInclude Include="Graphics\Drawable\Mesh.h" />
     <ClInclude Include="Graphics\Drawable\Plane.h" />
     <ClInclude Include="Graphics\Drawable\Prism.h" />
     <ClInclude Include="Graphics\Drawable\SolidSphere.h" />
