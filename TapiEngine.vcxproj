@@ -77,11 +77,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Assimp DLL to Output Directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -91,13 +100,22 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Assimp DLL to Output Directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -110,11 +128,20 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Assimp DLL to Output Directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -129,13 +156,22 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Assimp DLL to Output Directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
@@ -177,6 +213,82 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="assimp\include\ai_assert.h" />
+    <ClInclude Include="assimp\include\anim.h" />
+    <ClInclude Include="assimp\include\AssertHandler.h" />
+    <ClInclude Include="assimp\include\Base64.hpp" />
+    <ClInclude Include="assimp\include\BaseImporter.h" />
+    <ClInclude Include="assimp\include\Bitmap.h" />
+    <ClInclude Include="assimp\include\BlobIOSystem.h" />
+    <ClInclude Include="assimp\include\ByteSwapper.h" />
+    <ClInclude Include="assimp\include\camera.h" />
+    <ClInclude Include="assimp\include\cexport.h" />
+    <ClInclude Include="assimp\include\cfileio.h" />
+    <ClInclude Include="assimp\include\cimport.h" />
+    <ClInclude Include="assimp\include\ColladaMetaData.h" />
+    <ClInclude Include="assimp\include\color4.h" />
+    <ClInclude Include="assimp\include\commonMetaData.h" />
+    <ClInclude Include="assimp\include\CreateAnimMesh.h" />
+    <ClInclude Include="assimp\include\DefaultIOStream.h" />
+    <ClInclude Include="assimp\include\DefaultIOSystem.h" />
+    <ClInclude Include="assimp\include\DefaultLogger.hpp" />
+    <ClInclude Include="assimp\include\defs.h" />
+    <ClInclude Include="assimp\include\Exceptional.h" />
+    <ClInclude Include="assimp\include\Exporter.hpp" />
+    <ClInclude Include="assimp\include\fast_atof.h" />
+    <ClInclude Include="assimp\include\GenericProperty.h" />
+    <ClInclude Include="assimp\include\GltfMaterial.h" />
+    <ClInclude Include="assimp\include\Hash.h" />
+    <ClInclude Include="assimp\include\Importer.hpp" />
+    <ClInclude Include="assimp\include\importerdesc.h" />
+    <ClInclude Include="assimp\include\IOStream.hpp" />
+    <ClInclude Include="assimp\include\IOStreamBuffer.h" />
+    <ClInclude Include="assimp\include\IOSystem.hpp" />
+    <ClInclude Include="assimp\include\light.h" />
+    <ClInclude Include="assimp\include\LineSplitter.h" />
+    <ClInclude Include="assimp\include\LogAux.h" />
+    <ClInclude Include="assimp\include\Logger.hpp" />
+    <ClInclude Include="assimp\include\LogStream.hpp" />
+    <ClInclude Include="assimp\include\material.h" />
+    <ClInclude Include="assimp\include\MathFunctions.h" />
+    <ClInclude Include="assimp\include\matrix3x3.h" />
+    <ClInclude Include="assimp\include\matrix4x4.h" />
+    <ClInclude Include="assimp\include\MemoryIOWrapper.h" />
+    <ClInclude Include="assimp\include\mesh.h" />
+    <ClInclude Include="assimp\include\metadata.h" />
+    <ClInclude Include="assimp\include\NullLogger.hpp" />
+    <ClInclude Include="assimp\include\ObjMaterial.h" />
+    <ClInclude Include="assimp\include\ParsingUtils.h" />
+    <ClInclude Include="assimp\include\pbrmaterial.h" />
+    <ClInclude Include="assimp\include\postprocess.h" />
+    <ClInclude Include="assimp\include\Profiler.h" />
+    <ClInclude Include="assimp\include\ProgressHandler.hpp" />
+    <ClInclude Include="assimp\include\qnan.h" />
+    <ClInclude Include="assimp\include\quaternion.h" />
+    <ClInclude Include="assimp\include\RemoveComments.h" />
+    <ClInclude Include="assimp\include\scene.h" />
+    <ClInclude Include="assimp\include\SceneCombiner.h" />
+    <ClInclude Include="assimp\include\SGSpatialSort.h" />
+    <ClInclude Include="assimp\include\SkeletonMeshBuilder.h" />
+    <ClInclude Include="assimp\include\SmallVector.h" />
+    <ClInclude Include="assimp\include\SmoothingGroups.h" />
+    <ClInclude Include="assimp\include\SpatialSort.h" />
+    <ClInclude Include="assimp\include\StandardShapes.h" />
+    <ClInclude Include="assimp\include\StreamReader.h" />
+    <ClInclude Include="assimp\include\StreamWriter.h" />
+    <ClInclude Include="assimp\include\StringComparison.h" />
+    <ClInclude Include="assimp\include\StringUtils.h" />
+    <ClInclude Include="assimp\include\Subdivision.h" />
+    <ClInclude Include="assimp\include\texture.h" />
+    <ClInclude Include="assimp\include\TinyFormatter.h" />
+    <ClInclude Include="assimp\include\types.h" />
+    <ClInclude Include="assimp\include\vector2.h" />
+    <ClInclude Include="assimp\include\vector3.h" />
+    <ClInclude Include="assimp\include\version.h" />
+    <ClInclude Include="assimp\include\Vertex.h" />
+    <ClInclude Include="assimp\include\XmlParser.h" />
+    <ClInclude Include="assimp\include\XMLTools.h" />
+    <ClInclude Include="assimp\include\ZipArchiveIOSystem.h" />
     <ClInclude Include="ErrorHandling\dxerr.h" />
     <ClInclude Include="ErrorHandling\GraphicsExceptionMacros.h" />
     <ClInclude Include="ErrorHandling\SmflmException.h" />
@@ -235,6 +347,17 @@
     <Image Include="..\..\..\Downloads\TapiEngine.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assimp\include\color4.inl" />
+    <None Include="assimp\include\config.h.in" />
+    <None Include="assimp\include\material.inl" />
+    <None Include="assimp\include\matrix3x3.inl" />
+    <None Include="assimp\include\matrix4x4.inl" />
+    <None Include="assimp\include\module.modulemap" />
+    <None Include="assimp\include\quaternion.inl" />
+    <None Include="assimp\include\revision.h.in" />
+    <None Include="assimp\include\SmoothingGroups.inl" />
+    <None Include="assimp\include\vector2.inl" />
+    <None Include="assimp\include\vector3.inl" />
     <None Include="ErrorHandling\DXGetErrorDescription.inl" />
     <None Include="ErrorHandling\DXGetErrorString.inl" />
     <None Include="ErrorHandling\DXTrace.inl" />

@@ -6,6 +6,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+
 Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 {
 	namespace dx = DirectX;
@@ -28,7 +30,7 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 
 	if (scene == nullptr || scene->mNumMeshes == 0u)
 	{
-		throw GFX_EXCEPT_NOMSG;
+		//throw SFWND_NOGFX_EXCEPT();
 	}
 
 	const aiMesh* pMesh = scene->mMeshes[0u];
