@@ -4,6 +4,7 @@
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
 #include "Graphics/Drawable/TexturedBox.h"
+#include "Graphics/Drawable/Mesh.h"
 #include "Graphics/Lighting/PointLight.h"
 #include "Physics/PhysicsWorld.h"
 #include "imgui/ImguiManager.h"

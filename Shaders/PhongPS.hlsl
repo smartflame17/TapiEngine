@@ -1,30 +1,34 @@
-cbuffer LightCbuf
+cbuffer MaterialCbuf : register(b0)
 {
-    float3 lightpos;
+    float3 materialColor;
+    float padding;
 };
 
-static const float3 materialColor = float3(0.7f, 0.7f, 1.0f);
-static const float3 ambientColor = float3(0.1f, 0.1f, 0.1f);
-static const float3 diffuseColor = float3(1.0f, 1.0f, 1.0f);
-static const float diffuseIntensity = 1.0f;
-
-// light attenuation parameters
-static const float attConst = 1.0f;
-static const float attLinear = 0.045f;
-static const float attQuad = 0.0075f;
+cbuffer LightCbuf : register(b1)
+{
+    float3 lightpos;
+    float diffuseIntensity;
+    float3 ambientColor;
+    float attConst;
+    float3 diffuseColor;
+    float attLinear;
+    float attQuad;
+    float3 lightPadding;
+};
 
 float4 main(float3 worldPos: POSITION, float3 n : NORMAL) : SV_TARGET
 {
-    //fragment to light vector
+    // fragment to light vector
     const float3 vToLight = lightpos - worldPos;
     const float distance = length(vToLight);
     const float3 L = normalize(vToLight);
-    
-    //attenuation
+
+    // attenuation
     const float att = attConst + attLinear * distance + attQuad * distance * distance;
-    
-    //diffuse
+
+    // diffuse + ambient lighting modulated by material color
     const float3 diffuse = diffuseIntensity * diffuseColor * max(dot(n, L), 0.0f) / att;
-    
-    return float4(saturate(diffuse + ambientColor), 1.0f);
+    const float3 color = materialColor * saturate(diffuse + ambientColor);
+
+    return float4(color, 1.0f);
 }

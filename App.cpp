@@ -46,6 +46,11 @@ void App::ResetSimulation()
 		));
 	}
 
+	auto suzanne = std::make_unique<Mesh>(wnd.Gfx(), "suzanne.obj");
+	suzanne->SetScale(2.0f);
+	suzanne->SetPos({ 0.0f, 0.0f, 8.0f });
+	drawables.push_back(std::move(suzanne));
+
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
 }
 
