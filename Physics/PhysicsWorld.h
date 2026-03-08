@@ -7,13 +7,15 @@ namespace Physics
     class PhysicsWorld
     {
     public:
-		PhysicsWorld() : spatialGrid(5.0f) {} // 5.0 unit cell size by default
+		PhysicsWorld() : spatialGrid(5.0f), gravity (0.0f) {} // 5.0 unit cell size / no gravity by default
 
         void AddBody(std::shared_ptr<RigidBody> rb, std::shared_ptr<Collider> col)
         {
             bodies.push_back(rb);
             colliders.push_back(col);
         }
+
+		void SetGravity(float g) { gravity = g; }
 
 		// Ran in fixed timesteps, so needs interpolation during rendering with rb->GetInterpolatedTransform(alpha)
         void Update(float dt)
@@ -22,7 +24,7 @@ namespace Physics
             for (auto& rb : bodies)
             {
                 // Apply Gravity
-                //if (rb->mass > 0) rb->AddForce(Vector3(0, -9.8f * rb->mass, 0));
+                if (rb->mass > 0) rb->AddForce(Vector3(0, gravity * rb->mass, 0));
                 rb->Integrate(dt);
             }
 
@@ -65,5 +67,6 @@ namespace Physics
         std::vector<std::shared_ptr<RigidBody>> bodies;
         std::vector<std::shared_ptr<Collider>> colliders;
         SpatialGrid spatialGrid;
+		float gravity;
     };
 }
