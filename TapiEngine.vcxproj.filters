@@ -57,6 +57,9 @@
     <ClCompile Include="Tools\Timer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Tools\DungeonGenerator.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Input\Mouse.cpp">
       <Filter>소스 파일\Input</Filter>
     </ClCompile>
@@ -168,6 +171,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Tools\Timer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\DungeonGenerator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ErrorHandling\WindowExceptionMacros.h">

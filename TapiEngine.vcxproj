@@ -208,6 +208,7 @@
     <ClCompile Include="Physics\Physics.cpp" />
     <ClCompile Include="Physics\SpatialGrid.cpp" />
     <ClCompile Include="Tools\Timer.cpp" />
+    <ClCompile Include="Tools\DungeonGenerator.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -338,6 +339,7 @@
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
     <ClInclude Include="Tools\Timer.h" />
+    <ClInclude Include="Tools\DungeonGenerator.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
