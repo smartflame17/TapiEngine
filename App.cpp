@@ -4,7 +4,7 @@
 #include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (1280, 720, "TapiEngine v0.3"),
+	wnd (1280, 720, "TapiEngine v0.4"),
 	light(wnd.Gfx())
 {
 	// Initialize scene objects

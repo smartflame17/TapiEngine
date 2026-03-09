@@ -12,11 +12,18 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 {
 	namespace dx = DirectX;
 
-	struct Vertex
+	/*struct Vertex
 	{
 		dx::XMFLOAT3 pos;
 		dx::XMFLOAT3 n;
-	};
+	};*/
+
+	using Dvtx::VertexLayout;
+	Dvtx::VertexBuffer vbuf(std::move(
+		VertexLayout{}
+		.Append(VertexLayout::Position3D)
+		.Append(VertexLayout::Normal)
+	));
 
 	Assimp::Importer importer;
 	const std::string modelPath = "Graphics/Models/" + modelName;
@@ -30,11 +37,12 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 
 	if (scene == nullptr || scene->mNumMeshes == 0u)
 	{
-		//throw SFWND_NOGFX_EXCEPT();
+		HRESULT hr;
+		GFX_THROW_FAILED(E_FAIL);
 	}
 
 	const aiMesh* pMesh = scene->mMeshes[0u];
-	std::vector<Vertex> vertices;
+	/*std::vector<Vertex> vertices;
 	vertices.reserve(pMesh->mNumVertices);
 
 	for (unsigned int i = 0u; i < pMesh->mNumVertices; i++)
@@ -42,6 +50,14 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 		const aiVector3D& v = pMesh->mVertices[i];
 		const aiVector3D& n = pMesh->HasNormals() ? pMesh->mNormals[i] : aiVector3D(0.0f, 1.0f, 0.0f);
 		vertices.push_back({ { v.x, v.y, v.z },{ n.x, n.y, n.z } });
+	}*/
+
+	for (unsigned int i = 0; i < pMesh->mNumVertices; i++)
+	{
+		vbuf.EmplaceBack(
+			dx::XMFLOAT3{ pMesh->mVertices[i].x * scale,pMesh->mVertices[i].y * scale,pMesh->mVertices[i].z * scale },
+			*reinterpret_cast<dx::XMFLOAT3*>(&pMesh->mNormals[i])
+		);
 	}
 
 	std::vector<unsigned short> indices;
@@ -57,7 +73,8 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 		}
 	}
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertices));
+	//AddBind(std::make_unique<VertexBuffer>(gfx, vertices));
+	AddBind(std::make_unique<VertexBuffer>(gfx, vbuf));
 	AddIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
 
 	auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");
@@ -65,12 +82,14 @@ Mesh::Mesh(Graphics& gfx, const std::string& modelName)
 	AddBind(std::move(pvs));
 	AddBind(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
 
-	const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	/*const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 	{
 		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
 	};
-	AddBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));*/
+
+	AddBind(std::make_unique<InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
 	AddBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
 
