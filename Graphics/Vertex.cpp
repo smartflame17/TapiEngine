@@ -20,6 +20,8 @@ namespace Dvtx
 	{
 		return elements.size();
 	}
+
+	// Create ied automatically based on the layout elements
 	std::vector<D3D11_INPUT_ELEMENT_DESC> VertexLayout::GetD3DLayout() const noexcept(!IS_DEBUG)
 	{
 		std::vector<D3D11_INPUT_ELEMENT_DESC> desc;
@@ -130,11 +132,11 @@ namespace Dvtx
 	{
 		return layout;
 	}
-	size_t VertexBuffer::Size() const noexcept(!IS_DEBUG)
+	size_t VertexBuffer::Size() const noexcept(!IS_DEBUG)	// returns number of vertices in the buffer
 	{
 		return buffer.size() / layout.Size();
 	}
-	size_t VertexBuffer::SizeBytes() const noexcept(!IS_DEBUG)
+	size_t VertexBuffer::SizeBytes() const noexcept(!IS_DEBUG)	// returns size of the buffer in bytes
 	{
 		return buffer.size();
 	}

@@ -158,8 +158,8 @@ namespace Dvtx
 		template<typename First, typename ...Rest>
 		void SetAttributeByIndex(size_t i, First&& first, Rest&&... rest) noexcept(!IS_DEBUG)
 		{
-			SetAttributeByIndex(i, std::forward<First>(first));
-			SetAttributeByIndex(i + 1, std::forward<Rest>(rest)...);
+			SetAttributeByIndex(i, std::forward<First>(first));			// strip one parameter and set it...
+			SetAttributeByIndex(i + 1, std::forward<Rest>(rest)...);	// then recursive call with next index and rest of parameters
 		}
 		// helper to reduce code duplication in SetAttributeByIndex
 		template<VertexLayout::ElementType DestLayoutType, typename SrcType>
@@ -204,7 +204,7 @@ namespace Dvtx
 		template<typename ...Params>
 		void EmplaceBack(Params&&... params) noexcept(!IS_DEBUG)
 		{
-			assert(sizeof...(params) == layout.GetElementCount() && "Param count doesn't match number of vertex elements");
+			assert(sizeof...(params) == layout.GetElementCount() && "Param count doesn't match number of vertex elements");	// in case of index mismatch / buffer overflow
 			buffer.resize(buffer.size() + layout.Size());
 			Back().SetAttributeByIndex(0u, std::forward<Params>(params)...);
 		}
