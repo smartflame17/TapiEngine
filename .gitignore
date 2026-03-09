@@ -7,8 +7,8 @@
 *.pdb
 *.obj
 *.exe
-*.dll
-*.lib
+#*.dll  (add assimp binary to commit)
+#*.lib
 *.ilk
 *.exp
 *.log
