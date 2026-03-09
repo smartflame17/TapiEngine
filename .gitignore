@@ -5,10 +5,10 @@
 *.ncb
 *.aps
 *.pdb
-*.obj
+#*.obj
 *.exe
-*.dll
-*.lib
+#*.dll  (add assimp binary to commit)
+#*.lib
 *.ilk
 *.exp
 *.log
@@ -31,8 +31,8 @@ Debug/
 Release/
 x64/
 Win32/
-bin/
-obj/
+#bin/ 
+#obj/
 
 # User-specific settings and configurations
 *.local

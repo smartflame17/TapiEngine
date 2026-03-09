@@ -57,6 +57,9 @@
     <ClCompile Include="Tools\Timer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Tools\DungeonGenerator.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Input\Mouse.cpp">
       <Filter>소스 파일\Input</Filter>
     </ClCompile>
@@ -144,6 +147,9 @@
     <ClCompile Include="Physics\SpatialGrid.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Vertex.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -168,6 +174,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Tools\Timer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\DungeonGenerator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ErrorHandling\WindowExceptionMacros.h">
@@ -527,16 +536,12 @@
     <ClInclude Include="assimp\include\ZipArchiveIOSystem.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="TapiEngine.rc">
-      <Filter>리소스 파일</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\Downloads\TapiEngine.ico">
-      <Filter>리소스 파일</Filter>
-    </Image>
+    <ClInclude Include="Graphics\Vertex.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Color.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -577,6 +582,7 @@
     <None Include="assimp\include\vector3.inl">
       <Filter>헤더 파일</Filter>
     </None>
+    <None Include="assimp\bin\assimp-vc143-mtd.dll" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -589,5 +595,13 @@
     <FxCompile Include="Shaders\PhongVS.hlsl" />
     <FxCompile Include="Shaders\SolidVS.hlsl" />
     <FxCompile Include="Shaders\SolidPS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TapiEngine.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

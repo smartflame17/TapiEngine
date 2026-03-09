@@ -52,6 +52,11 @@ void App::ResetSimulation()
 	drawables.push_back(std::move(suzanne));
 
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+
+	// Test for map generator
+	//DungeonGenerator gen(22222);
+	//gen.Generate(80, 40);
+	//gen.SaveToFile("dungeon2.txt");
 }
 
 int App::Begin()

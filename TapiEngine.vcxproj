@@ -195,6 +195,7 @@
     <ClCompile Include="Graphics\IBindable\VertexBuffer.cpp" />
     <ClCompile Include="Graphics\IBindable\VertexShader.cpp" />
     <ClCompile Include="Graphics\Lighting\PointLight.cpp" />
+    <ClCompile Include="Graphics\Vertex.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\ImguiManager.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -208,6 +209,7 @@
     <ClCompile Include="Physics\Physics.cpp" />
     <ClCompile Include="Physics\SpatialGrid.cpp" />
     <ClCompile Include="Tools\Timer.cpp" />
+    <ClCompile Include="Tools\DungeonGenerator.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -294,6 +296,7 @@
     <ClInclude Include="ErrorHandling\SmflmException.h" />
     <ClInclude Include="ErrorHandling\WindowExceptionMacros.h" />
     <ClInclude Include="Graphics\Camera.h" />
+    <ClInclude Include="Graphics\Color.h" />
     <ClInclude Include="Graphics\Drawable\Box.h" />
     <ClInclude Include="Graphics\Drawable\Cone.h" />
     <ClInclude Include="Graphics\Drawable\Cube.h" />
@@ -320,6 +323,7 @@
     <ClInclude Include="Graphics\IBindable\VertexBuffer.h" />
     <ClInclude Include="Graphics\IBindable\VertexShader.h" />
     <ClInclude Include="Graphics\Lighting\PointLight.h" />
+    <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\ImguiManager.h" />
@@ -338,15 +342,11 @@
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
     <ClInclude Include="Tools\Timer.h" />
+    <ClInclude Include="Tools\DungeonGenerator.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TapiEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\Downloads\TapiEngine.ico" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="assimp\bin\assimp-vc143-mtd.dll" />
     <None Include="assimp\include\color4.inl" />
     <None Include="assimp\include\config.h.in" />
     <None Include="assimp\include\material.inl" />
@@ -446,6 +446,12 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TapiEngine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
