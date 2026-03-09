@@ -535,16 +535,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TapiEngine.rc">
-      <Filter>리소스 파일</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\Downloads\TapiEngine.ico">
-      <Filter>리소스 파일</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
       <Filter>리소스 파일</Filter>
     </None>
@@ -601,6 +591,8 @@
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Object Include="Graphics\Models\suzanne.obj" />
+    <ResourceCompile Include="TapiEngine.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

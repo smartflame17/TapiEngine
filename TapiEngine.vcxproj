@@ -343,12 +343,6 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TapiEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\Downloads\TapiEngine.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="assimp\bin\assimp-vc143-mtd.dll" />
     <None Include="assimp\include\color4.inl" />
     <None Include="assimp\include\config.h.in" />
@@ -454,7 +448,7 @@
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Object Include="Graphics\Models\suzanne.obj" />
+    <ResourceCompile Include="TapiEngine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
