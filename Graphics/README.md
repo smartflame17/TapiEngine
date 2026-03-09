@@ -50,6 +50,51 @@ All geometric primitive shapes such as cubes, planes, prisms, cones and spheres 
 
 ```Make()``` function transforms these primitives into IndexedTriangleList along with any divisions if any. This allows for tesselated textures or vertex manipulations.
 
+## Dynamic Vertex (Dvtx) System
+The Dynamic Vertex System is a system under construction, that will allow for semi-automatic vertex data management.  
+
+The standard way of handling vertex data is to specify the data layout and creating a vertex buffer for each 3D object, which is done in compile time.  
+
+However, this can be inefficient if there are many objects with the same data layout, and can lead to redundant code.  
+
+The new system will require the vertex data layout defined once, then automatically handle vertex buffer for each unique data layout.  
+The new VertexBuffer class in namespace Dvtx (Dynamic Vertex) will handle this, and will be used for all 3D objects in the future.  
+
+---
+The overall architecture should look like the following diagram:
+
+```
+
+________________________________________
+|           Dvtx::VertexBuffer         |          
+----------------------------------------
+|                                      |
+|     Vertex Data Layout (struct&)     |  <----------- Contains the data layout of the vertex data, which is used to create the input layout and vertex buffer.
+|          ______________              |
+|         |     pos      |             |
+|         |    color     |------------ +-------
+|         |  etc.(tex)   |             |      |
+|         ----------------             |      |
+|									   |      |
+|  Raw Vertex Data (std::vector<char>) |  <---+------- Contains the raw vertex data, which is used to create the vertex buffer.
+|          ______________              |      |
+|         |              |             |      |
+|         |     ...      |             |      |
+|         |   ________   |             |      | Used to cut out correct size and position of data
+|         |  |        | <--------------+-------
+|         |  |        |  |             |
+|         |  ----------  |             |
+|         ----------------             |
+|                                      |
+-----------------------------------------
+
+```
+
+Instead of ```vbuf[n].pos = ...```, we can use ```vbuf[n].Attr<Pos3D>() = ...``` to handle the vertex data, 
+which will automatically handle the correct position in the vertex buffer based on the input layout defined in the VertexBuffer class.  
+
+Think of it like a cookie cutter, where the data layout is the shape of the cookie cutter, and the raw vertex data is the dough.
+
 ## Others
 
 I have used Microsoft's DirectXTK (DirectX Toolkit) for implementing sprite / text rendering.  
