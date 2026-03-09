@@ -147,6 +147,9 @@
     <ClCompile Include="Physics\SpatialGrid.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Vertex.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -531,6 +534,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="assimp\include\ZipArchiveIOSystem.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Vertex.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Color.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
