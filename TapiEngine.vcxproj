@@ -349,6 +349,7 @@
     <Image Include="..\..\..\Downloads\TapiEngine.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assimp\bin\assimp-vc143-mtd.dll" />
     <None Include="assimp\include\color4.inl" />
     <None Include="assimp\include\config.h.in" />
     <None Include="assimp\include\material.inl" />
@@ -448,6 +449,12 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Graphics\Models\suzanne.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -583,6 +583,7 @@
     <None Include="assimp\include\vector3.inl">
       <Filter>헤더 파일</Filter>
     </None>
+    <None Include="assimp\bin\assimp-vc143-mtd.dll" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -595,5 +596,11 @@
     <FxCompile Include="Shaders\PhongVS.hlsl" />
     <FxCompile Include="Shaders\SolidVS.hlsl" />
     <FxCompile Include="Shaders\SolidPS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Graphics\Models\suzanne.obj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Tools/Timer.h"
+#include "Tools/DungeonGenerator.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
 #include "Graphics/Drawable/TexturedBox.h"
