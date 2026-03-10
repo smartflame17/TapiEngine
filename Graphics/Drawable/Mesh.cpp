@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "../../imgui/imgui.h"
 
 // Mesh
 Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<IBindable>> bindPtrs)
@@ -35,15 +36,21 @@ DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 
 
 // Node
-Node::Node(std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG)
+Node::Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG)
 	:
-meshPtrs(std::move(meshPtrs))
+	meshPtrs(std::move(meshPtrs)),
+	name(name)
 {
 	DirectX::XMStoreFloat4x4(&this->transform, transform);
 }
 void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
 {
-	const auto built = DirectX::XMLoadFloat4x4(&transform) * accumulatedTransform;
+	const auto localTransform =
+		DirectX::XMMatrixScaling(appliedScale.x, appliedScale.y, appliedScale.z) *
+		DirectX::XMMatrixRotationRollPitchYaw(appliedRotation.x, appliedRotation.y, appliedRotation.z) *
+		DirectX::XMMatrixTranslation(appliedTranslation.x, appliedTranslation.y, appliedTranslation.z) *
+		DirectX::XMLoadFloat4x4(&transform);
+	const auto built = localTransform * accumulatedTransform;
 	for (const auto pm : meshPtrs)
 	{
 		pm->Draw(gfx, built);
@@ -59,6 +66,32 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG)
 	childPtrs.push_back(std::move(pChild));
 }
 
+void Node::SetAppliedTransform(const DirectX::XMFLOAT3& translation, const DirectX::XMFLOAT3& rotation, const DirectX::XMFLOAT3& scale) noexcept
+{
+	appliedTranslation = translation;
+	appliedRotation = rotation;
+	appliedScale = scale;
+}
+const std::string& Node::GetName() const noexcept
+{
+	return name;
+}
+const std::vector<std::unique_ptr<Node>>& Node::GetChildren() const noexcept
+{
+	return childPtrs;
+}
+const DirectX::XMFLOAT3& Node::GetAppliedTranslation() const noexcept
+{
+	return appliedTranslation;
+}
+const DirectX::XMFLOAT3& Node::GetAppliedRotation() const noexcept
+{
+	return appliedRotation;
+}
+const DirectX::XMFLOAT3& Node::GetAppliedScale() const noexcept
+{
+	return appliedScale;
+}
 
 // Model
 Model::Model(Graphics& gfx, const std::string fileName)
@@ -75,6 +108,7 @@ Model::Model(Graphics& gfx, const std::string fileName)
 	}
 
 	pRoot = ParseNode(*pScene->mRootNode);
+	pSelectedNode = pRoot.get();
 }
 void Model::Draw(Graphics& gfx, DirectX::FXMMATRIX transform) const
 {
@@ -148,11 +182,88 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
 		curMeshPtrs.push_back(meshPtrs.at(meshIdx).get());
 	}
 
-	auto pNode = std::make_unique<Node>(std::move(curMeshPtrs), transform);
+	auto pNode = std::make_unique<Node>(std::move(curMeshPtrs), node.mName.C_Str(), transform);
 	for (size_t i = 0; i < node.mNumChildren; i++)
 	{
 		pNode->AddChild(ParseNode(*node.mChildren[i]));
 	}
 
 	return pNode;
+}
+
+void Model::DrawInspectorNode(Node& node) noexcept
+{
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+	if (&node == pSelectedNode)
+	{
+		flags |= ImGuiTreeNodeFlags_Selected;
+	}
+	if (node.GetChildren().empty())
+	{
+		flags |= ImGuiTreeNodeFlags_Leaf;
+	}
+
+	const bool isOpen = ImGui::TreeNodeEx(static_cast<void*>(&node), flags, "%s", node.GetName().c_str());
+	if (ImGui::IsItemClicked())
+	{
+		pSelectedNode = &node;
+	}
+
+	if (isOpen)
+	{
+		for (const auto& pChild : node.GetChildren())
+		{
+			DrawInspectorNode(*pChild);
+		}
+		ImGui::TreePop();
+	}
+}
+
+void Model::SpawnControlWindow() noexcept
+{
+	if (!pRoot)
+	{
+		return;
+	}
+
+	if (ImGui::Begin("Inspector"))
+	{
+		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+		DrawInspectorNode(*pRoot);
+	}
+	ImGui::End();
+
+	if (!pSelectedNode)
+	{
+		pSelectedNode = pRoot.get();
+	}
+
+	auto translation = pSelectedNode->GetAppliedTranslation();
+	auto rotation = pSelectedNode->GetAppliedRotation();
+	auto scale = pSelectedNode->GetAppliedScale();
+
+	if (ImGui::Begin("Transform"))
+	{
+		ImGui::Text("Node: %s", pSelectedNode->GetName().c_str());
+		ImGui::Separator();
+
+		ImGui::Text("Translate");
+		ImGui::DragFloat3("##Translate", &translation.x, 0.05f);
+
+		ImGui::Text("Rotate (radians)");
+		ImGui::DragFloat3("##Rotate", &rotation.x, 0.01f);
+
+		ImGui::Text("Scale");
+		ImGui::DragFloat3("##Scale", &scale.x, 0.01f);
+
+		if (ImGui::Button("Reset"))
+		{
+			translation = { 0.0f, 0.0f, 0.0f };
+			rotation = { 0.0f, 0.0f, 0.0f };
+			scale = { 1.0f, 1.0f, 1.0f };
+		}
+	}
+	ImGui::End();
+
+	pSelectedNode->SetAppliedTransform(translation, rotation, scale);
 }
