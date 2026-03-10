@@ -13,7 +13,7 @@ public:
 	Drawable(const Drawable&) = delete;
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
-	virtual void Update(float dt) noexcept = 0;
+	virtual void Update(float dt) noexcept {}
 	virtual ~Drawable() = default;
 protected:
 	void AddBind(std::unique_ptr<IBindable> bind) noexcept(!IS_DEBUG);

@@ -4,7 +4,7 @@
 #include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (1280, 720, "TapiEngine v0.3"),
+	wnd (1280, 720, "TapiEngine v0.4"),
 	light(wnd.Gfx())
 {
 	// Initialize scene objects
@@ -14,6 +14,7 @@ App::App():
 
 	// set editor cam starting position
 	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
+	activeCam = &editorCam;
 
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
@@ -46,13 +47,16 @@ void App::ResetSimulation()
 	}
 
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+
+	// Test for map generator
+	//DungeonGenerator gen(22222);
+	//gen.Generate(80, 40);
+	//gen.SaveToFile("dungeon2.txt");
 }
 
 int App::Begin()
 {
 	// Define timestep and init timer
-	const float dt = 1.0f / TARGET_FPS;
-	float accumulator = 0.0f;
 	timer.Mark();
 
 	// If ecode has value (some event handling)
@@ -67,18 +71,51 @@ int App::Begin()
 		// run the update logic in fixed steps.
 		while (accumulator >= dt)
 		{
-			Update(dt);
+			HandleInput(dt);
+
+			// Step Physics
+			if (isPlayMode && !isPaused)
+			{
+				physicsWorld.Update(dt);
+			}
+			
+			// Additional Game logic here...
+
 			accumulator -= dt;
 		}
+
+		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
+		const float alpha = accumulator / dt;
+		RenderFrame(alpha);
 	}
 }
 
-// Run per-frame update
-void App::Update(float dt)
+// Run per-frame update for rendering
+void App::RenderFrame(float alpha)
 {
 	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
-	HandleInput(dt);
 	
+	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
+	light.Bind(wnd.Gfx());
+
+	// --- Simulation Update & Draw ---
+	for (size_t i = 0; i < drawables.size(); i++)
+	{
+		// Assuming your drawables or game objects hold a reference to a RigidBody
+		// auto& rb = myGameObjects[i].rigidBody;
+
+		// Get the SMOOTH interpolated transform
+		// Matrix transform = rb->GetInterpolatedTransform(alpha);
+		if (isPlayMode && !isPaused)
+			drawables[i]->Update(dt); // Update logic if needed
+
+		// Pass this transform to your drawable's Draw method
+		drawables[i]->Draw(wnd.Gfx());
+		
+	}
+	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
+	light.Draw(wnd.Gfx());
+
 	// --- UI Logic ---
 	if (ImGui::Begin("Simulation Control"))
 	{
@@ -113,24 +150,11 @@ void App::Update(float dt)
 	}
 	ImGui::End();
 
-	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
-	light.Bind(wnd.Gfx());
-
-	// --- Simulation Update & Draw ---
-	for (auto& b : drawables)
-	{
-		if (isPlayMode && !isPaused)
-			b->Update(dt);
-		
-		b->Draw(wnd.Gfx());
-	}
-	light.Draw(wnd.Gfx());
-
 	// show imgui
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
-	
+	suzanne.SpawnControlWindow();
 
 	/*
 	// Draw Sprites and Text

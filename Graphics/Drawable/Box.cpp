@@ -38,7 +38,7 @@ Box::Box(Graphics& gfx,
 		/*
 		enum class ModelType { Sphere, Box, Prism, Plane };
 
-		// ·£´ý ¸ðµ¨ Å¸ÀÔ ¼±ÅÃ
+		// Â·Â£Â´Ã½ Â¸Ã°ÂµÂ¨ Ã…Â¸Ã€Ã” Â¼Â±Ã…Ãƒ
 		std::uniform_int_distribution<int> modelDist(0, 3);
 		ModelType selectedModel = static_cast<ModelType>(modelDist(rng));
 
@@ -85,6 +85,19 @@ Box::Box(Graphics& gfx,
 	}
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));	// the transformation constant buffer is non-static (different per object)
+
+	struct MaterialCbuf
+	{
+		DirectX::XMFLOAT3 color;
+		float padding;
+	};
+	std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
+	const MaterialCbuf material =
+	{
+		{ colorDist(rng), colorDist(rng), colorDist(rng) },
+		0.0f
+	};
+	AddBind(std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u));
 
 	// give random deformation per instance
 	dx::XMStoreFloat3x3(&mt, dx::XMMatrixScaling(1.0f, 1.0f, bdist(rng)));
