@@ -102,6 +102,12 @@ Model::Model(Graphics& gfx, const std::string fileName)
 		aiProcess_JoinIdenticalVertices
 	);
 
+	// Throw exception if failed to load
+	if (pScene == nullptr)
+	{
+		throw std::runtime_error("Failed to load model: " + fileName + "\n" + imp.GetErrorString());
+	}
+
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
 		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i]));
