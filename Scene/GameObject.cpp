@@ -1,7 +1,4 @@
 #include "GameObject.h"
-#include "Scene.h"
-#include "../Components/Component.h"
-#include <algorithm>
 
 std::uint64_t GameObject::nextId = 1;
 

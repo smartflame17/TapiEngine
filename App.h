@@ -8,6 +8,8 @@
 #include "Graphics/Lighting/PointLight.h"
 #include "Physics/PhysicsWorld.h"
 #include "Scene/Scene.h"
+#include "Scene/GameObject.h"
+#include "Components/Component.h"
 #include "imgui/ImguiManager.h"
 #define TARGET_FPS 60.0f
 

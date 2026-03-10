@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
+#include "../Scene/GameObject.h"
 
 class GameObject;
 class Graphics;

@@ -1,6 +1,5 @@
 #include "Component.h"
-#include "../Scene/GameObject.h"
-#include <cassert>
+
 
 std::uint64_t Component::nextId = 1;
 

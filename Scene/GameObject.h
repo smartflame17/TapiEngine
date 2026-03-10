@@ -1,11 +1,13 @@
 #pragma once
-
+#include <algorithm>
 #include <vector>
 #include <memory>
 #include <string>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include "Scene.h"
+#include "../Components/Component.h"
 
 class Scene;
 class Component;

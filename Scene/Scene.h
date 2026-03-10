@@ -3,6 +3,9 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <cstdint>
+#include "GameObject.h"
+#include "../imgui/imgui.h"
 
 class Graphics;
 class GameObject;

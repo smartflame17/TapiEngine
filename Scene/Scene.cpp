@@ -1,7 +1,5 @@
 #include "Scene.h"
-#include "GameObject.h"
-#include "../imgui/imgui.h"
-#include <cstdint>
+
 
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
