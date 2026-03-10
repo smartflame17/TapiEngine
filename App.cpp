@@ -154,6 +154,7 @@ void App::RenderFrame(float alpha)
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
+	suzanne.SpawnControlWindow();
 
 	/*
 	// Draw Sprites and Text
