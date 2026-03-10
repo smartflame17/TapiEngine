@@ -4,10 +4,10 @@
 #include "Tools/DungeonGenerator.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
-#include "Graphics/Drawable/TexturedBox.h"
 #include "Graphics/Drawable/Mesh.h"
 #include "Graphics/Lighting/PointLight.h"
 #include "Physics/PhysicsWorld.h"
+#include "Scene/Scene.h"
 #include "imgui/ImguiManager.h"
 #define TARGET_FPS 60.0f
 
@@ -35,7 +35,7 @@ private:
 	Camera* activeCam = nullptr; // reference to currently active camera
 
 	PointLight light;
-	std::vector<std::unique_ptr<class Drawable>> drawables;
+	Scene scene;
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;
 

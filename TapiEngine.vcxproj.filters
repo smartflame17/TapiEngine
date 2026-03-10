@@ -150,6 +150,18 @@
     <ClCompile Include="Graphics\Vertex.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Components\Component.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\DrawableComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\GameObject.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Scene.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -255,6 +267,18 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\IBindable\Sampler.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Component.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\DrawableComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\GameObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\TexturedBox.h">

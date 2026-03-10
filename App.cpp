@@ -2,6 +2,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
+#include "Components/DrawableComponent.h"
 
 App::App():
 	wnd (1280, 720, "TapiEngine v0.4"),
@@ -28,8 +29,7 @@ App::~App()
 
 void App::ResetSimulation()
 {
-	drawables.clear();
-	drawables.reserve(nDrawables);
+	scene.Clear();
 
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -38,9 +38,11 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
+	auto& root = scene.CreateGameObject("Root");
 	for (auto i = 0; i < 120; i++)
 	{
-		drawables.push_back(std::make_unique<Box>(
+		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
+		object.AddComponent<DrawableComponent>(std::make_unique<Box>(
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
@@ -79,7 +81,7 @@ int App::Begin()
 				physicsWorld.Update(dt);
 			}
 			
-			// Additional Game logic here...
+			scene.Update(dt, isPlayMode && !isPaused);
 
 			accumulator -= dt;
 		}
@@ -98,21 +100,8 @@ void App::RenderFrame(float alpha)
 	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
 	light.Bind(wnd.Gfx());
 
-	// --- Simulation Update & Draw ---
-	for (size_t i = 0; i < drawables.size(); i++)
-	{
-		// Assuming your drawables or game objects hold a reference to a RigidBody
-		// auto& rb = myGameObjects[i].rigidBody;
-
-		// Get the SMOOTH interpolated transform
-		// Matrix transform = rb->GetInterpolatedTransform(alpha);
-		if (isPlayMode && !isPaused)
-			drawables[i]->Update(dt); // Update logic if needed
-
-		// Pass this transform to your drawable's Draw method
-		drawables[i]->Draw(wnd.Gfx());
-		
-	}
+	// --- Simulation Draw ---
+	scene.Render(wnd.Gfx());
 	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
 	light.Draw(wnd.Gfx());
 
@@ -149,6 +138,8 @@ void App::RenderFrame(float alpha)
 		ImGui::EndDisabled();
 	}
 	ImGui::End();
+
+	scene.DrawHierarchyWindow();
 
 	// show imgui
 	imgui.StatWindow();
