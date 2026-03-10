@@ -366,6 +366,10 @@
       </SubType>
     </None>
     <None Include="packages.config" />
+    <None Include="Tools\README.md">
+      <SubType>
+      </SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl">
