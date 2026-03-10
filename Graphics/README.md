@@ -29,7 +29,7 @@ Each 3D object would bind any needed feature within the graphics pipeline by cal
 
 For the first instance of some Drawable, it will be staticly initialized (via ```AddStaticBind()```). Afterwards, all instances of the same Drawable will share the same static collection of IBindable.  
 This will be done at initialization or whenever changes are made (in the update loop) to reduce redundant operations.  
-As for the constant buffer, since the transformation matrices will change per frame, we keep a seperate reference to perform transformation.
+As for the constant buffer, since the transformation matrices need to be independent per object, we keep a seperate reference to perform transformation.
 
 A Child class Drawable Base from Drawable will be templated to account for different structural data needed per 3D object.
 All instances of the same templated DrawableBase (ex. DrawableBase\<Cube> or DrawableBase\<Sphere>) shares a static buffer to operate on.
