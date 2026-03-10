@@ -1,21 +1,46 @@
 #pragma once
-#include "Drawable.h"
-#include <string>
+#include "DrawableBase.h"
+#include "../IBindable/IBindableBase.h"
+#include "../Vertex.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-class Mesh : public Drawable
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+
+class Mesh : public DrawableBase<Mesh>
 {
 public:
-	Mesh(Graphics& gfx, const std::string& modelName);
+	Mesh(Graphics& gfx, std::vector<std::unique_ptr<IBindable>> bindPtrs);
+	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
-	void Update(float dt) noexcept override;
+private:
+	mutable DirectX::XMFLOAT4X4 transform;
+};
 
-	void SetPos(DirectX::XMFLOAT3 pos) noexcept;
-	void SetRotation(float pitch, float yaw, float roll) noexcept;
-	void SetScale(float scale) noexcept;
+class Node
+{
+	friend class Model;
+public:
+	Node(std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG);
+	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
 private:
-	const std::vector<std::unique_ptr<IBindable>>& GetStaticBinds() const noexcept override;
+	void AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG);;
 private:
-	DirectX::XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3 rot = { 0.0f, 0.0f, 0.0f };
-	float scale = 1.0f;
+	std::vector<std::unique_ptr<Node>> childPtrs;
+	std::vector<Mesh*> meshPtrs;
+	DirectX::XMFLOAT4X4 transform;
+};
+
+class Model
+{
+public:
+	Model(Graphics& gfx, const std::string fileName);
+	void Draw(Graphics& gfx, DirectX::FXMMATRIX transform) const;
+private:
+	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh);
+	std::unique_ptr<Node> ParseNode(const aiNode& node);
+private:
+	std::unique_ptr<Node> pRoot;
+	std::vector<std::unique_ptr<Mesh>> meshPtrs;
 };

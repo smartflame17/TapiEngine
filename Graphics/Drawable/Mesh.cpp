@@ -1,137 +1,158 @@
 #include "Mesh.h"
-#include "../IBindable/IBindableBase.h"
-#include "../../ErrorHandling/GraphicsExceptionMacros.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+// Mesh
+Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<IBindable>> bindPtrs)
+{
+	if (!IsStaticInitialized())
+	{
+		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	}
 
-#pragma comment(lib, "assimp-vc143-mtd.lib")
+	for (auto& pb : bindPtrs)
+	{
+		if (auto pi = dynamic_cast<IndexBuffer*>(pb.get()))
+		{
+			AddIndexBuffer(std::unique_ptr<IndexBuffer>{ pi });
+			pb.release();
+		}
+		else
+		{
+			AddBind(std::move(pb));
+		}
+	}
 
-Mesh::Mesh(Graphics& gfx, const std::string& modelName)
+	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+}
+void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
+{
+	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
+	Drawable::Draw(gfx);
+}
+DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
+{
+	return DirectX::XMLoadFloat4x4(&transform);
+}
+
+
+// Node
+Node::Node(std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG)
+	:
+meshPtrs(std::move(meshPtrs))
+{
+	DirectX::XMStoreFloat4x4(&this->transform, transform);
+}
+void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
+{
+	const auto built = DirectX::XMLoadFloat4x4(&transform) * accumulatedTransform;
+	for (const auto pm : meshPtrs)
+	{
+		pm->Draw(gfx, built);
+	}
+	for (const auto& pc : childPtrs)
+	{
+		pc->Draw(gfx, built);
+	}
+}
+void Node::AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG)
+{
+	assert(pChild);
+	childPtrs.push_back(std::move(pChild));
+}
+
+
+// Model
+Model::Model(Graphics& gfx, const std::string fileName)
+{
+	Assimp::Importer imp;
+	const auto pScene = imp.ReadFile(fileName.c_str(),
+		aiProcess_Triangulate |
+		aiProcess_JoinIdenticalVertices
+	);
+
+	for (size_t i = 0; i < pScene->mNumMeshes; i++)
+	{
+		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i]));
+	}
+
+	pRoot = ParseNode(*pScene->mRootNode);
+}
+void Model::Draw(Graphics& gfx, DirectX::FXMMATRIX transform) const
+{
+	pRoot->Draw(gfx, transform);
+}
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 {
 	namespace dx = DirectX;
-
-	/*struct Vertex
-	{
-		dx::XMFLOAT3 pos;
-		dx::XMFLOAT3 n;
-	};*/
-
 	using Dvtx::VertexLayout;
+
 	Dvtx::VertexBuffer vbuf(std::move(
 		VertexLayout{}
 		.Append(VertexLayout::Position3D)
 		.Append(VertexLayout::Normal)
 	));
 
-	Assimp::Importer importer;
-	const std::string modelPath = "Graphics/Models/" + modelName;
-	const aiScene* scene = importer.ReadFile(
-		modelPath,
-		aiProcess_Triangulate |
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_GenNormals |
-		aiProcess_ConvertToLeftHanded
-	);
-
-	if (scene == nullptr || scene->mNumMeshes == 0u)
-	{
-		HRESULT hr;
-		GFX_THROW_FAILED(E_FAIL);
-	}
-
-	const aiMesh* pMesh = scene->mMeshes[0u];
-	/*std::vector<Vertex> vertices;
-	vertices.reserve(pMesh->mNumVertices);
-
-	for (unsigned int i = 0u; i < pMesh->mNumVertices; i++)
-	{
-		const aiVector3D& v = pMesh->mVertices[i];
-		const aiVector3D& n = pMesh->HasNormals() ? pMesh->mNormals[i] : aiVector3D(0.0f, 1.0f, 0.0f);
-		vertices.push_back({ { v.x, v.y, v.z },{ n.x, n.y, n.z } });
-	}*/
-
-	for (unsigned int i = 0; i < pMesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
 	{
 		vbuf.EmplaceBack(
-			dx::XMFLOAT3{ pMesh->mVertices[i].x * scale,pMesh->mVertices[i].y * scale,pMesh->mVertices[i].z * scale },
-			*reinterpret_cast<dx::XMFLOAT3*>(&pMesh->mNormals[i])
+			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mVertices[i]),
+			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i])
 		);
 	}
 
 	std::vector<unsigned short> indices;
-	indices.reserve(pMesh->mNumFaces * 3u);
-	for (unsigned int i = 0u; i < pMesh->mNumFaces; i++)
+	indices.reserve(mesh.mNumFaces * 3);
+	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
 	{
-		const aiFace& face = pMesh->mFaces[i];
-		if (face.mNumIndices == 3u)
-		{
-			indices.push_back(static_cast<unsigned short>(face.mIndices[0]));
-			indices.push_back(static_cast<unsigned short>(face.mIndices[1]));
-			indices.push_back(static_cast<unsigned short>(face.mIndices[2]));
-		}
+		const auto& face = mesh.mFaces[i];
+		assert(face.mNumIndices == 3);
+		indices.push_back(face.mIndices[0]);
+		indices.push_back(face.mIndices[1]);
+		indices.push_back(face.mIndices[2]);
 	}
 
-	//AddBind(std::make_unique<VertexBuffer>(gfx, vertices));
-	AddBind(std::make_unique<VertexBuffer>(gfx, vbuf));
-	AddIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
+	std::vector<std::unique_ptr<IBindable>> bindablePtrs;
+
+	bindablePtrs.push_back(std::make_unique<VertexBuffer>(gfx, vbuf));
+
+	bindablePtrs.push_back(std::make_unique<IndexBuffer>(gfx, indices));
 
 	auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");
 	auto pvsbc = pvs->GetBytecode();
-	AddBind(std::move(pvs));
-	AddBind(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
+	bindablePtrs.push_back(std::move(pvs));
 
-	/*const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	bindablePtrs.push_back(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
+
+	bindablePtrs.push_back(std::make_unique<InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
+
+	struct PSMaterialConstant
 	{
-		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-	};
-	AddBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));*/
-
-	AddBind(std::make_unique<InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
-	AddBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
-
-	struct MaterialCbuf
-	{
-		dx::XMFLOAT3 color;
+		DirectX::XMFLOAT3 color = { 0.8f,0.3f,0.8f };
 		float padding;
-	};
-	const MaterialCbuf material = { { 0.7f, 0.7f, 1.0f },0.0f };
-	AddBind(std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u));
-}
+	} pmc;
+	bindablePtrs.push_back(std::make_unique<PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 0u));
 
-DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
-{
-	return
-		DirectX::XMMatrixScaling(scale, scale, scale) *
-		DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z) *
-		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
-
-void Mesh::Update(float dt) noexcept
+std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
 {
-	(void)dt;
-}
+	namespace dx = DirectX;
+	const auto transform = dx::XMMatrixTranspose(dx::XMLoadFloat4x4(
+		reinterpret_cast<const dx::XMFLOAT4X4*>(&node.mTransformation)
+	));
 
-void Mesh::SetPos(DirectX::XMFLOAT3 newPos) noexcept
-{
-	pos = newPos;
-}
+	std::vector<Mesh*> curMeshPtrs;
+	curMeshPtrs.reserve(node.mNumMeshes);
+	for (size_t i = 0; i < node.mNumMeshes; i++)
+	{
+		const auto meshIdx = node.mMeshes[i];
+		curMeshPtrs.push_back(meshPtrs.at(meshIdx).get());
+	}
 
-void Mesh::SetRotation(float pitch, float yaw, float roll) noexcept
-{
-	rot = { pitch, yaw, roll };
-}
+	auto pNode = std::make_unique<Node>(std::move(curMeshPtrs), transform);
+	for (size_t i = 0; i < node.mNumChildren; i++)
+	{
+		pNode->AddChild(ParseNode(*node.mChildren[i]));
+	}
 
-void Mesh::SetScale(float newScale) noexcept
-{
-	scale = newScale;
-}
-
-const std::vector<std::unique_ptr<IBindable>>& Mesh::GetStaticBinds() const noexcept
-{
-	static const std::vector<std::unique_ptr<IBindable>> empty;
-	return empty;
+	return pNode;
 }

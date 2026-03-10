@@ -9,7 +9,7 @@
 #include "Graphics/Lighting/PointLight.h"
 #include "Physics/PhysicsWorld.h"
 #include "imgui/ImguiManager.h"
-#define TARGET_FPS 120.0f
+#define TARGET_FPS 60.0f
 
 class App
 {
@@ -38,6 +38,9 @@ private:
 	std::vector<std::unique_ptr<class Drawable>> drawables;
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;
+
+	// Testing model loading and rendering
+	Model suzanne{ wnd.Gfx(), "Graphics/Models/suzanne.obj" };
 
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode

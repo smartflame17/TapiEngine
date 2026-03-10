@@ -46,11 +46,6 @@ void App::ResetSimulation()
 		));
 	}
 
-	auto suzanne = std::make_unique<Mesh>(wnd.Gfx(), "suzanne.obj");
-	suzanne->SetScale(2.0f);
-	suzanne->SetPos({ 0.0f, 0.0f, 8.0f });
-	drawables.push_back(std::move(suzanne));
-
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
 
 	// Test for map generator
@@ -95,7 +90,7 @@ int App::Begin()
 	}
 }
 
-// Run per-frame update
+// Run per-frame update for rendering
 void App::RenderFrame(float alpha)
 {
 	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
@@ -116,7 +111,9 @@ void App::RenderFrame(float alpha)
 
 		// Pass this transform to your drawable's Draw method
 		drawables[i]->Draw(wnd.Gfx());
+		
 	}
+	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
 	light.Draw(wnd.Gfx());
 
 	// --- UI Logic ---
