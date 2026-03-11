@@ -1,10 +1,7 @@
 #include "App.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
 
 App::App():
-	wnd (1280, 720, "TapiEngine v0.4"),
+	wnd (1920, 1080, "TapiEngine v0.4"),
 	light(wnd.Gfx())
 {
 	// Initialize scene objects
@@ -28,8 +25,7 @@ App::~App()
 
 void App::ResetSimulation()
 {
-	drawables.clear();
-	drawables.reserve(nDrawables);
+	scene.Clear();
 
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -38,13 +34,22 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
+	auto& root = scene.CreateGameObject("Root");
 	for (auto i = 0; i < 120; i++)
 	{
-		drawables.push_back(std::make_unique<Box>(
+		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
+		object.AddComponent<DrawableComponent>(std::make_unique<Box>(
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
 	}
+
+	auto& suzanne = scene.CreateChildGameObject(root, "suzanne");
+	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
+		wnd.Gfx(),
+		"Graphics/Models/suzanne.obj",
+		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+	));
 
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
 
@@ -79,7 +84,7 @@ int App::Begin()
 				physicsWorld.Update(dt);
 			}
 			
-			// Additional Game logic here...
+			scene.Update(dt, isPlayMode && !isPaused);
 
 			accumulator -= dt;
 		}
@@ -93,34 +98,41 @@ int App::Begin()
 // Run per-frame update for rendering
 void App::RenderFrame(float alpha)
 {
-	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
+	wnd.Gfx().BeginFrame(0.4f, 0.6f, 0.8f);
 	
 	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
 	light.Bind(wnd.Gfx());
 
-	// --- Simulation Update & Draw ---
-	for (size_t i = 0; i < drawables.size(); i++)
-	{
-		// Assuming your drawables or game objects hold a reference to a RigidBody
-		// auto& rb = myGameObjects[i].rigidBody;
-
-		// Get the SMOOTH interpolated transform
-		// Matrix transform = rb->GetInterpolatedTransform(alpha);
-		if (isPlayMode && !isPaused)
-			drawables[i]->Update(dt); // Update logic if needed
-
-		// Pass this transform to your drawable's Draw method
-		drawables[i]->Draw(wnd.Gfx());
-		
-	}
-	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
+	// --- Simulation Draw ---
+	scene.Render(wnd.Gfx());
 	light.Draw(wnd.Gfx());
 
 	// --- UI Logic ---
-	if (ImGui::Begin("Simulation Control"))
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
+	if (ImGui::Begin("TapiEngine v0.4", nullptr,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse
+		))
 	{
 		// Play/Pause Button
 		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
+		const char* stopBtnLabel = "Stop";
+		float width1 = ImGui::CalcTextSize(playBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+		float width2 = ImGui::CalcTextSize(stopBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+		float spacing = ImGui::GetStyle().ItemSpacing.x;
+
+		float totalWidth = width1 + width2 + spacing;
+		float windowWidth = ImGui::GetContentRegionAvail().x;
+
+		float indentation = (windowWidth - totalWidth) * 0.5f;
+
+		if (indentation > 0.0f) {
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indentation);
+		}
+
 		if (ImGui::Button(playBtnLabel))
 		{
 			if (!isPlayMode)
@@ -137,7 +149,7 @@ void App::RenderFrame(float alpha)
 		ImGui::SameLine();
 		// Stop Button
 		ImGui::BeginDisabled(!isPlayMode);
-		if (ImGui::Button("Stop"))
+		if (ImGui::Button(stopBtnLabel))
 		{
 			if (isPlayMode)
 			{
@@ -149,12 +161,16 @@ void App::RenderFrame(float alpha)
 		ImGui::EndDisabled();
 	}
 	ImGui::End();
+	ImGui::PopStyleVar();
+
+	scene.DrawHierarchyWindow();
 
 	// show imgui
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
-	suzanne.SpawnControlWindow();
+
+	ImGui::ShowDemoWindow(nullptr);
 
 	/*
 	// Draw Sprites and Text

@@ -175,12 +175,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Components\Component.cpp" />
+    <ClCompile Include="Components\DrawableComponent.cpp" />
+    <ClCompile Include="Scene\GameObject.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="ErrorHandling\dxerr.cpp" />
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\Drawable\Box.cpp" />
     <ClCompile Include="Graphics\Drawable\Drawable.cpp" />
     <ClCompile Include="Graphics\Drawable\Mesh.cpp" />
+    <ClCompile Include="Graphics\Drawable\Model.cpp" />
     <ClCompile Include="Graphics\Drawable\SolidSphere.cpp" />
     <ClCompile Include="Graphics\Drawable\TexturedBox.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
@@ -215,6 +220,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="Components\Component.h" />
+    <ClInclude Include="Components\DrawableComponent.h" />
+    <ClInclude Include="Scene\GameObject.h" />
+    <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="assimp\include\ai_assert.h" />
     <ClInclude Include="assimp\include\anim.h" />
     <ClInclude Include="assimp\include\AssertHandler.h" />
@@ -303,6 +312,7 @@
     <ClInclude Include="Graphics\Drawable\DrawableBase.h" />
     <ClInclude Include="Graphics\Drawable\IndexedTriangleList.h" />
     <ClInclude Include="Graphics\Drawable\Mesh.h" />
+    <ClInclude Include="Graphics\Drawable\Model.h" />
     <ClInclude Include="Graphics\Drawable\Plane.h" />
     <ClInclude Include="Graphics\Drawable\Prism.h" />
     <ClInclude Include="Graphics\Drawable\SolidSphere.h" />
