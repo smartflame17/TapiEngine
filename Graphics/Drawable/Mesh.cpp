@@ -1,7 +1,5 @@
 #include "Mesh.h"
-#include "../../imgui/imgui.h"
 
-// Mesh
 Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<IBindable>> bindPtrs)
 {
 	if (!IsStaticInitialized())
@@ -24,18 +22,18 @@ Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<IBindable>> bindPtrs)
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
 }
+
 void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
 {
 	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
 	Drawable::Draw(gfx);
 }
+
 DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 {
 	return DirectX::XMLoadFloat4x4(&transform);
 }
 
-
-// Node
 Node::Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG)
 	:
 	meshPtrs(std::move(meshPtrs)),
@@ -43,6 +41,7 @@ Node::Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::
 {
 	DirectX::XMStoreFloat4x4(&this->transform, transform);
 }
+
 void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
 {
 	const auto localTransform =
@@ -60,6 +59,7 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 		pc->Draw(gfx, built);
 	}
 }
+
 void Node::AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG)
 {
 	assert(pChild);
@@ -72,29 +72,33 @@ void Node::SetAppliedTransform(const DirectX::XMFLOAT3& translation, const Direc
 	appliedRotation = rotation;
 	appliedScale = scale;
 }
+
 const std::string& Node::GetName() const noexcept
 {
 	return name;
 }
+
 const std::vector<std::unique_ptr<Node>>& Node::GetChildren() const noexcept
 {
 	return childPtrs;
 }
+
 const DirectX::XMFLOAT3& Node::GetAppliedTranslation() const noexcept
 {
 	return appliedTranslation;
 }
+
 const DirectX::XMFLOAT3& Node::GetAppliedRotation() const noexcept
 {
 	return appliedRotation;
 }
+
 const DirectX::XMFLOAT3& Node::GetAppliedScale() const noexcept
 {
 	return appliedScale;
 }
 
-// Model
-Model::Model(Graphics& gfx, const std::string fileName)
+Model::Model(Graphics& gfx, const std::string& fileName)
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(fileName.c_str(),
@@ -102,7 +106,6 @@ Model::Model(Graphics& gfx, const std::string fileName)
 		aiProcess_JoinIdenticalVertices
 	);
 
-	// Throw exception if failed to load
 	if (pScene == nullptr)
 	{
 		throw std::runtime_error("Failed to load model: " + fileName + "\n" + imp.GetErrorString());
@@ -114,12 +117,29 @@ Model::Model(Graphics& gfx, const std::string fileName)
 	}
 
 	pRoot = ParseNode(*pScene->mRootNode);
-	pSelectedNode = pRoot.get();
 }
-void Model::Draw(Graphics& gfx, DirectX::FXMMATRIX transform) const
+
+void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
-	pRoot->Draw(gfx, transform);
+	if (pRoot == nullptr)
+	{
+		return;
+	}
+	pRoot->Draw(gfx, GetTransformXM());
 }
+
+void Model::Update(float dt) noexcept
+{
+	(void)dt;
+}
+
+DirectX::XMMATRIX Model::GetTransformXM() const noexcept
+{
+	return DirectX::XMMatrixScaling(modelScale.x, modelScale.y, modelScale.z) *
+		DirectX::XMMatrixRotationRollPitchYaw(modelRotation.x, modelRotation.y, modelRotation.z) *
+		DirectX::XMMatrixTranslation(modelTranslation.x, modelTranslation.y, modelTranslation.z);
+}
+
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 {
 	namespace dx = DirectX;
@@ -153,7 +173,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	std::vector<std::unique_ptr<IBindable>> bindablePtrs;
 
 	bindablePtrs.push_back(std::make_unique<VertexBuffer>(gfx, vbuf));
-
 	bindablePtrs.push_back(std::make_unique<IndexBuffer>(gfx, indices));
 
 	auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");
@@ -161,7 +180,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	bindablePtrs.push_back(std::move(pvs));
 
 	bindablePtrs.push_back(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
-
 	bindablePtrs.push_back(std::make_unique<InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
 
 	struct PSMaterialConstant
@@ -173,6 +191,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
+
 std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
 {
 	namespace dx = DirectX;
@@ -195,81 +214,4 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
 	}
 
 	return pNode;
-}
-
-void Model::DrawInspectorNode(Node& node) noexcept
-{
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
-	if (&node == pSelectedNode)
-	{
-		flags |= ImGuiTreeNodeFlags_Selected;
-	}
-	if (node.GetChildren().empty())
-	{
-		flags |= ImGuiTreeNodeFlags_Leaf;
-	}
-
-	const bool isOpen = ImGui::TreeNodeEx(static_cast<void*>(&node), flags, "%s", node.GetName().c_str());
-	if (ImGui::IsItemClicked())
-	{
-		pSelectedNode = &node;
-	}
-
-	if (isOpen)
-	{
-		for (const auto& pChild : node.GetChildren())
-		{
-			DrawInspectorNode(*pChild);
-		}
-		ImGui::TreePop();
-	}
-}
-
-void Model::SpawnControlWindow() noexcept
-{
-	if (!pRoot)
-	{
-		return;
-	}
-
-	if (ImGui::Begin("Inspector"))
-	{
-		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
-		DrawInspectorNode(*pRoot);
-	}
-	ImGui::End();
-
-	if (!pSelectedNode)
-	{
-		pSelectedNode = pRoot.get();
-	}
-
-	auto translation = pSelectedNode->GetAppliedTranslation();
-	auto rotation = pSelectedNode->GetAppliedRotation();
-	auto scale = pSelectedNode->GetAppliedScale();
-
-	if (ImGui::Begin("Transform"))
-	{
-		ImGui::Text("Node: %s", pSelectedNode->GetName().c_str());
-		ImGui::Separator();
-
-		ImGui::Text("Translate");
-		ImGui::DragFloat3("##Translate", &translation.x, 0.05f);
-
-		ImGui::Text("Rotate (radians)");
-		ImGui::DragFloat3("##Rotate", &rotation.x, 0.01f);
-
-		ImGui::Text("Scale");
-		ImGui::DragFloat3("##Scale", &scale.x, 0.01f);
-
-		if (ImGui::Button("Reset"))
-		{
-			translation = { 0.0f, 0.0f, 0.0f };
-			rotation = { 0.0f, 0.0f, 0.0f };
-			scale = { 1.0f, 1.0f, 1.0f };
-		}
-	}
-	ImGui::End();
-
-	pSelectedNode->SetAppliedTransform(translation, rotation, scale);
 }
