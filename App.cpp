@@ -113,6 +113,20 @@ void App::RenderFrame(float alpha)
 	{
 		// Play/Pause Button
 		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
+		const char* stopBtnLabel = "Stop";
+		float width1 = ImGui::CalcTextSize(playBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+		float width2 = ImGui::CalcTextSize(stopBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+		float spacing = ImGui::GetStyle().ItemSpacing.x;
+
+		float totalWidth = width1 + width2 + spacing;
+		float windowWidth = ImGui::GetContentRegionAvail().x;
+
+		float indentation = (windowWidth - totalWidth) * 0.5f;
+
+		if (indentation > 0.0f) {
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indentation);
+		}
+
 		if (ImGui::Button(playBtnLabel))
 		{
 			if (!isPlayMode)
@@ -129,7 +143,7 @@ void App::RenderFrame(float alpha)
 		ImGui::SameLine();
 		// Stop Button
 		ImGui::BeginDisabled(!isPlayMode);
-		if (ImGui::Button("Stop"))
+		if (ImGui::Button(stopBtnLabel))
 		{
 			if (isPlayMode)
 			{
