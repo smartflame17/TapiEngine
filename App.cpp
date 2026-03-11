@@ -44,6 +44,13 @@ void App::ResetSimulation()
 		));
 	}
 
+	auto& suzanne = scene.CreateChildGameObject(root, "suzanne");
+	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
+		wnd.Gfx(),
+		"Graphics/Models/suzanne.obj",
+		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+	));
+
 	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
 
 	// Test for map generator
@@ -98,7 +105,6 @@ void App::RenderFrame(float alpha)
 
 	// --- Simulation Draw ---
 	scene.Render(wnd.Gfx());
-	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
 	light.Draw(wnd.Gfx());
 
 	// --- UI Logic ---
@@ -163,7 +169,6 @@ void App::RenderFrame(float alpha)
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
-	suzanne.SpawnControlWindow();
 
 	ImGui::ShowDemoWindow(nullptr);
 
