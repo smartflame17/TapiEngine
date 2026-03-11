@@ -34,7 +34,7 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
-	auto& root = scene.CreateGameObject("Root");
+	auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
 	{
 		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
@@ -44,7 +44,7 @@ void App::ResetSimulation()
 		));
 	}
 
-	auto& suzanne = scene.CreateChildGameObject(root, "suzanne");
+	auto& suzanne = scene.CreateGameObject("suzanne");
 	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/suzanne.obj",
