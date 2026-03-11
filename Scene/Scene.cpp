@@ -39,7 +39,13 @@ void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 
 void Scene::DrawHierarchyWindow() noexcept
 {
-	if (!ImGui::Begin("Scene Hierarchy"))
+	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(0, 60), ImGuiCond_Always);
+	if (!ImGui::Begin(name.c_str(), nullptr,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse
+		))
 	{
 		ImGui::End();
 		return;
@@ -71,7 +77,7 @@ const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const no
 
 void Scene::DrawHierarchyNode(GameObject& object) noexcept
 {
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DrawLinesToNodes;
 	if (object.GetChildren().empty())
 		flags |= ImGuiTreeNodeFlags_Leaf;
 	if (selectedObject == &object)

@@ -13,7 +13,8 @@ class GameObject;
 class Scene
 {
 public:
-	Scene() = default;
+	Scene() : name("Scene") {}
+	Scene(const std::string& sceneName) : name(sceneName) {}
 
 	GameObject& CreateGameObject(const std::string& name);
 	GameObject& CreateChildGameObject(GameObject& parent, const std::string& name);
@@ -29,6 +30,7 @@ private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
 
 private:
+	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	GameObject* selectedObject = nullptr;
 };

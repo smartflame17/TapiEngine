@@ -123,12 +123,14 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
 	// configure viewport
 	D3D11_VIEWPORT vp = {};
-	vp.Width = (float) width;
-	vp.Height = (float) height;
+	//vp.Width = (float) width;
+	//vp.Height = (float) height;
+	vp.Width = 1280.0f;
+	vp.Height = 720.0f;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
+	vp.TopLeftX = 300.0f;
+	vp.TopLeftY = 60.0f;
 	pContext->RSSetViewports(1u, &vp);
 
 	// init imgui for directx11

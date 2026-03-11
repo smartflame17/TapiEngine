@@ -2,15 +2,24 @@
 #include "Window.h"
 #include "Tools/Timer.h"
 #include "Tools/DungeonGenerator.h"
+
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
 #include "Graphics/Drawable/Mesh.h"
 #include "Graphics/Lighting/PointLight.h"
+
 #include "Physics/PhysicsWorld.h"
+
+#include "imgui/ImguiManager.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
+
 #include "Scene/Scene.h"
 #include "Scene/GameObject.h"
+
 #include "Components/Component.h"
-#include "imgui/ImguiManager.h"
+#include "Components/DrawableComponent.h"
 #define TARGET_FPS 60.0f
 
 class App

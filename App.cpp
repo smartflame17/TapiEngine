@@ -1,11 +1,7 @@
 #include "App.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
-#include "Components/DrawableComponent.h"
 
 App::App():
-	wnd (1280, 720, "TapiEngine v0.4"),
+	wnd (1920, 1080, "TapiEngine v0.4"),
 	light(wnd.Gfx())
 {
 	// Initialize scene objects
@@ -95,7 +91,7 @@ int App::Begin()
 // Run per-frame update for rendering
 void App::RenderFrame(float alpha)
 {
-	wnd.Gfx().BeginFrame(0.3f, 0.2f, 0.4f);
+	wnd.Gfx().BeginFrame(0.4f, 0.6f, 0.8f);
 	
 	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
 	light.Bind(wnd.Gfx());
@@ -106,7 +102,14 @@ void App::RenderFrame(float alpha)
 	light.Draw(wnd.Gfx());
 
 	// --- UI Logic ---
-	if (ImGui::Begin("Simulation Control"))
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
+	if (ImGui::Begin("TapiEngine v0.4", nullptr,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse
+		))
 	{
 		// Play/Pause Button
 		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
@@ -138,6 +141,7 @@ void App::RenderFrame(float alpha)
 		ImGui::EndDisabled();
 	}
 	ImGui::End();
+	ImGui::PopStyleVar();
 
 	scene.DrawHierarchyWindow();
 
@@ -146,6 +150,8 @@ void App::RenderFrame(float alpha)
 	activeCam->SpawnControlWindow();
 	light.SpawnControlWindow();
 	suzanne.SpawnControlWindow();
+
+	ImGui::ShowDemoWindow(nullptr);
 
 	/*
 	// Draw Sprites and Text
