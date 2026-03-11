@@ -5,7 +5,7 @@
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
-#include "Graphics/Drawable/Mesh.h"
+#include "Graphics/Drawable/Model.h"
 #include "Graphics/Lighting/PointLight.h"
 
 #include "Physics/PhysicsWorld.h"
@@ -50,8 +50,6 @@ private:
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;
 
-	// Testing model loading and rendering
-	Model suzanne{ wnd.Gfx(), "Graphics/Models/suzanne.obj" };
 
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
