@@ -27,6 +27,8 @@ public:
 
 	GameObject* GetParent() const noexcept;
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
+	const std::vector<std::unique_ptr<Component>>& GetComponents() const noexcept;
+
 
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;

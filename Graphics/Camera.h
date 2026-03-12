@@ -1,9 +1,13 @@
 #pragma once
 #include "Graphics.h"
+#include "../Components/Component.h"
+#include "../imgui/imgui.h"
 
-class Camera
+class Camera : public Component
 {
 public:
+	Camera() = default;
+
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
 	void SetPosition(float x, float y, float z) noexcept;
 	void SetRotation(float pitch, float yaw, float roll) noexcept;

@@ -2,8 +2,10 @@
 #include "../Graphics.h"
 #include "../IBindable/ConstantBuffers.h"
 #include "../Drawable/SolidSphere.h"
+#include "../../Components/Component.h"
+#include "../../imgui/imgui.h"
 
-class PointLight
+class PointLight : public Component
 {
 public:
 	PointLight(Graphics& gfx, float radius = 0.5f);
