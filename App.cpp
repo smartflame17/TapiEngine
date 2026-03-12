@@ -35,6 +35,14 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
+	// GO initialization
+	auto& cameraObject = scene.CreateGameObject("Camera");
+	auto& gameCam = cameraObject.AddComponent<Camera>();
+	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+
+	auto& pointLightObject = scene.CreateGameObject("PointLight");
+	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
+
 	auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
 	{
@@ -52,13 +60,6 @@ void App::ResetSimulation()
 		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
 	));
 
-	auto& cameraObject = scene.CreateGameObject("Camera");
-	auto& gameCam = cameraObject.AddComponent<Camera>();
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
-
-	auto& pointLightObject = scene.CreateGameObject("PointLight");
-	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
-
 	CacheSceneComponents();
 
 	// Test for map generator
@@ -67,6 +68,7 @@ void App::ResetSimulation()
 	//gen.SaveToFile("dungeon2.txt");
 }
 
+// Cache pointers to important components (cameras, lights) for easy access during update and rendering
 void App::CacheSceneComponents() noexcept
 {
 	gameCams.clear();
