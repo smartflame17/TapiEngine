@@ -7,13 +7,13 @@ int CALLBACK WinMain(			// CALLBACK is stdcall convention used by windows
 	LPSTR		lpCmdLine,		// string pointer to cmd line arguments (non-parsed)
 	int			nCmdShow)		// window property on startup
 {
-	/*
+	
 	// Console attaching snippet
-	AllocConsole();
+	/*AllocConsole();
 	FILE* fp;
 	freopen_s(&fp, "CONOUT$", "w", stdout);
-	printf("Hello from GUI app with console!\n");
-	*/
+	printf("Hello from GUI app with console!\n");*/
+	
 
 	try {
 		return App{}.Begin();

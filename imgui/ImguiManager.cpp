@@ -68,6 +68,13 @@ void ImguiManager::StatWindow(bool* p_open)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::BeginMenu("New")) 
+			{
+				if (ImGui::MenuItem("Scene")) {}
+				if (ImGui::MenuItem("GameObject")) {}
+
+				ImGui::EndMenu();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))
