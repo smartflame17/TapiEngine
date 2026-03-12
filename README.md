@@ -7,6 +7,7 @@ TapiEngine is a basic 3D engine written in C++ with minimal external dependencie
 - Minimal external dependencies for ease of setup and portability
 - Core rendering capabilities using Direct3D 11
 - Windows-native application loop and input handling via WinAPI
+- Object-Component system for flexible scene management
 - Designed for learning, prototyping, and extending
 
 ## Getting Started
@@ -14,7 +15,7 @@ TapiEngine is a basic 3D engine written in C++ with minimal external dependencie
 ### Prerequisites
 
 - Windows OS
-- Visual Studio (recommended) or any C++ compiler with Direct3D 11 SDK support
+- Visual Studio 2022 (recommended) or any C++ compiler with Direct3D 11 SDK support
 
 ### Building
 
@@ -29,17 +30,12 @@ TapiEngine is a basic 3D engine written in C++ with minimal external dependencie
 
 After building, run the executable from your build output directory. You should see a window initialized by WinAPI and rendered via Direct3D 11.
 
-## Contributing
-
-Contributions, issues, and feature requests are welcome! Please open an issue to discuss your ideas or fixes.
-
-## License
-
-This project currently does not have a license specified. Please contact the owner for more details.
 
 ## Acknowledgements
 
 - Microsoft for WinAPI and Direct3D 11
+- The [imgui](https://github.com/ocornut/imgui) library for providing a simple and effective GUI solution
+- The [assimp](https://github.com/assimp/assimp) library for model loading capabilities
 - The open-source community for inspiration and guidance
 
 ---
