@@ -222,6 +222,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Components\Component.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
+    <ClInclude Include="imgui\imfilebrowser.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="assimp\include\ai_assert.h" />

@@ -572,6 +572,9 @@
     <ClInclude Include="Graphics\Color.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\imfilebrowser.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -613,6 +616,7 @@
       <Filter>헤더 파일</Filter>
     </None>
     <None Include="assimp\bin\assimp-vc143-mtd.dll" />
+    <None Include="Tools\README.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />

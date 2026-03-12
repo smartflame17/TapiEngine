@@ -171,7 +171,8 @@ void App::RenderFrame(float alpha)
 	if (ImGui::Begin("TapiEngine v0.4", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoBringToFrontOnFocus
 		))
 	{
 		// Play/Pause Button
