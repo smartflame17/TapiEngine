@@ -39,6 +39,7 @@ private:
 	ImguiManager imgui;		// initializes imgui
 	Window wnd;
 	Timer timer;
+	Scene scene;
 
 	// Cameras for different modes
 	Camera editorCam;
@@ -47,10 +48,6 @@ private:
 	Camera* activeCam = nullptr; // reference to currently active camera
 
 	std::vector<PointLight*> pointLights;
-	Scene scene;
-	static constexpr size_t nDrawables = 180;
-	bool showDemoWindow = true;
-
 
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
