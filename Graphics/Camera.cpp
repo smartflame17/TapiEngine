@@ -1,5 +1,4 @@
 #include "Camera.h"
-#include "../imgui/imgui.h"
 
 #define PI 3.14159265359f
 #define MAX_DISTANCE 1000.0f		// max distance camera can move in any direction

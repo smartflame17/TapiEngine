@@ -1,8 +1,7 @@
 #include "App.h"
 
 App::App():
-	wnd (1920, 1080, "TapiEngine v0.4"),
-	light(wnd.Gfx())
+	wnd (1920, 1080, "TapiEngine v0.4")
 {
 	// Initialize scene objects
 	ResetSimulation();
@@ -26,6 +25,8 @@ App::~App()
 void App::ResetSimulation()
 {
 	scene.Clear();
+	gameCams.clear();
+	pointLights.clear();
 
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -33,6 +34,14 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> odist(0.0f, 3.1415f * 0.3f);
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
+
+	// GO initialization
+	auto& cameraObject = scene.CreateGameObject("Camera");
+	auto& gameCam = cameraObject.AddComponent<Camera>();
+	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+
+	auto& pointLightObject = scene.CreateGameObject("PointLight");
+	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
 
 	auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
@@ -51,12 +60,44 @@ void App::ResetSimulation()
 		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
 	));
 
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+	CacheSceneComponents();
 
 	// Test for map generator
 	//DungeonGenerator gen(22222);
 	//gen.Generate(80, 40);
 	//gen.SaveToFile("dungeon2.txt");
+}
+
+// Cache pointers to important components (cameras, lights) for easy access during update and rendering
+void App::CacheSceneComponents() noexcept
+{
+	gameCams.clear();
+	pointLights.clear();
+
+	auto collect = [&](auto& self, const GameObject& gameObject) -> void
+	{
+		for (const auto& component : gameObject.GetComponents())
+		{
+			if (auto camera = dynamic_cast<Camera*>(component.get()))
+			{
+				gameCams.push_back(camera);
+			}
+			if (auto pointLight = dynamic_cast<PointLight*>(component.get()))
+			{
+				pointLights.push_back(pointLight);
+			}
+		}
+
+		for (const auto& child : gameObject.GetChildren())
+		{
+			self(self, *child);
+		}
+	};
+
+	for (const auto& rootObject : scene.GetRootObjects())
+	{
+		collect(collect, *rootObject);
+	}
 }
 
 int App::Begin()
@@ -100,12 +141,28 @@ void App::RenderFrame(float alpha)
 {
 	wnd.Gfx().BeginFrame(0.4f, 0.6f, 0.8f);
 	
-	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
-	light.Bind(wnd.Gfx());
+	if (activeCam != nullptr)
+	{
+		wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
+	}
+
+	for (const auto* light : pointLights)
+	{
+		if (light != nullptr)
+		{
+			light->Bind(wnd.Gfx());
+		}
+	}
 
 	// --- Simulation Draw ---
 	scene.Render(wnd.Gfx());
-	light.Draw(wnd.Gfx());
+	for (const auto* light : pointLights)
+	{
+		if (light != nullptr)
+		{
+			light->Draw(wnd.Gfx());
+		}
+	}
 
 	// --- UI Logic ---
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
@@ -167,8 +224,17 @@ void App::RenderFrame(float alpha)
 
 	// show imgui
 	imgui.StatWindow();
-	activeCam->SpawnControlWindow();
-	light.SpawnControlWindow();
+	if (activeCam != nullptr)
+	{
+		activeCam->SpawnControlWindow();
+	}
+	for (auto* light : pointLights)
+	{
+		if (light != nullptr)
+		{
+			light->SpawnControlWindow();
+		}
+	}
 
 	ImGui::ShowDemoWindow(nullptr);
 
@@ -189,9 +255,19 @@ void App::RenderFrame(float alpha)
 void App::HandleInput(float dt)
 {
 	// --- Input Handling & Camera Control ---
-	activeCam = isPlayMode ? &gameCam : &editorCam;
+	activeCam = &editorCam;
+	if (isPlayMode && !gameCams.empty())
+	{
+		activeCam = gameCams.front();
+	}
+
 	const float camSpeed = 12.0f * dt;
 	const float rotateSpeed = 0.004f;
+
+	if (activeCam == nullptr)
+	{
+		return;
+	}
 
 	// Mouse Input Polling
 	const Mouse::Event e = wnd.mouse.Read();

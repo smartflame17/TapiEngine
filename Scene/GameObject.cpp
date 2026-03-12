@@ -33,6 +33,11 @@ const std::vector<std::unique_ptr<GameObject>>& GameObject::GetChildren() const 
 	return children;
 }
 
+const std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() const noexcept
+{
+	return components;
+}
+
 GameObject& GameObject::AddChild(std::unique_ptr<GameObject> child) noexcept
 {
 	child->SetParent(this);

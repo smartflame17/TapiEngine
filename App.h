@@ -32,6 +32,7 @@ private:
 	void Update(float dt);	// called per frame
 	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
 	void ResetSimulation();	// resets camera, light, and all drawables to initial state
+	void CacheSceneComponents() noexcept;
 
 	void HandleInput(float dt); // handles input per frame
 private:
@@ -41,11 +42,11 @@ private:
 
 	// Cameras for different modes
 	Camera editorCam;
-	Camera gameCam;
+	std::vector<Camera*> gameCams;
 
 	Camera* activeCam = nullptr; // reference to currently active camera
 
-	PointLight light;
+	std::vector<PointLight*> pointLights;
 	Scene scene;
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;
