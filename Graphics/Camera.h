@@ -1,7 +1,10 @@
 #pragma once
 #include "Graphics.h"
+#include "../Components/Component.h"
+#include "../imgui/imgui.h"
+#include <algorithm>
 
-class Camera
+class Camera : public Component
 {
 public:
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
@@ -9,17 +12,16 @@ public:
 	void SetRotation(float pitch, float yaw, float roll) noexcept;
 	void Reset() noexcept;
 
-	// helpers to move/rotate camera with mouse/keyboard
 	void Translate(DirectX::XMFLOAT3 translation) noexcept;
 	void Rotate(float dx, float dy) noexcept;
 
-	void SpawnControlWindow() noexcept;	// imgui window for controlling camera
+	void SpawnControlWindow() noexcept;
 
 private:
 	float x = 0.0f;
 	float y = 0.0f;
 	float z = 0.0f;
-	float pitch = 0.0f; // rotation around x-axis
-	float yaw = 0.0f;   // rotation around y-axis
-	float roll = 0.0f;  // rotation around z-axis
+	float pitch = 0.0f;
+	float yaw = 0.0f;
+	float roll = 0.0f;
 };

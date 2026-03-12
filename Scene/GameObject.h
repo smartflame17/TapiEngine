@@ -26,7 +26,10 @@ public:
 	void SetName(std::string newName) noexcept;
 
 	GameObject* GetParent() const noexcept;
+	std::vector<std::unique_ptr<GameObject>>& GetChildren() noexcept;
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
+	std::vector<std::unique_ptr<Component>>& GetComponents() noexcept;
+	const std::vector<std::unique_ptr<Component>>& GetComponents() const noexcept;
 
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;

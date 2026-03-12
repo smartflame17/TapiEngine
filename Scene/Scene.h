@@ -24,6 +24,7 @@ public:
 	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void DrawHierarchyWindow() noexcept;
 
+	std::vector<std::unique_ptr<GameObject>>& GetRootObjects() noexcept;
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 
 private:

@@ -5,7 +5,7 @@
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
-#include "Graphics/Drawable/Mesh.h"
+#include "Graphics/Drawable/Model.h"
 #include "Graphics/Lighting/PointLight.h"
 
 #include "Physics/PhysicsWorld.h"
@@ -20,6 +20,8 @@
 
 #include "Components/Component.h"
 #include "Components/DrawableComponent.h"
+#include <vector>
+#include <random>
 #define TARGET_FPS 60.0f
 
 class App
@@ -27,41 +29,35 @@ class App
 public:
 	App();
 	~App();
-	int Begin();	// handles message pump between windows and the app
-private:
-	void Update(float dt);	// called per frame
-	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
-	void ResetSimulation();	// resets camera, light, and all drawables to initial state
+	int Begin();
 
-	void HandleInput(float dt); // handles input per frame
 private:
-	ImguiManager imgui;		// initializes imgui
+	void Update(float dt);
+	void RenderFrame(float alpha);
+	void ResetSimulation();
+	void HandleInput(float dt);
+	void RefreshSceneComponentCaches();
+
+private:
+	ImguiManager imgui;
 	Window wnd;
 	Timer timer;
 
-	// Cameras for different modes
 	Camera editorCam;
-	Camera gameCam;
+	std::vector<Camera*> gameCams;
+	std::vector<PointLight*> sceneLights;
+	Camera* activeCam = nullptr;
 
-	Camera* activeCam = nullptr; // reference to currently active camera
-
-	PointLight light;
 	Scene scene;
 	static constexpr size_t nDrawables = 180;
 	bool showDemoWindow = true;
 
-	// Testing model loading and rendering
-	Model suzanne{ wnd.Gfx(), "Graphics/Models/suzanne.obj" };
+	bool isPlayMode = false;
+	bool isPaused = false;
 
-	// Simulation state
-	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
-	bool isPaused = false;   // true = Simulation Paused (while in Play Mode)
-
-	// Input state
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 
-	// Physics
 	Physics::PhysicsWorld physicsWorld;
 
 	const float dt = 1.0f / TARGET_FPS;

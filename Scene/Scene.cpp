@@ -70,6 +70,11 @@ void Scene::DrawHierarchyWindow() noexcept
 	ImGui::End();
 }
 
+std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() noexcept
+{
+	return rootObjects;
+}
+
 const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const noexcept
 {
 	return rootObjects;

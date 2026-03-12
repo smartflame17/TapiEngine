@@ -1,5 +1,4 @@
 #include "PointLight.h"
-#include "../../imgui/imgui.h"
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
@@ -41,4 +40,9 @@ void PointLight::Bind(Graphics& gfx) const noexcept
 	cbufData.pos = pos;
 	cbuf.Update(gfx, cbufData);
 	cbuf.Bind(gfx);
+}
+
+void PointLight::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
+{
+	Draw(gfx);
 }

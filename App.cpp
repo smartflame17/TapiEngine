@@ -1,31 +1,34 @@
 #include "App.h"
 
-App::App():
-	wnd (1920, 1080, "TapiEngine v0.4"),
-	light(wnd.Gfx())
+App::App() :
+	wnd(1920, 1080, "TapiEngine v0.4")
 {
-	// Initialize scene objects
 	ResetSimulation();
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
 
-	// set editor cam starting position
 	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
 	activeCam = &editorCam;
 
-	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
 	lastMouseY = wnd.mouse.GetPosY();
 }
 
 App::~App()
 {
-
 }
 
 void App::ResetSimulation()
 {
 	scene.Clear();
+
+	auto& root = scene.CreateGameObject("Root");
+	auto& cameraObject = scene.CreateChildGameObject(root, "Camera");
+	auto& gameCamera = cameraObject.AddComponent<Camera>();
+	gameCamera.SetPosition(0.0f, 0.0f, 0.0f);
+
+	auto& lightObject = scene.CreateChildGameObject(root, "PointLight");
+	lightObject.AddComponent<PointLight>(wnd.Gfx());
 
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
@@ -34,7 +37,6 @@ void App::ResetSimulation()
 	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
 	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
-	auto& root = scene.CreateGameObject("Root");
 	for (auto i = 0; i < 120; i++)
 	{
 		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
@@ -44,64 +46,89 @@ void App::ResetSimulation()
 		));
 	}
 
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+	auto& suzanne = scene.CreateChildGameObject(root, "suzanne");
+	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
+		wnd.Gfx(),
+		"Graphics/Models/suzanne.obj",
+		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+	));
 
-	// Test for map generator
-	//DungeonGenerator gen(22222);
-	//gen.Generate(80, 40);
-	//gen.SaveToFile("dungeon2.txt");
+	RefreshSceneComponentCaches();
+}
+
+void App::RefreshSceneComponentCaches()
+{
+	gameCams.clear();
+	sceneLights.clear();
+
+	auto collectComponents = [&](GameObject& gameObject, auto&& collectRef) -> void
+	{
+		for (auto& component : gameObject.GetComponents())
+		{
+			if (auto* camera = dynamic_cast<Camera*>(component.get()))
+			{
+				gameCams.push_back(camera);
+			}
+			if (auto* light = dynamic_cast<PointLight*>(component.get()))
+			{
+				sceneLights.push_back(light);
+			}
+		}
+
+		for (auto& child : gameObject.GetChildren())
+		{
+			collectRef(*child, collectRef);
+		}
+	};
+
+	for (auto& rootObject : scene.GetRootObjects())
+	{
+		collectComponents(*rootObject, collectComponents);
+	}
 }
 
 int App::Begin()
 {
-	// Define timestep and init timer
 	timer.Mark();
 
-	// If ecode has value (some event handling)
 	while (true) {
 		if (const auto ecode = Window::ProcessMessages())
 			return *ecode;
 
-		// Accumulate the time elapsed since the last frame
 		accumulator += timer.Mark();
 
-		// As long as we have enough accumulated time,
-		// run the update logic in fixed steps.
 		while (accumulator >= dt)
 		{
 			HandleInput(dt);
 
-			// Step Physics
 			if (isPlayMode && !isPaused)
 			{
 				physicsWorld.Update(dt);
 			}
-			
+
 			scene.Update(dt, isPlayMode && !isPaused);
 
 			accumulator -= dt;
 		}
 
-		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
 		const float alpha = accumulator / dt;
 		RenderFrame(alpha);
 	}
 }
 
-// Run per-frame update for rendering
 void App::RenderFrame(float alpha)
 {
 	wnd.Gfx().BeginFrame(0.4f, 0.6f, 0.8f);
-	
+
 	wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
-	light.Bind(wnd.Gfx());
 
-	// --- Simulation Draw ---
+	for (const auto* light : sceneLights)
+	{
+		light->Bind(wnd.Gfx());
+	}
+
 	scene.Render(wnd.Gfx());
-	suzanne.Draw(wnd.Gfx(), DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f));
-	light.Draw(wnd.Gfx());
 
-	// --- UI Logic ---
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
@@ -109,9 +136,8 @@ void App::RenderFrame(float alpha)
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse
-		))
+	))
 	{
-		// Play/Pause Button
 		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
 		const char* stopBtnLabel = "Stop";
 		float width1 = ImGui::CalcTextSize(playBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
@@ -141,7 +167,6 @@ void App::RenderFrame(float alpha)
 		}
 
 		ImGui::SameLine();
-		// Stop Button
 		ImGui::BeginDisabled(!isPlayMode);
 		if (ImGui::Button(stopBtnLabel))
 		{
@@ -159,43 +184,38 @@ void App::RenderFrame(float alpha)
 
 	scene.DrawHierarchyWindow();
 
-	// show imgui
 	imgui.StatWindow();
 	activeCam->SpawnControlWindow();
-	light.SpawnControlWindow();
-	suzanne.SpawnControlWindow();
+	for (auto* light : sceneLights)
+	{
+		light->SpawnControlWindow();
+	}
 
 	ImGui::ShowDemoWindow(nullptr);
 
-	/*
-	// Draw Sprites and Text
-	wnd.Gfx().pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, // Or your preferred sort mode
-		nullptr,                          // Use default BlendState (alpha blend)
-		nullptr,                          // Use default SamplerState
-		wnd.Gfx().GetDepthStencilState(), // Use Depth State
-		nullptr                           // Use default RasterizerState
-	);
-	wnd.Gfx().pSpriteFont->DrawString(wnd.Gfx().pSpriteBatch.get(), L"Hello, DirectXTK!", DirectX::XMFLOAT2(300, 400), DirectX::Colors::PaleVioletRed);
-	wnd.Gfx().pSpriteBatch->End();
-	*/
 	wnd.Gfx().Endframe();
 }
 
 void App::HandleInput(float dt)
 {
-	// --- Input Handling & Camera Control ---
-	activeCam = isPlayMode ? &gameCam : &editorCam;
+	if (isPlayMode && !gameCams.empty())
+	{
+		activeCam = gameCams.front();
+	}
+	else
+	{
+		activeCam = &editorCam;
+	}
+
 	const float camSpeed = 12.0f * dt;
 	const float rotateSpeed = 0.004f;
 
-	// Mouse Input Polling
 	const Mouse::Event e = wnd.mouse.Read();
 
 	if (e.GetType() == Mouse::Event::Type::WheelUp)
-		activeCam->Translate({ 0.0f, 0.0f, camSpeed * 3.0f }); // Zoom in (move forward)
+		activeCam->Translate({ 0.0f, 0.0f, camSpeed * 3.0f });
 	else if (e.GetType() == Mouse::Event::Type::WheelDown)
-		activeCam->Translate({ 0.0f, 0.0f, -camSpeed * 3.0f }); // Zoom out (move backward)
-
+		activeCam->Translate({ 0.0f, 0.0f, -camSpeed * 3.0f });
 
 	const int curMouseX = wnd.mouse.GetPosX();
 	const int curMouseY = wnd.mouse.GetPosY();
@@ -204,13 +224,11 @@ void App::HandleInput(float dt)
 
 	if (wnd.mouse.IsLeftPressed())
 	{
-		// Holding left click + moving: standard fps style looking
 		activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
 	}
 
 	if (wnd.mouse.IsMiddlePressed())
 	{
-		// Holding middle click + moving: move up / down (relative to view, stored in local Y)
 		activeCam->Translate({ (float)mouseDx * camSpeed * 0.1f, 0.0f, 0.0f });
 		activeCam->Translate({ 0.0f, -(float)mouseDy * camSpeed * 0.1f, 0.0f });
 	}
@@ -218,7 +236,6 @@ void App::HandleInput(float dt)
 	lastMouseX = curMouseX;
 	lastMouseY = curMouseY;
 
-	// Keyboard Input (WASD / Arrows)
 	DirectX::XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
 	if (wnd.kbd.IsKeyPressed('W') || wnd.kbd.IsKeyPressed(VK_UP))
 	{
@@ -237,5 +254,4 @@ void App::HandleInput(float dt)
 		translation.x += camSpeed;
 	}
 	activeCam->Translate(translation);
-
 }

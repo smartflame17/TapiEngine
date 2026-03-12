@@ -28,9 +28,24 @@ GameObject* GameObject::GetParent() const noexcept
 	return parent;
 }
 
+std::vector<std::unique_ptr<GameObject>>& GameObject::GetChildren() noexcept
+{
+	return children;
+}
+
 const std::vector<std::unique_ptr<GameObject>>& GameObject::GetChildren() const noexcept
 {
 	return children;
+}
+
+std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() noexcept
+{
+	return components;
+}
+
+const std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() const noexcept
+{
+	return components;
 }
 
 GameObject& GameObject::AddChild(std::unique_ptr<GameObject> child) noexcept

@@ -141,6 +141,9 @@
     <ClCompile Include="Graphics\Drawable\Mesh.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Drawable\Model.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -285,6 +288,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\Mesh.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Drawable\Model.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui.h">
