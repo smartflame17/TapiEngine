@@ -14,8 +14,8 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		};
 		auto model = Sphere::Make<Vertex>();
 		model.Transform(dx::XMMatrixScaling(radius, radius, radius));
-		AddBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
-		AddIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
+		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
+		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
 
 		auto pvs = std::make_unique<VertexShader>(gfx, L"SolidVS.cso");
 		auto pvsbc = pvs->GetBytecode();
@@ -36,6 +36,10 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		};
 		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	}
+	else 
+	{
+		SetIndexFromStatic();
 	}
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));	// the transformation constant buffer is non-static (different per object)
 }
