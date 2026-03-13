@@ -19,3 +19,12 @@ void DrawableComponent::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
 		drawable->Draw(gfx);
 	}
 }
+
+void DrawableComponent::OnInspector() noexcept
+{
+	if (auto component = dynamic_cast<Component*>(drawable.get()))
+	{
+		component->OnInspector();
+	}
+	else Component::OnInspector();
+}
