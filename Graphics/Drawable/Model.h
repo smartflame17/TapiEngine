@@ -47,13 +47,14 @@ private:
 	DirectX::XMFLOAT3 appliedScale = { 1.0f, 1.0f, 1.0f };
 };
 
-class Model : public DrawableBase<Model>, public Component
+class Model : public DrawableBase<Model>
 {
 public:
 	Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity());
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
-	void OnInspector() noexcept override;
+
+	void DrawInspector() noexcept override;
 	void SpawnControlWindow() noexcept;
 
 private:

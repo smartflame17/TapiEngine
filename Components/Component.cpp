@@ -23,6 +23,10 @@ std::uint64_t Component::GetId() const noexcept
 	return id;
 }
 
+void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
+{
+}
+
 void Component::OnInspector() noexcept
 {
 }
