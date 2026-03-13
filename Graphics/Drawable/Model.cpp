@@ -145,7 +145,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	struct PSMaterialConstant
 	{
 		DirectX::XMFLOAT3 color = { 0.8f,0.3f,0.8f };
-		float padding;
+		float specularIntensity = 0.7f;
+		float specularPower = 32.0f;
+		DirectX::XMFLOAT3 specularColor = { 1.0f,1.0f,1.0f };
 	} material;
 	bindablePtrs.push_back(std::make_unique<PixelConstantBuffer<PSMaterialConstant>>(gfx, material, 0u));
 
