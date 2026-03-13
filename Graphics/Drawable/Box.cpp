@@ -56,7 +56,7 @@ Box::Box(Graphics& gfx,
 			model = Prism::Make<Vertex>();
 			break;
 		case ModelType::Plane:
-			model = Plane::Make<Vertex>();
+			model = Geometry::Plane::Make<Vertex>();
 			break;
 		}
 		*/

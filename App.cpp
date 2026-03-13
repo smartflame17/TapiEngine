@@ -52,6 +52,9 @@ void App::ResetSimulation()
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
 
+	auto& groundObject = scene.CreateGameObject("Ground");
+	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
+
 	auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
 	{
