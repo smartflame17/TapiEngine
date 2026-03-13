@@ -11,16 +11,23 @@ void PointLight::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Light"))
 	{
-		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &pos.x, -60.0f, 60.0f, "%.1f");
-		ImGui::SliderFloat("Y", &pos.y, -60.0f, 60.0f, "%.1f");
-		ImGui::SliderFloat("Z", &pos.z, -60.0f, 60.0f, "%.1f");
-		if (ImGui::Button("Reset"))
-		{
-			Reset();
-		}
+		OnInspector();
 	}
 	ImGui::End();
+}
+
+void PointLight::OnInspector() noexcept
+{
+	ImGui::Text("Point Light");
+	ImGui::Separator();
+	ImGui::Text("Position");
+	ImGui::SliderFloat("X", &pos.x, -60.0f, 60.0f, "%.1f");
+	ImGui::SliderFloat("Y", &pos.y, -60.0f, 60.0f, "%.1f");
+	ImGui::SliderFloat("Z", &pos.z, -60.0f, 60.0f, "%.1f");
+	if (ImGui::Button("Reset"))
+	{
+		Reset();
+	}
 }
 
 void PointLight::Reset() noexcept

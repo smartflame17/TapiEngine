@@ -70,6 +70,56 @@ void Scene::DrawHierarchyWindow() noexcept
 	ImGui::End();
 }
 
+
+GameObject* Scene::GetSelectedObject() const noexcept
+{
+	return selectedObject;
+}
+
+void Scene::DrawInspectorWindow() noexcept
+{
+	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(1620, 60), ImGuiCond_Always);
+	if (!ImGui::Begin("Inspector", nullptr,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse
+		))
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (selectedObject == nullptr)
+	{
+		ImGui::TextUnformatted("No GameObject selected.");
+		ImGui::End();
+		return;
+	}
+
+	ImGui::Text("GameObject: %s", selectedObject->GetName().c_str());
+	ImGui::Text("ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
+	ImGui::Separator();
+
+	const auto& components = selectedObject->GetComponents();
+	if (components.empty())
+	{
+		ImGui::TextUnformatted("No components.");
+	}
+	else
+	{
+		for (const auto& component : components)
+		{
+			if (component != nullptr)
+			{
+				component->OnInspector();
+				ImGui::Spacing();
+			}
+		}
+	}
+
+	ImGui::End();
+}
 const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const noexcept
 {
 	return rootObjects;

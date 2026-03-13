@@ -23,8 +23,10 @@ public:
 	void Update(float dt, bool isSimulationRunning) noexcept;
 	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void DrawHierarchyWindow() noexcept;
+	void DrawInspectorWindow() noexcept;
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
+	GameObject* GetSelectedObject() const noexcept;
 
 private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
