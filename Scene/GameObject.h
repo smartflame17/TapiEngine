@@ -8,17 +8,16 @@
 #include <utility>
 #include "Scene.h"
 #include "../Components/Component.h"
+#include "../Components/DrawableComponent.h"
 
-class Scene;
-class Component;
 class Graphics;
 
 class GameObject
 {
 public:
 	GameObject(Scene& ownerScene, std::string objectName);
-	~GameObject() = default;
 	GameObject(const GameObject&) = delete;
+	~GameObject();
 	GameObject& operator=(const GameObject&) = delete;
 
 	std::uint64_t GetId() const noexcept;
@@ -41,6 +40,11 @@ public:
 		component->SetOwner(this);
 		T& componentRef = *component;
 		components.push_back(std::move(component));
+
+		if constexpr (std::is_base_of_v<DrawableComponent, T>)
+		{
+			scene.RegisterDrawable(&componentRef);
+		}
 		return componentRef;
 	}
 
@@ -76,6 +80,10 @@ public:
 		{
 			if (dynamic_cast<T*>(it->get()) != nullptr)
 			{
+				if constexpr (std::is_base_of_v<DrawableComponent, T>)
+				{
+					scene.UnregisterDrawable(static_cast<DrawableComponent*>(it->get()));
+				}
 				components.erase(it);
 				return true;
 			}
@@ -84,7 +92,6 @@ public:
 	}
 
 	void Update(float dt, bool isSimulationRunning) noexcept;
-	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 
 private:
 	void SetParent(GameObject* newParent) noexcept;

@@ -62,19 +62,26 @@ void Camera::Rotate(float dx, float dy) noexcept
 
 void Camera::SpawnControlWindow() noexcept
 {
-	if (ImGui::Begin("Camera")) 
+	if (ImGui::Begin("Camera"))
 	{
-		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
-		ImGui::SliderFloat("Y", &y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
-		ImGui::SliderFloat("Z", &z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
-
-		if (ImGui::Button("Reset")) 
-		{
-			Reset();
-		}
+		OnInspector();
 	}
 	ImGui::End();
+}
+
+void Camera::OnInspector() noexcept
+{
+	ImGui::Text("Camera");
+	ImGui::Separator();
+	ImGui::Text("Position");
+	ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	ImGui::SliderFloat("Y", &y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	ImGui::SliderFloat("Z", &z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+
+	if (ImGui::Button("Reset"))
+	{
+		Reset();
+	}
 }
 
 void Camera::SetPosition(float x, float y, float z) noexcept

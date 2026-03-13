@@ -206,17 +206,23 @@ void Model::DrawInspectorNode(Node& node) noexcept
 
 void Model::SpawnControlWindow() noexcept
 {
+	if (ImGui::Begin("Model Control"))
+	{
+		DrawInspector();
+	}
+	ImGui::End();
+}
+
+void Model::DrawInspector() noexcept
+{
 	if (!pRoot)
 	{
 		return;
 	}
-
-	if (ImGui::Begin("Inspector"))
-	{
-		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
-		DrawInspectorNode(*pRoot);
-	}
-	ImGui::End();
+	ImGui::Text("Model");
+	ImGui::Separator();
+	ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+	DrawInspectorNode(*pRoot);
 
 	if (!pSelectedNode)
 	{
@@ -227,28 +233,27 @@ void Model::SpawnControlWindow() noexcept
 	auto rotation = pSelectedNode->GetAppliedRotation();
 	auto scale = pSelectedNode->GetAppliedScale();
 
-	if (ImGui::Begin("Transform"))
+	ImGui::Separator();
+	ImGui::Text("Transform Controls");
+	ImGui::NewLine();
+	ImGui::Text("Node: %s", pSelectedNode->GetName().c_str());
+	ImGui::Separator();
+
+	ImGui::Text("Translate");
+	ImGui::DragFloat3("##Translate", &translation.x, 0.05f);
+
+	ImGui::Text("Rotate (radians)");
+	ImGui::DragFloat3("##Rotate", &rotation.x, 0.01f);
+
+	ImGui::Text("Scale");
+	ImGui::DragFloat3("##Scale", &scale.x, 0.01f);
+
+	if (ImGui::Button("Reset"))
 	{
-		ImGui::Text("Node: %s", pSelectedNode->GetName().c_str());
-		ImGui::Separator();
-
-		ImGui::Text("Translate");
-		ImGui::DragFloat3("##Translate", &translation.x, 0.05f);
-
-		ImGui::Text("Rotate (radians)");
-		ImGui::DragFloat3("##Rotate", &rotation.x, 0.01f);
-
-		ImGui::Text("Scale");
-		ImGui::DragFloat3("##Scale", &scale.x, 0.01f);
-
-		if (ImGui::Button("Reset"))
-		{
-			translation = { 0.0f, 0.0f, 0.0f };
-			rotation = { 0.0f, 0.0f, 0.0f };
-			scale = { 1.0f, 1.0f, 1.0f };
-		}
+		translation = { 0.0f, 0.0f, 0.0f };
+		rotation = { 0.0f, 0.0f, 0.0f };
+		scale = { 1.0f, 1.0f, 1.0f };
 	}
-	ImGui::End();
 
 	pSelectedNode->SetAppliedTransform(translation, rotation, scale);
 }

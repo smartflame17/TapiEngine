@@ -19,3 +19,11 @@ void DrawableComponent::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
 		drawable->Draw(gfx);
 	}
 }
+
+void DrawableComponent::OnInspector() noexcept
+{
+	if (drawable)
+	{
+		drawable->DrawInspector();
+	}
+}

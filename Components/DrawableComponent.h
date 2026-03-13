@@ -10,7 +10,8 @@ public:
 	explicit DrawableComponent(std::unique_ptr<Drawable> drawablePtr);
 
 	void OnUpdate(float dt, bool isSimulationRunning) noexcept override;
-	void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG) override;
+	void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG);
+	void OnInspector() noexcept override;
 
 private:
 	std::unique_ptr<Drawable> drawable;

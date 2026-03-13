@@ -8,6 +8,7 @@
 #include "../IBindable/VertexShader.h"
 #include "../Vertex.h"
 #include "../../imgui/imgui.h"
+#include "../../Components/Component.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -52,6 +53,8 @@ public:
 	Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity());
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
+
+	void DrawInspector() noexcept override;
 	void SpawnControlWindow() noexcept;
 
 private:

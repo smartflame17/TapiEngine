@@ -18,6 +18,7 @@ public:
 	void Rotate(float dx, float dy) noexcept;
 
 	void SpawnControlWindow() noexcept;	// imgui window for controlling camera
+	void OnInspector() noexcept override;
 
 private:
 	float x = 0.0f;

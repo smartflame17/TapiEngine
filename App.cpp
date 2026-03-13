@@ -12,6 +12,15 @@ App::App():
 	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
 	activeCam = &editorCam;
 
+	imgui.SetContext({
+		&scene,
+		activeCam,
+		&pointLights,
+		&isPlayMode,
+		&isPaused,
+		[this]() { ResetSimulation(); }
+	});
+
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
 	lastMouseY = wnd.mouse.GetPosY();
@@ -61,6 +70,10 @@ void App::ResetSimulation()
 	));
 
 	CacheSceneComponents();
+
+	if (isPlayMode)
+		activeCam = gameCams.empty() ? &editorCam : gameCams.front();
+	else activeCam = &editorCam;
 
 	// Test for map generator
 	//DungeonGenerator gen(22222);
@@ -112,6 +125,12 @@ int App::Begin()
 
 		// Accumulate the time elapsed since the last frame
 		accumulator += timer.Mark();
+
+		if (needsReset)
+		{
+			ResetSimulation();
+			needsReset = false;
+		}
 
 		// As long as we have enough accumulated time,
 		// run the update logic in fixed steps.
@@ -165,91 +184,16 @@ void App::RenderFrame(float alpha)
 	}
 
 	// --- UI Logic ---
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
-	if (ImGui::Begin("TapiEngine v0.4", nullptr,
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoBringToFrontOnFocus
-		))
-	{
-		// Play/Pause Button
-		const char* playBtnLabel = isPlayMode ? (isPaused ? "Resume" : "Pause") : "Play";
-		const char* stopBtnLabel = "Stop";
-		float width1 = ImGui::CalcTextSize(playBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-		float width2 = ImGui::CalcTextSize(stopBtnLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-		float spacing = ImGui::GetStyle().ItemSpacing.x;
-
-		float totalWidth = width1 + width2 + spacing;
-		float windowWidth = ImGui::GetContentRegionAvail().x;
-
-		float indentation = (windowWidth - totalWidth) * 0.5f;
-
-		if (indentation > 0.0f) {
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indentation);
-		}
-
-		if (ImGui::Button(playBtnLabel))
-		{
-			if (!isPlayMode)
-			{
-				isPlayMode = true;
-				isPaused = false;
-			}
-			else
-			{
-				isPaused = !isPaused;
-			}
-		}
-
-		ImGui::SameLine();
-		// Stop Button
-		ImGui::BeginDisabled(!isPlayMode);
-		if (ImGui::Button(stopBtnLabel))
-		{
-			if (isPlayMode)
-			{
-				isPlayMode = false;
-				isPaused = false;
-				ResetSimulation();
-			}
-		}
-		ImGui::EndDisabled();
-	}
-	ImGui::End();
-	ImGui::PopStyleVar();
-
-	scene.DrawHierarchyWindow();
-
-	// show imgui
+	imgui.SetContext({
+		&scene,
+		activeCam,
+		&pointLights,
+		&isPlayMode,
+		&isPaused,
+		[this]() { needsReset = true; }
+	});
 	imgui.StatWindow();
-	if (activeCam != nullptr)
-	{
-		activeCam->SpawnControlWindow();
-	}
-	for (auto* light : pointLights)
-	{
-		if (light != nullptr)
-		{
-			light->SpawnControlWindow();
-		}
-	}
 
-	ImGui::ShowDemoWindow(nullptr);
-
-	/*
-	// Draw Sprites and Text
-	wnd.Gfx().pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, // Or your preferred sort mode
-		nullptr,                          // Use default BlendState (alpha blend)
-		nullptr,                          // Use default SamplerState
-		wnd.Gfx().GetDepthStencilState(), // Use Depth State
-		nullptr                           // Use default RasterizerState
-	);
-	wnd.Gfx().pSpriteFont->DrawString(wnd.Gfx().pSpriteBatch.get(), L"Hello, DirectXTK!", DirectX::XMFLOAT2(300, 400), DirectX::Colors::PaleVioletRed);
-	wnd.Gfx().pSpriteBatch->End();
-	*/
 	wnd.Gfx().Endframe();
 }
 

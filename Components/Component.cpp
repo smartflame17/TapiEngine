@@ -1,5 +1,5 @@
 #include "Component.h"
-
+#include "../Scene/GameObject.h"
 
 std::uint64_t Component::nextId = 1;
 
@@ -21,4 +21,12 @@ GameObject& Component::GetGameObject() const noexcept
 std::uint64_t Component::GetId() const noexcept
 {
 	return id;
+}
+
+void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
+{
+}
+
+void Component::OnInspector() noexcept
+{
 }
