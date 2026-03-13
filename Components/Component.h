@@ -19,6 +19,7 @@ public:
 
 	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept {}
 	virtual void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG) {}
+	virtual void OnInspector() noexcept;
 
 private:
 	static std::uint64_t nextId;

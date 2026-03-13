@@ -11,6 +11,7 @@ public:
 
 	void OnUpdate(float dt, bool isSimulationRunning) noexcept override;
 	void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG) override;
+	void OnInspector() noexcept override;
 
 private:
 	std::unique_ptr<Drawable> drawable;

@@ -11,9 +11,6 @@
 #include "Physics/PhysicsWorld.h"
 
 #include "imgui/ImguiManager.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
 
 #include "Scene/Scene.h"
 #include "Scene/GameObject.h"
@@ -52,6 +49,7 @@ private:
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
 	bool isPaused = false;   // true = Simulation Paused (while in Play Mode)
+	bool needsReset = false;  // flag to indicate if simulation needs reset (used to defer reset until end of frame)
 
 	// Input state
 	int lastMouseX = 0;

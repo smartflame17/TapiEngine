@@ -22,3 +22,7 @@ std::uint64_t Component::GetId() const noexcept
 {
 	return id;
 }
+
+void Component::OnInspector() noexcept
+{
+}
