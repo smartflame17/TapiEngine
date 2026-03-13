@@ -10,8 +10,6 @@
 #include "../Components/Component.h"
 #include "../Components/DrawableComponent.h"
 
-class Scene;
-class Component;
 class Graphics;
 
 class GameObject
@@ -45,7 +43,7 @@ public:
 
 		if constexpr (std::is_base_of_v<DrawableComponent, T>)
 		{
-			scene->RegisterDrawable(&componentRef);
+			scene.RegisterDrawable(&componentRef);
 		}
 		return componentRef;
 	}
@@ -84,7 +82,7 @@ public:
 			{
 				if constexpr (std::is_base_of_v<DrawableComponent, T>)
 				{
-					scene->UnregisterDrawable(static_cast<DrawableComponent*>(it->get()));
+					scene.UnregisterDrawable(static_cast<DrawableComponent*>(it->get()));
 				}
 				components.erase(it);
 				return true;

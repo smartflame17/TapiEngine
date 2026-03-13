@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+
 std::uint64_t GameObject::nextId = 1;
 
 GameObject::GameObject(Scene& ownerScene, std::string objectName) :

@@ -4,9 +4,6 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-#include "GameObject.h"
-#include "../Components/Component.h"
-#include "../Components/DrawableComponent.h"
 #include "../imgui/imgui.h"
 
 class Graphics;

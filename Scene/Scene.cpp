@@ -1,5 +1,6 @@
 #include "Scene.h"
-
+#include "GameObject.h"
+#include "../Components/DrawableComponent.h"
 
 GameObject& Scene::CreateGameObject(const std::string& name)
 {

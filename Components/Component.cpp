@@ -1,5 +1,5 @@
 #include "Component.h"
-
+#include "../Scene/GameObject.h"
 
 std::uint64_t Component::nextId = 1;
 
