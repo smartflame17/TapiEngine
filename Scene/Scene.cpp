@@ -2,6 +2,12 @@
 #include "GameObject.h"
 #include "../Components/DrawableComponent.h"
 
+Scene::Scene() : name("Scene") {}
+
+Scene::Scene(const std::string& sceneName) : name(sceneName) {}
+
+Scene::~Scene() = default;
+
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
 	auto object = std::make_unique<GameObject>(*this, name);

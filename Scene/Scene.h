@@ -13,8 +13,9 @@ class DrawableComponent;
 class Scene
 {
 public:
-	Scene() : name("Scene") {}
-	Scene(const std::string& sceneName) : name(sceneName) {}
+	Scene();
+	Scene(const std::string& sceneName);
+	~Scene();
 
 	GameObject& CreateGameObject(const std::string& name);
 	GameObject& CreateChildGameObject(GameObject& parent, const std::string& name);
