@@ -1,8 +1,10 @@
 #pragma once
 #include "imgui.h"
+#include "imfilebrowser.h"
 #include <functional>
 #include <vector>
 #include <utility>
+#include <iostream>
 
 #include "../Scene/Scene.h"
 #include "../Graphics/Camera.h"
@@ -30,4 +32,5 @@ public:
 
 private:
 	UiContext context;
+	ImGui::FileBrowser fileDialog;
 };

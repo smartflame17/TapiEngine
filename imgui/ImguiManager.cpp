@@ -102,12 +102,12 @@ void ImguiManager::StatWindow(bool* p_open)
 	{
 		if (ImGui::BeginTabItem("Log"))
 		{
-			ImGui::TextUnformatted("This is a log window. You can redirect your application's log output here.");
+			ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
 			ImGui::EndTabItem();
 		}
-		if (ImGui::BeginTabItem("File Browser"))
+		if (ImGui::BeginTabItem("Asset Browser"))
 		{
-			ImGui::TextUnformatted("This is a file browser. You can implement file loading/saving functionality here.");
+			ImGui::TextUnformatted("This is a asset browser. Implement file loading/saving functionality here.");
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
@@ -134,5 +134,60 @@ void ImguiManager::StatWindow(bool* p_open)
 				light->SpawnControlWindow();
 			}
 		}
+	}
+
+	// Top-most title menu skeleton (for future use, e.g. file/edit/view menus)
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::BeginMenu("New"))
+			{
+				if (ImGui::BeginMenu("Scene"))
+				{
+					if (ImGui::MenuItem("Empty Scene")) {}
+					if (ImGui::MenuItem("Default Scene")) {}
+					ImGui::EndMenu();
+				}
+				ImGui::Separator();
+				if (ImGui::BeginMenu("GameObject"))
+				{
+					if (ImGui::MenuItem("Empty GameObject")) {}
+					if (ImGui::MenuItem("Camera")) {}
+					if (ImGui::MenuItem("Light")) {}
+					if (ImGui::MenuItem("Model")) 
+					{
+						fileDialog.Open();
+						fileDialog.Display();
+						if (fileDialog.HasSelected())
+						{
+							std::cout << fileDialog.GetSelected().string() << std::endl;
+							fileDialog.ClearSelected();
+						}
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::MenuItem("Open Scene", "Ctrl+O");
+			ImGui::MenuItem("Save Scene", "Ctrl+S");
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit"))
+		{
+			ImGui::MenuItem("Undo", "Ctrl+Z");
+			ImGui::MenuItem("Redo", "Ctrl+Y");
+			ImGui::Separator();
+			ImGui::MenuItem("Cut", "Ctrl+X");
+			ImGui::MenuItem("Copy", "Ctrl+C");
+			ImGui::MenuItem("Paste", "Ctrl+V");
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("View"))
+		{
+			ImGui::MenuItem("Toggle Statistics Window", nullptr, nullptr, true);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
 	}
 }
