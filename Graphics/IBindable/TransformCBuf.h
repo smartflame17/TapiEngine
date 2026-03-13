@@ -21,10 +21,16 @@ private:
 		DirectX::XMMATRIX modelViewProjection;
 		DirectX::XMMATRIX model;
 	};
+	struct Camera
+	{
+		DirectX::XMFLOAT3 cameraPos;
+		float padding;
+	};
 public:
 	TransformCbuf(Graphics& gfx, const Drawable& parent);
 	void Bind(Graphics& gfx) noexcept override;
 private:
 	static std::unique_ptr<VertexConstantBuffer<Transforms>> pVcbuf;
+	static std::unique_ptr<PixelConstantBuffer<Camera>> pPcbuf;
 	const Drawable& parent;
 };
