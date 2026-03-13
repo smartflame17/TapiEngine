@@ -17,6 +17,7 @@ void ImguiManager::SetContext(UiContext context) noexcept
 
 void ImguiManager::StatWindow(bool* p_open)
 {
+	// Top-left corner window and title bar for app statistics and play/pause/stop controls
 	ImGui::SetNextWindowSize(ImVec2(300, 60), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::Begin("Statistics", p_open,
@@ -86,6 +87,32 @@ void ImguiManager::StatWindow(bool* p_open)
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
+
+	// Mid-bottom multipurpose window for logging, file browser, etc.
+	ImGui::SetNextWindowSize(ImVec2(1280, 300), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(300, 780), ImGuiCond_Always);
+	ImGui::Begin("Multipurpose", nullptr,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoTitleBar
+	);
+	if (ImGui::BeginTabBar("MyTabBar"))
+	{
+		if (ImGui::BeginTabItem("Log"))
+		{
+			ImGui::TextUnformatted("This is a log window. You can redirect your application's log output here.");
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("File Browser"))
+		{
+			ImGui::TextUnformatted("This is a file browser. You can implement file loading/saving functionality here.");
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
+	}
+	ImGui::End();
 
 	if (context.scene != nullptr)
 	{
