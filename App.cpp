@@ -122,6 +122,12 @@ int App::Begin()
 		// Accumulate the time elapsed since the last frame
 		accumulator += timer.Mark();
 
+		if (needsReset)
+		{
+			ResetSimulation();
+			needsReset = false;
+		}
+
 		// As long as we have enough accumulated time,
 		// run the update logic in fixed steps.
 		while (accumulator >= dt)
@@ -180,7 +186,7 @@ void App::RenderFrame(float alpha)
 		&pointLights,
 		&isPlayMode,
 		&isPaused,
-		[this]() { ResetSimulation(); }
+		[this]() { needsReset = true; }
 	});
 	imgui.StatWindow();
 
