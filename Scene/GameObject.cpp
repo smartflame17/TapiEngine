@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+
 std::uint64_t GameObject::nextId = 1;
 
 GameObject::GameObject(Scene& ownerScene, std::string objectName) :
@@ -7,6 +8,17 @@ GameObject::GameObject(Scene& ownerScene, std::string objectName) :
 	scene(ownerScene),
 	name(std::move(objectName))
 {}
+
+GameObject::~GameObject()
+{
+	for (auto& component : components)
+	{
+		if (auto drawable = dynamic_cast<DrawableComponent*>(component.get()))
+		{
+			scene.UnregisterDrawable(drawable);
+		}
+	}
+}
 
 std::uint64_t GameObject::GetId() const noexcept
 {
@@ -68,19 +80,6 @@ void GameObject::Update(float dt, bool isSimulationRunning) noexcept
 	for (auto& child : children)
 	{
 		child->Update(dt, isSimulationRunning);
-	}
-}
-
-void GameObject::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
-{
-	for (const auto& component : components)
-	{
-		component->OnRender(gfx);
-	}
-
-	for (const auto& child : children)
-	{
-		child->Render(gfx);
 	}
 }
 

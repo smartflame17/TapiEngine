@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <cassert>
-#include "../Scene/GameObject.h"
 
 class GameObject;
 class Graphics;
@@ -17,8 +16,7 @@ public:
 	GameObject& GetGameObject() const noexcept;
 	std::uint64_t GetId() const noexcept;
 
-	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept {}
-	virtual void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG) {}
+	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept;
 	virtual void OnInspector() noexcept;
 
 private:

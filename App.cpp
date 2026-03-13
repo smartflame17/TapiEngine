@@ -71,6 +71,10 @@ void App::ResetSimulation()
 
 	CacheSceneComponents();
 
+	if (isPlayMode)
+		activeCam = gameCams.empty() ? &editorCam : gameCams.front();
+	else activeCam = &editorCam;
+
 	// Test for map generator
 	//DungeonGenerator gen(22222);
 	//gen.Generate(80, 40);

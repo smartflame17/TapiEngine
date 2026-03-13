@@ -14,6 +14,7 @@ public:
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	virtual void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
 	virtual void Update(float dt) noexcept {}
+	virtual void DrawInspector() noexcept {}
 	virtual ~Drawable() = default;
 protected:
 	void AddBind(std::unique_ptr<IBindable> bind) noexcept(!IS_DEBUG);

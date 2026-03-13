@@ -208,12 +208,12 @@ void Model::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Model Control"))
 	{
-		OnInspector();
+		DrawInspector();
 	}
 	ImGui::End();
 }
 
-void Model::OnInspector() noexcept
+void Model::DrawInspector() noexcept
 {
 	if (!pRoot)
 	{

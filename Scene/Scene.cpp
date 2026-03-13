@@ -1,5 +1,12 @@
 #include "Scene.h"
+#include "GameObject.h"
+#include "../Components/DrawableComponent.h"
 
+Scene::Scene() : name("Scene") {}
+
+Scene::Scene(const std::string& sceneName) : name(sceneName) {}
+
+Scene::~Scene() = default;
 
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
@@ -31,10 +38,24 @@ void Scene::Update(float dt, bool isSimulationRunning) noexcept
 
 void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
-	for (const auto& object : rootObjects)
+	for (const auto& drawable : drawables)
 	{
-		object->Render(gfx);
+		drawable->OnRender(gfx);
 	}
+}
+
+void Scene::RegisterDrawable(DrawableComponent* drawable) noexcept
+{
+    drawables.push_back(drawable);
+}
+
+void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
+{
+    auto it = std::find(drawables.begin(), drawables.end(), drawable);
+    if (it != drawables.end())
+    {
+        drawables.erase(it);
+    }
 }
 
 void Scene::DrawHierarchyWindow() noexcept
@@ -78,8 +99,8 @@ GameObject* Scene::GetSelectedObject() const noexcept
 
 void Scene::DrawInspectorWindow() noexcept
 {
-	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(1620, 60), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(340, 800), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(1580, 15), ImGuiCond_Always);
 	if (!ImGui::Begin("Inspector", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
