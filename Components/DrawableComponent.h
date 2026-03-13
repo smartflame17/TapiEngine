@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include "../Graphics/Drawable/Drawable.h"
+#include "../imgui/imgui.h"
 #include <memory>
 
 class DrawableComponent : public Component
@@ -14,5 +15,6 @@ public:
 	void OnInspector() noexcept override;
 
 private:
+	Transform transform;
 	std::unique_ptr<Drawable> drawable;
 };

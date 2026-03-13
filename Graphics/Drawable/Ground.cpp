@@ -63,5 +63,6 @@ DirectX::XMMATRIX Ground::GetTransformXM() const noexcept
 {
 	return
 		DirectX::XMMatrixRotationX(DirectX::XM_PIDIV2) *
-		DirectX::XMMatrixScaling(scale, scale, 1.0f);
+		DirectX::XMMatrixScaling(scale, scale, 1.0f) *
+		GetAppliedTransformXM();
 }

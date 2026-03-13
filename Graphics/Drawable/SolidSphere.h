@@ -1,5 +1,7 @@
 #pragma once
 #include "DrawableBase.h"
+#include "Sphere.h"
+#include "../IBindable/IBindableBase.h"
 
 class SolidSphere : public DrawableBase<SolidSphere>
 {
