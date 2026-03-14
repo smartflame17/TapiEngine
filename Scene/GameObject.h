@@ -105,3 +105,16 @@ private:
 	std::vector<std::unique_ptr<GameObject>> children;
 	std::vector<std::unique_ptr<Component>> components;
 };
+
+template<typename T>
+inline T* Component::GetComponent() noexcept
+{
+	// Delegates the call to the parent GameObject
+	return GetGameObject().GetComponent<T>();
+}
+
+template<typename T>
+inline const T* Component::GetComponent() const noexcept
+{
+	return GetGameObject().GetComponent<T>();
+}
