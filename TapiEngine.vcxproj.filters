@@ -96,6 +96,9 @@
     <ClCompile Include="Graphics\Drawable\Box.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Drawable\Ground.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\IBindable\Texture.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -228,6 +231,9 @@
       <Filter>헤더 파일\IBindable</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\Drawable.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Drawable\Ground.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
     <ClInclude Include="Input\Keyboard.h">

@@ -5,6 +5,8 @@
 #include "IndexedTriangleList.h"
 #include "../../Tools/TapiMath.h"
 
+namespace Geometry
+{
 class Plane
 {
 public:
@@ -82,3 +84,4 @@ public:
 		return MakeTesselated<V>(1, 1);
 	}
 };
+}

@@ -31,5 +31,5 @@ void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 
 DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 {
-	return DirectX::XMLoadFloat4x4(&transform);
+	return DirectX::XMLoadFloat4x4(&transform) * GetAppliedTransformXM();
 }
