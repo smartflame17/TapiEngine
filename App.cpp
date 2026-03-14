@@ -9,9 +9,10 @@ App::App():
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
 
 	// set editor cam starting position
-	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
+	editorCam.SetPosition(0.0f, 2.0f, -5.0f);
 	activeCam = &editorCam;
-
+	
+	// send state to imgui for display and interaction
 	imgui.SetContext({
 		&scene,
 		activeCam,
@@ -47,7 +48,7 @@ void App::ResetSimulation()
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
 	auto& gameCam = cameraObject.AddComponent<Camera>();
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+	gameCam.SetPosition(0.0f, 2.0f, 0.0f);
 
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
@@ -231,9 +232,17 @@ void App::HandleInput(float dt)
 	const int mouseDx = curMouseX - lastMouseX;
 	const int mouseDy = curMouseY - lastMouseY;
 
-	if (wnd.mouse.IsLeftPressed())
+	if (!isPlayMode)
 	{
-		// Holding left click + moving: standard fps style looking
+		if (wnd.mouse.IsLeftPressed())
+		{
+			// Holding left click + moving: standard fps style looking (in editor mode only)
+			activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
+		}
+	}
+	else
+	{
+		// in play mode, no left press required for fps-style looking, just mouse movement
 		activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
 	}
 

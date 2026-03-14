@@ -7,7 +7,7 @@
 class Ground : public DrawableBase<Ground>
 {
 public:
-	Ground(Graphics& gfx, int divisionsX = 64, int divisionsY = 64, float scale = 50.0f);
+	Ground(Graphics& gfx, int divisionsX = 64, int divisionsY = 64, float scale = 64.0f);
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 
 private:
