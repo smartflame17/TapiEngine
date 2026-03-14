@@ -98,7 +98,7 @@ void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 
 DirectX::XMMATRIX Model::GetTransformXM() const noexcept
 {
-	return DirectX::XMLoadFloat4x4(&modelTransform);
+	return DirectX::XMLoadFloat4x4(&modelTransform) * GetAppliedTransformXM();
 }
 
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)

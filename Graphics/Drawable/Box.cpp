@@ -1,10 +1,4 @@
 #include "Box.h"
-#include "../IBindable/IBindableBase.h"
-#include "../../ErrorHandling/GraphicsExceptionMacros.h"
-#include "Cube.h"
-#include "Sphere.h"
-#include "Prism.h"
-#include "Plane.h"
 
 Box::Box(Graphics& gfx,
 	std::mt19937& rng,
@@ -56,7 +50,7 @@ Box::Box(Graphics& gfx,
 			model = Prism::Make<Vertex>();
 			break;
 		case ModelType::Plane:
-			model = Plane::Make<Vertex>();
+			model = Geometry::Plane::Make<Vertex>();
 			break;
 		}
 		*/
@@ -125,5 +119,6 @@ DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 		DirectX::XMLoadFloat3x3(&mt) *
 		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
 		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi);
+		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
+		GetAppliedTransformXM();
 }
