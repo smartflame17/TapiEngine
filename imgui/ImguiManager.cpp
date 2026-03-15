@@ -41,7 +41,8 @@ void ImguiManager::DrawGizmo() noexcept
 		ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoScrollbar |
 		ImGuiWindowFlags_NoScrollWithMouse |
-		ImGuiWindowFlags_NoBackground
+		ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoMouseInputs
 	);
 
 	if (ImGui::IsWindowHovered())
