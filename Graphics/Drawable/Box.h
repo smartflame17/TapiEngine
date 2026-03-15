@@ -1,5 +1,10 @@
 #pragma once
 #include "DrawableBase.h"
+#include "Plane.h"
+#include "Prism.h"
+#include "Sphere.h"
+#include "Cube.h"
+#include "../IBindable/IBindableBase.h"
 
 class Box : public DrawableBase<Box>
 {

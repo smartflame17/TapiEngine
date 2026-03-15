@@ -19,6 +19,12 @@ public:
 	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept;
 	virtual void OnInspector() noexcept;
 
+	template<typename T>
+	T* GetComponent() noexcept;
+
+	template<typename T>
+	const T* GetComponent() const noexcept;
+	
 private:
 	static std::uint64_t nextId;
 	std::uint64_t id = 0;

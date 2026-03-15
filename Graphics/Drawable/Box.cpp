@@ -1,10 +1,4 @@
 #include "Box.h"
-#include "../IBindable/IBindableBase.h"
-#include "../../ErrorHandling/GraphicsExceptionMacros.h"
-#include "Cube.h"
-#include "Sphere.h"
-#include "Prism.h"
-#include "Plane.h"
 
 Box::Box(Graphics& gfx,
 	std::mt19937& rng,
@@ -56,7 +50,7 @@ Box::Box(Graphics& gfx,
 			model = Prism::Make<Vertex>();
 			break;
 		case ModelType::Plane:
-			model = Plane::Make<Vertex>();
+			model = Geometry::Plane::Make<Vertex>();
 			break;
 		}
 		*/
@@ -89,13 +83,19 @@ Box::Box(Graphics& gfx,
 	struct MaterialCbuf
 	{
 		DirectX::XMFLOAT3 color;
-		float padding;
+		float specularIntensity;
+		float specularPower;
+		DirectX::XMFLOAT3 specularColor;
 	};
 	std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
+	std::uniform_real_distribution<float> specularIntensityDist(0.2f, 1.0f);
+	std::uniform_real_distribution<float> specularPowerDist(8.0f, 64.0f);
 	const MaterialCbuf material =
 	{
 		{ colorDist(rng), colorDist(rng), colorDist(rng) },
-		0.0f
+		specularIntensityDist(rng),
+		specularPowerDist(rng),
+		{ 1.0f, 1.0f, 1.0f }
 	};
 	AddBind(std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u));
 
@@ -119,5 +119,6 @@ DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 		DirectX::XMLoadFloat3x3(&mt) *
 		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
 		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi);
+		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
+		GetAppliedTransformXM();
 }
