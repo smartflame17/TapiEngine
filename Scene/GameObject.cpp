@@ -1,6 +1,5 @@
 #include "GameObject.h"
 
-
 std::uint64_t GameObject::nextId = 1;
 
 GameObject::GameObject(Scene& ownerScene, std::string objectName) :
@@ -48,6 +47,30 @@ const std::vector<std::unique_ptr<GameObject>>& GameObject::GetChildren() const 
 const std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() const noexcept
 {
 	return components;
+}
+
+Transform& GameObject::GetTransform() noexcept
+{
+	return transform;
+}
+
+const Transform& GameObject::GetTransform() const noexcept
+{
+	return transform;
+}
+
+DirectX::XMMATRIX GameObject::GetLocalTransformMatrix() const noexcept
+{
+	return MakeTransformMatrix(transform);
+}
+
+DirectX::XMMATRIX GameObject::GetWorldTransformMatrix() const noexcept
+{
+	if (parent == nullptr)
+	{
+		return GetLocalTransformMatrix();
+	}
+	return GetLocalTransformMatrix() * parent->GetWorldTransformMatrix();
 }
 
 GameObject& GameObject::AddChild(std::unique_ptr<GameObject> child) noexcept

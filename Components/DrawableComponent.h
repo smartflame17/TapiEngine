@@ -15,6 +15,5 @@ public:
 	void OnInspector() noexcept override;
 
 private:
-	Transform transform;
 	std::unique_ptr<Drawable> drawable;
 };

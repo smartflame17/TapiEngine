@@ -6,7 +6,9 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <DirectXMath.h>
 #include "Scene.h"
+#include "Transform.h"
 #include "../Components/Component.h"
 #include "../Components/DrawableComponent.h"
 
@@ -28,6 +30,10 @@ public:
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
 	const std::vector<std::unique_ptr<Component>>& GetComponents() const noexcept;
 
+	Transform& GetTransform() noexcept;
+	const Transform& GetTransform() const noexcept;
+	DirectX::XMMATRIX GetLocalTransformMatrix() const noexcept;
+	DirectX::XMMATRIX GetWorldTransformMatrix() const noexcept;
 
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;
@@ -102,6 +108,7 @@ private:
 	Scene& scene;
 	std::string name;
 	GameObject* parent = nullptr;
+	Transform transform;
 	std::vector<std::unique_ptr<GameObject>> children;
 	std::vector<std::unique_ptr<Component>> components;
 };
@@ -109,7 +116,6 @@ private:
 template<typename T>
 inline T* Component::GetComponent() noexcept
 {
-	// Delegates the call to the parent GameObject
 	return GetGameObject().GetComponent<T>();
 }
 
