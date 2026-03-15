@@ -1,4 +1,5 @@
 #include "DrawableComponent.h"
+#include "../../Scene/GameObject.h"
 
 DrawableComponent::DrawableComponent(std::unique_ptr<Drawable> drawablePtr) :
 	drawable(std::move(drawablePtr))
