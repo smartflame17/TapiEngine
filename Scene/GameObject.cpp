@@ -49,6 +49,25 @@ const std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() const
 	return components;
 }
 
+void GameObject::SetPosition(float x, float y, float z) noexcept
+{
+	transform.position = { x, y, z };
+}
+
+void GameObject::SetRotation(float x, float y, float z) noexcept
+{
+	transform.rotation = { x, y, z };
+}
+void GameObject::SetScale(float x, float y, float z) noexcept
+{
+	transform.scale = { x, y, z };
+}
+
+void GameObject::SetTransform(const Transform& newTransform) noexcept
+{
+	transform = newTransform;
+}
+
 Transform& GameObject::GetTransform() noexcept
 {
 	return transform;

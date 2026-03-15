@@ -49,10 +49,11 @@ void App::ResetSimulation()
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
 	auto& gameCam = cameraObject.AddComponent<Camera>();
-	gameCam.SetPosition(0.0f, 2.0f, 0.0f);
+	cameraObject.SetPosition(0.0f, 2.0f, -5.0f);
 
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
+	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
 
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
@@ -70,9 +71,10 @@ void App::ResetSimulation()
 	auto& suzanne = scene.CreateGameObject("suzanne");
 	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/suzanne.obj",
-		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+		"Graphics/Models/suzanne.obj"
 	));
+	suzanne.SetPosition(2.0f, 0.0f, 0.0f);
+	suzanne.SetScale(5.0f, 5.0f, 5.0f);
 
 	CacheSceneComponents();
 

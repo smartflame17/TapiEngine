@@ -30,6 +30,11 @@ public:
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
 	const std::vector<std::unique_ptr<Component>>& GetComponents() const noexcept;
 
+	void SetPosition(float x, float y, float z) noexcept;
+	void SetRotation(float x, float y, float z) noexcept;
+	void SetScale(float x, float y, float z) noexcept;
+	void SetTransform(const Transform& newTransform) noexcept;
+
 	Transform& GetTransform() noexcept;
 	const Transform& GetTransform() const noexcept;
 	DirectX::XMMATRIX GetLocalTransformMatrix() const noexcept;
