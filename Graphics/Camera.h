@@ -11,6 +11,7 @@ public:
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
 	void SetPosition(float x, float y, float z) noexcept;
 	void SetRotation(float pitch, float yaw, float roll) noexcept;
+	void LookAt(float targetX, float targetY, float targetZ) noexcept;
 	void Reset() noexcept;
 
 	// helpers to move/rotate camera with mouse/keyboard

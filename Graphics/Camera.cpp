@@ -50,6 +50,22 @@ void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 	z = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, z));
 }
 
+void Camera::LookAt(float targetX, float targetY, float targetZ) noexcept
+{
+	using namespace DirectX;
+	XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
+	XMVECTOR target = XMVectorSet(targetX, targetY, targetZ, 1.0f);
+	XMVECTOR forward = XMVector3Normalize(XMVectorSubtract(target, pos));
+	// Calculate yaw and pitch from forward vector
+	pitch = asinf(-XMVectorGetY(forward)); // negative because of LH coordinate system
+	yaw = atan2f(XMVectorGetX(forward), XMVectorGetZ(forward));
+
+	// Clamp pitch to approx 90 degrees (just under PI/2)
+	constexpr float limit = PI / 2.0f - 0.01f;
+	pitch = std::max(-limit, std::min(limit, pitch));
+	
+}
+
 void Camera::Rotate(float dx, float dy) noexcept
 {
 	yaw += dx;
