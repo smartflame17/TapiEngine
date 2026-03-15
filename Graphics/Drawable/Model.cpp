@@ -92,7 +92,8 @@ void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (pRoot)
 	{
-		pRoot->Draw(gfx, DirectX::XMLoadFloat4x4(&modelTransform));
+		const auto fullModelTransform = DirectX::XMLoadFloat4x4(&modelTransform) * GetAppliedTransformXM();
+		pRoot->Draw(gfx, fullModelTransform);
 	}
 }
 

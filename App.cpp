@@ -16,6 +16,7 @@ App::App():
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
 		&isPlayMode,
 		&isPaused,
@@ -191,6 +192,7 @@ void App::RenderFrame(float alpha)
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
 		&isPlayMode,
 		&isPaused,
