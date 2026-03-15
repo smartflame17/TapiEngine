@@ -23,6 +23,26 @@ std::uint64_t Component::GetId() const noexcept
 	return id;
 }
 
+Transform& Component::GetTransform() noexcept
+{
+	return transform;
+}
+
+const Transform& Component::GetTransform() const noexcept
+{
+	return transform;
+}
+
+DirectX::XMMATRIX Component::GetLocalTransformMatrix() const noexcept
+{
+	return MakeTransformMatrix(transform);
+}
+
+DirectX::XMMATRIX Component::GetWorldTransformMatrix() const noexcept
+{
+	return GetLocalTransformMatrix() * GetGameObject().GetWorldTransformMatrix();
+}
+
 void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
 {
 }

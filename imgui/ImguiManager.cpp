@@ -1,4 +1,5 @@
 #include "ImguiManager.h"
+
 ImguiManager::ImguiManager()
 {
 	IMGUI_CHECKVERSION();
@@ -15,9 +16,84 @@ void ImguiManager::SetContext(UiContext context) noexcept
 	this->context = std::move(context);
 }
 
+void ImguiManager::DrawGizmo() noexcept
+{
+	if (context.scene == nullptr || context.activeCamera == nullptr || context.graphics == nullptr)
+	{
+		return;
+	}
+	if (context.isPlayMode != nullptr && *context.isPlayMode)
+	{
+		return;
+	}
+	if (context.scene->GetSelectedObject() == nullptr)
+	{
+		return;
+	}
+
+	ImGui::SetNextWindowPos(ImVec2(300, 60), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Always);
+	ImGui::Begin("Viewport", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoScrollWithMouse |
+		ImGuiWindowFlags_NoBackground
+	);
+
+	if (ImGui::IsWindowHovered())
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_T)) currentOperation = ImGuizmo::TRANSLATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_R)) currentOperation = ImGuizmo::ROTATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_S)) currentOperation = ImGuizmo::SCALE;
+	}
+
+	ImGui::SetCursorPos(ImVec2(10.0f, 10.0f));
+	ImGui::BeginChild("##gizmo_toolbar", ImVec2(240.0f, 90.0f), true);
+	if (ImGui::RadioButton("Translate", currentOperation == ImGuizmo::TRANSLATE)) currentOperation = ImGuizmo::TRANSLATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Rotate", currentOperation == ImGuizmo::ROTATE)) currentOperation = ImGuizmo::ROTATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Scale", currentOperation == ImGuizmo::SCALE)) currentOperation = ImGuizmo::SCALE;
+	if (currentOperation != ImGuizmo::SCALE)
+	{
+		if (ImGui::RadioButton("Local", currentMode == ImGuizmo::LOCAL)) currentMode = ImGuizmo::LOCAL;
+		ImGui::SameLine();
+		if (ImGui::RadioButton("World", currentMode == ImGuizmo::WORLD)) currentMode = ImGuizmo::WORLD;
+	}
+	ImGui::EndChild();
+
+	ImGuizmo::SetDrawlist();
+	const auto viewportPos = ImGui::GetWindowPos();
+	const auto viewportSize = ImGui::GetWindowSize();
+	ImGuizmo::SetRect(viewportPos.x, viewportPos.y, viewportSize.x, viewportSize.y);
+
+	DirectX::XMFLOAT4X4 modelMatrix;
+	DirectX::XMFLOAT4X4 viewMatrix;
+	DirectX::XMFLOAT4X4 projectionMatrix;
+	DirectX::XMStoreFloat4x4(&modelMatrix, context.scene->GetSelectedWorldTransformMatrix());
+	DirectX::XMStoreFloat4x4(&viewMatrix, context.activeCamera->GetViewMatrix());
+	DirectX::XMStoreFloat4x4(&projectionMatrix, context.graphics->GetProjection());
+
+	if (ImGuizmo::Manipulate(
+		&viewMatrix.m[0][0],
+		&projectionMatrix.m[0][0],
+		currentOperation,
+		currentMode,
+		&modelMatrix.m[0][0]
+	))
+	{
+		context.scene->SetSelectedWorldTransformMatrix(DirectX::XMLoadFloat4x4(&modelMatrix));
+	}
+
+	ImGui::End();
+}
+
 void ImguiManager::EditorWindow(bool* p_open)
 {
-	// Top-left corner window and title bar for app statistics and play/pause/stop controls
 	ImGui::SetNextWindowSize(ImVec2(300, 60), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::Begin("Statistics", p_open,
@@ -88,7 +164,6 @@ void ImguiManager::EditorWindow(bool* p_open)
 	ImGui::End();
 	ImGui::PopStyleVar();
 
-	// Mid-bottom multipurpose window for logging, file browser, etc.
 	ImGui::SetNextWindowSize(ImVec2(1280, 300), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(300, 780), ImGuiCond_Always);
 	ImGui::Begin("Multipurpose", nullptr,
@@ -120,6 +195,8 @@ void ImguiManager::EditorWindow(bool* p_open)
 		context.scene->DrawInspectorWindow();
 	}
 
+	DrawGizmo();
+
 	if (context.activeCamera != nullptr)
 	{
 		context.activeCamera->SpawnControlWindow();
@@ -136,7 +213,6 @@ void ImguiManager::EditorWindow(bool* p_open)
 		}
 	}
 
-	// Top-most title menu skeleton (for future use, e.g. file/edit/view menus)
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -155,7 +231,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 					if (ImGui::MenuItem("Empty GameObject")) {}
 					if (ImGui::MenuItem("Camera")) {}
 					if (ImGui::MenuItem("Light")) {}
-					if (ImGui::MenuItem("Model")) 
+					if (ImGui::MenuItem("Model"))
 					{
 						fileDialog.Open();
 						fileDialog.Display();

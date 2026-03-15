@@ -1,5 +1,10 @@
 #include "Drawable.h"
 
+Drawable::Drawable() noexcept
+{
+	DirectX::XMStoreFloat4x4(&externalTransform, DirectX::XMMatrixIdentity());
+}
+
 
 void Drawable::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
@@ -24,12 +29,18 @@ const Transform& Drawable::GetTransform() const noexcept
 	return transform;
 }
 
+void Drawable::SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
+{
+	DirectX::XMStoreFloat4x4(&externalTransform, matrix);
+}
+
 DirectX::XMMATRIX Drawable::GetAppliedTransformXM() const noexcept
 {
 	return
 		DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
 		DirectX::XMMatrixRotationRollPitchYaw(transform.rotation.x, transform.rotation.y, transform.rotation.z) *
-		DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z);
+		DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z) *
+		DirectX::XMLoadFloat4x4(&externalTransform);
 }
 
 void Drawable::AddBind(std::unique_ptr<IBindable> bind) noexcept(!IS_DEBUG)
