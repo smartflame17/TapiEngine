@@ -192,7 +192,7 @@ void App::RenderFrame(float alpha)
 		&isPaused,
 		[this]() { needsReset = true; }
 	});
-	imgui.StatWindow();
+	imgui.EditorWindow();
 
 	wnd.Gfx().Endframe();
 }

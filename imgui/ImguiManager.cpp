@@ -15,7 +15,7 @@ void ImguiManager::SetContext(UiContext context) noexcept
 	this->context = std::move(context);
 }
 
-void ImguiManager::StatWindow(bool* p_open)
+void ImguiManager::EditorWindow(bool* p_open)
 {
 	// Top-left corner window and title bar for app statistics and play/pause/stop controls
 	ImGui::SetNextWindowSize(ImVec2(300, 60), ImGuiCond_Always);

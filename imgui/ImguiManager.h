@@ -28,7 +28,7 @@ public:
 	~ImguiManager();
 
 	void SetContext(UiContext context) noexcept;
-	void StatWindow(bool* p_open = nullptr);
+	void EditorWindow(bool* p_open = nullptr);
 
 private:
 	UiContext context;
