@@ -1,8 +1,8 @@
 #include "Scene.h"
-#include <algorithm>
 #include "GameObject.h"
 #include "../Components/Component.h"
 #include "../Components/DrawableComponent.h"
+#include <algorithm>
 
 Scene::Scene() : name("Scene") {}
 
@@ -28,7 +28,6 @@ void Scene::Clear() noexcept
 {
 	rootObjects.clear();
 	selectedObject = nullptr;
-	selectedComponent = nullptr;
 }
 
 void Scene::Update(float dt, bool isSimulationRunning) noexcept
@@ -59,10 +58,6 @@ void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
 	{
 		drawables.erase(it);
 	}
-	if (selectedComponent == drawable)
-	{
-		selectedComponent = nullptr;
-	}
 }
 
 void Scene::DrawHierarchyWindow() noexcept
@@ -85,11 +80,7 @@ void Scene::DrawHierarchyWindow() noexcept
 	}
 
 	ImGui::Separator();
-	if (selectedComponent != nullptr)
-	{
-		ImGui::Text("Selected Component ID: %llu", static_cast<unsigned long long>(selectedComponent->GetId()));
-	}
-	else if (selectedObject != nullptr)
+	if (selectedObject != nullptr)
 	{
 		ImGui::Text("Selected: %s", selectedObject->GetName().c_str());
 		ImGui::Text("GameObject ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
@@ -105,11 +96,6 @@ void Scene::DrawHierarchyWindow() noexcept
 GameObject* Scene::GetSelectedObject() const noexcept
 {
 	return selectedObject;
-}
-
-Component* Scene::GetSelectedComponent() const noexcept
-{
-	return selectedComponent;
 }
 
 void Scene::DrawInspectorWindow() noexcept
@@ -138,33 +124,25 @@ void Scene::DrawInspectorWindow() noexcept
 	ImGui::Separator();
 
 	auto& objectTransform = selectedObject->GetTransform();
-	ImGui::Text("GameObject Transform");
-	ImGui::DragFloat3("GO Position", &objectTransform.position.x, 0.05f);
-	ImGui::DragFloat3("GO Rotation", &objectTransform.rotation.x, 0.01f);
-	ImGui::DragFloat3("GO Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
+	ImGui::Text("Transform");
+	ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
+	ImGui::DragFloat3("Rotation", &objectTransform.rotation.x, 0.01f);
+	ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
 	ImGui::Separator();
 
-	if (selectedComponent != nullptr)
+	const auto& components = selectedObject->GetComponents();
+	if (components.empty())
 	{
-		ImGui::Text("Selected Component");
-		selectedComponent->OnInspector();
+		ImGui::TextUnformatted("No components.");
 	}
 	else
 	{
-		const auto& components = selectedObject->GetComponents();
-		if (components.empty())
+		for (const auto& component : components)
 		{
-			ImGui::TextUnformatted("No components.");
-		}
-		else
-		{
-			for (const auto& component : components)
+			if (component != nullptr)
 			{
-				if (component != nullptr)
-				{
-					component->OnInspector();
-					ImGui::Spacing();
-				}
+				component->OnInspector();
+				ImGui::Spacing();
 			}
 		}
 	}
@@ -179,10 +157,6 @@ const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const no
 
 DirectX::XMMATRIX Scene::GetSelectedWorldTransformMatrix() const noexcept
 {
-	if (selectedComponent != nullptr)
-	{
-		return selectedComponent->GetWorldTransformMatrix();
-	}
 	if (selectedObject != nullptr)
 	{
 		return selectedObject->GetWorldTransformMatrix();
@@ -192,13 +166,6 @@ DirectX::XMMATRIX Scene::GetSelectedWorldTransformMatrix() const noexcept
 
 void Scene::SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
 {
-	if (selectedComponent != nullptr)
-	{
-		const auto ownerWorld = selectedComponent->GetGameObject().GetWorldTransformMatrix();
-		const auto local = matrix * DirectX::XMMatrixInverse(nullptr, ownerWorld);
-		selectedComponent->GetTransform() = MakeTransformFromMatrix(local);
-		return;
-	}
 	if (selectedObject != nullptr)
 	{
 		const auto* parent = selectedObject->GetParent();
@@ -220,14 +187,13 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DrawLinesToNodes;
 	if (object.GetChildren().empty() && object.GetComponents().empty())
 		flags |= ImGuiTreeNodeFlags_Leaf;
-	if (selectedObject == &object && selectedComponent == nullptr)
+	if (selectedObject == &object)
 		flags |= ImGuiTreeNodeFlags_Selected;
 
 	const bool opened = ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(object.GetId())), flags, "%s", object.GetName().c_str());
 	if (ImGui::IsItemClicked())
 	{
 		selectedObject = &object;
-		selectedComponent = nullptr;
 	}
 
 	if (opened)
@@ -238,22 +204,15 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 			{
 				continue;
 			}
-			ImGuiTreeNodeFlags componentFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-			if (selectedComponent == component.get())
-			{
-				componentFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-
 			ImGui::TreeNodeEx(
 				reinterpret_cast<void*>(static_cast<uintptr_t>(component->GetId())),
-				componentFlags,
+				ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen,
 				"Component (%llu)",
 				static_cast<unsigned long long>(component->GetId())
 			);
 			if (ImGui::IsItemClicked())
 			{
 				selectedObject = &object;
-				selectedComponent = component.get();
 			}
 		}
 

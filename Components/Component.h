@@ -2,8 +2,6 @@
 
 #include <cstdint>
 #include <cassert>
-#include <DirectXMath.h>
-#include "../Scene/Transform.h"
 
 class GameObject;
 class Graphics;
@@ -18,11 +16,6 @@ public:
 	GameObject& GetGameObject() const noexcept;
 	std::uint64_t GetId() const noexcept;
 
-	Transform& GetTransform() noexcept;
-	const Transform& GetTransform() const noexcept;
-	DirectX::XMMATRIX GetLocalTransformMatrix() const noexcept;
-	DirectX::XMMATRIX GetWorldTransformMatrix() const noexcept;
-
 	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept;
 	virtual void OnInspector() noexcept;
 
@@ -36,5 +29,4 @@ private:
 	static std::uint64_t nextId;
 	std::uint64_t id = 0;
 	GameObject* owner = nullptr;
-	Transform transform;
 };

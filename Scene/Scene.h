@@ -9,7 +9,6 @@
 
 class Graphics;
 class GameObject;
-class Component;
 class DrawableComponent;
 
 class Scene
@@ -32,7 +31,6 @@ public:
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 	GameObject* GetSelectedObject() const noexcept;
-	Component* GetSelectedComponent() const noexcept;
 	DirectX::XMMATRIX GetSelectedWorldTransformMatrix() const noexcept;
 	void SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept;
 
@@ -44,5 +42,4 @@ private:
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	std::vector<DrawableComponent*> drawables;
 	GameObject* selectedObject = nullptr;
-	Component* selectedComponent = nullptr;
 };
