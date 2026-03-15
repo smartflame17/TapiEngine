@@ -16,7 +16,8 @@ void DrawableComponent::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (drawable != nullptr)
 	{
-		drawable->SetExternalTransformMatrix(GetWorldTransformMatrix());
+		drawable->SetTransform(GetTransform());
+		drawable->SetExternalTransformMatrix(GetGameObject().GetWorldTransformMatrix());
 		drawable->Draw(gfx);
 	}
 }
