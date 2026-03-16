@@ -21,36 +21,33 @@ inline DirectX::XMMATRIX MakeTransformMatrix(const Transform& transform) noexcep
 inline Transform MakeTransformFromMatrix(DirectX::FXMMATRIX matrix) noexcept
 {
 	Transform transform;
-	DirectX::XMVECTOR scale;
-	DirectX::XMVECTOR rotation;
-	DirectX::XMVECTOR translation;
+	DirectX::XMFLOAT4X4 m;
+	DirectX::XMStoreFloat4x4(&m, matrix);
 
-	if (DirectX::XMMatrixDecompose(&scale, &rotation, &translation, matrix))
+	transform.position = { m._41, m._42, m._43 };
+
+	const auto length3 = [](float x, float y, float z) noexcept
 	{
-		DirectX::XMStoreFloat3(&transform.position, translation);
-		DirectX::XMStoreFloat3(&transform.scale, scale);
+		return std::sqrt(x * x + y * y + z * z);
+	};
 
-		DirectX::XMFLOAT4 quat;
-		DirectX::XMStoreFloat4(&quat, rotation);
-		const float x = quat.x;
-		const float y = quat.y;
-		const float z = quat.z;
-		const float w = quat.w;
+	transform.scale.x = length3(m._11, m._12, m._13);
+	transform.scale.y = length3(m._21, m._22, m._23);
+	transform.scale.z = length3(m._31, m._32, m._33);
 
-		const float sinr_cosp = 2.0f * (w * x + y * z);
-		const float cosr_cosp = 1.0f - 2.0f * (x * x + y * y);
-		transform.rotation.x = std::atan2(sinr_cosp, cosr_cosp);
+	const float safeScaleX = (transform.scale.x > 0.0f) ? transform.scale.x : 1.0f;
+	const float safeScaleY = (transform.scale.y > 0.0f) ? transform.scale.y : 1.0f;
+	const float safeScaleZ = (transform.scale.z > 0.0f) ? transform.scale.z : 1.0f;
 
-		const float sinp = 2.0f * (w * y - z * x);
-		if (std::abs(sinp) >= 1.0f)
-			transform.rotation.y = std::copysign(DirectX::XM_PIDIV2, sinp);
-		else
-			transform.rotation.y = std::asin(sinp);
+	const float n11 = m._11 / safeScaleX;
+	const float n12 = m._12 / safeScaleX;
+	const float n13 = m._13 / safeScaleX;
+	const float n23 = m._23 / safeScaleY;
+	const float n33 = m._33 / safeScaleZ;
 
-		const float siny_cosp = 2.0f * (w * z + x * y);
-		const float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
-		transform.rotation.z = std::atan2(siny_cosp, cosy_cosp);
-	}
+	transform.rotation.x = std::atan2(n23, n33);
+	transform.rotation.y = std::atan2(-n13, std::sqrt(n23 * n23 + n33 * n33));
+	transform.rotation.z = std::atan2(n12, n11);
 
 	return transform;
 }

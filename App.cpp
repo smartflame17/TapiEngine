@@ -73,8 +73,8 @@ void App::ResetSimulation()
 		wnd.Gfx(),
 		"Graphics/Models/suzanne.obj"
 	));
-	suzanne.SetPosition(2.0f, 0.0f, 0.0f);
-	suzanne.SetScale(5.0f, 5.0f, 5.0f);
+	//suzanne.SetPosition(2.0f, 0.0f, 0.0f);
+	//suzanne.SetScale(5.0f, 5.0f, 5.0f);
 
 	CacheSceneComponents();
 
