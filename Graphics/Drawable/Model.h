@@ -50,7 +50,7 @@ private:
 class Model : public DrawableBase<Model>
 {
 public:
-	Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity());
+	Model(Graphics& gfx, const std::string& fileName);
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 
@@ -66,5 +66,4 @@ private:
 	std::unique_ptr<Node> pRoot;
 	Node* pSelectedNode = nullptr;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
-	DirectX::XMFLOAT4X4 modelTransform;
 };

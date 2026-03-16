@@ -64,10 +64,8 @@ const DirectX::XMFLOAT3& Node::GetAppliedScale() const noexcept
 	return appliedScale;
 }
 
-Model::Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform)
+Model::Model(Graphics& gfx, const std::string& fileName)
 {
-	DirectX::XMStoreFloat4x4(&modelTransform, transform);
-
 	Assimp::Importer importer;
 	const auto pScene = importer.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
@@ -92,14 +90,13 @@ void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (pRoot)
 	{
-		const auto fullModelTransform = DirectX::XMLoadFloat4x4(&modelTransform) * GetAppliedTransformXM();
-		pRoot->Draw(gfx, fullModelTransform);
+		pRoot->Draw(gfx, GetAppliedTransformXM());
 	}
 }
 
 DirectX::XMMATRIX Model::GetTransformXM() const noexcept
 {
-	return DirectX::XMLoadFloat4x4(&modelTransform) * GetAppliedTransformXM();
+	return GetAppliedTransformXM();
 }
 
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
