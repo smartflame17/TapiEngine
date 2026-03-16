@@ -363,6 +363,7 @@
     <ClInclude Include="Physics\PhysicsWorld.h" />
     <ClInclude Include="Physics\SpatialGrid.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Scene\Transform.h" />
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
     <ClInclude Include="Tools\Timer.h" />

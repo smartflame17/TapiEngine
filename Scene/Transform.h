@@ -39,17 +39,17 @@ inline Transform MakeTransformFromMatrix(DirectX::FXMMATRIX matrix) noexcept
 
 		const float sinr_cosp = 2.0f * (w * x + y * z);
 		const float cosr_cosp = 1.0f - 2.0f * (x * x + y * y);
-		transform.rotation.z = std::atan2(sinr_cosp, cosr_cosp);
+		transform.rotation.x = std::atan2(sinr_cosp, cosr_cosp);
 
 		const float sinp = 2.0f * (w * y - z * x);
 		if (std::abs(sinp) >= 1.0f)
-			transform.rotation.x = std::copysign(DirectX::XM_PIDIV2, sinp);
+			transform.rotation.y = std::copysign(DirectX::XM_PIDIV2, sinp);
 		else
-			transform.rotation.x = std::asin(sinp);
+			transform.rotation.y = std::asin(sinp);
 
 		const float siny_cosp = 2.0f * (w * z + x * y);
 		const float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
-		transform.rotation.y = std::atan2(siny_cosp, cosy_cosp);
+		transform.rotation.z = std::atan2(siny_cosp, cosy_cosp);
 	}
 
 	return transform;
