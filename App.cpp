@@ -182,7 +182,7 @@ void App::RenderFrame(float alpha)
 
 	// --- Simulation Draw ---
 	scene.Render(wnd.Gfx());
-	for (const auto* light : pointLights)
+	for (auto* light : pointLights)
 	{
 		if (light != nullptr)
 		{
