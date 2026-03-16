@@ -45,7 +45,10 @@ void ImguiManager::DrawGizmo() noexcept
 		ImGuiWindowFlags_NoMouseInputs
 	);
 
-	if (ImGui::IsWindowHovered())
+	const bool isViewportActive =
+		ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) ||
+		ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+	if (isViewportActive)
 	{
 		if (ImGui::IsKeyPressed(ImGuiKey_T)) currentOperation = ImGuizmo::TRANSLATE;
 		if (ImGui::IsKeyPressed(ImGuiKey_R)) currentOperation = ImGuizmo::ROTATE;
@@ -72,10 +75,10 @@ void ImguiManager::DrawGizmo() noexcept
 	const auto viewportSize = ImGui::GetWindowSize();
 	ImGuizmo::SetRect(viewportPos.x, viewportPos.y, viewportSize.x, viewportSize.y);
 
-	DirectX::XMFLOAT4X4 modelMatrix;
+	DirectX::XMFLOAT4X4 gameObjectWorldMatrix;
 	DirectX::XMFLOAT4X4 viewMatrix;
 	DirectX::XMFLOAT4X4 projectionMatrix;
-	DirectX::XMStoreFloat4x4(&modelMatrix, context.scene->GetSelectedWorldTransformMatrix());
+	DirectX::XMStoreFloat4x4(&gameObjectWorldMatrix, context.scene->GetSelectedWorldTransformMatrix());
 	DirectX::XMStoreFloat4x4(&viewMatrix, context.activeCamera->GetViewMatrix());
 	DirectX::XMStoreFloat4x4(&projectionMatrix, context.graphics->GetProjection());
 
@@ -84,10 +87,10 @@ void ImguiManager::DrawGizmo() noexcept
 		&projectionMatrix.m[0][0],
 		currentOperation,
 		currentMode,
-		&modelMatrix.m[0][0]
+		&gameObjectWorldMatrix.m[0][0]
 	))
 	{
-		context.scene->SetSelectedWorldTransformMatrix(DirectX::XMLoadFloat4x4(&modelMatrix));
+		context.scene->SetSelectedWorldTransformMatrix(DirectX::XMLoadFloat4x4(&gameObjectWorldMatrix));
 	}
 
 	ImGui::End();
