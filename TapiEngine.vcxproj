@@ -392,6 +392,10 @@
     </None>
     <None Include="imgui\README.md" />
     <None Include="packages.config" />
+    <None Include="Scene\README.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="Tools\README.md">
       <SubType>
       </SubType>
