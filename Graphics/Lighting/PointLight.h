@@ -12,7 +12,7 @@ public:
 	void SpawnControlWindow() noexcept;	// ImGui window for editing light properties
 	void OnInspector() noexcept override;
 	void Reset() noexcept;
-	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
+	void Draw(Graphics& gfx) noexcept(!IS_DEBUG);
 	void Bind(Graphics& gfx) const noexcept;
 private:
 	struct PointLightCbuf

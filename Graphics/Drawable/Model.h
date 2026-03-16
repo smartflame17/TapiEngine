@@ -7,6 +7,7 @@
 #include "../IBindable/VertexBuffer.h"
 #include "../IBindable/VertexShader.h"
 #include "../Vertex.h"
+#include "../../Scene/Transform.h"
 #include "../../imgui/imgui.h"
 #include "../../Components/Component.h"
 #include <assimp/Importer.hpp>
@@ -27,12 +28,10 @@ class Node
 public:
 	Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG);
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
-	void SetAppliedTransform(const DirectX::XMFLOAT3& translation, const DirectX::XMFLOAT3& rotation, const DirectX::XMFLOAT3& scale) noexcept;
+	void SetRelativeTransform(const Transform& transform) noexcept;
 	const std::string& GetName() const noexcept;
 	const std::vector<std::unique_ptr<Node>>& GetChildren() const noexcept;
-	const DirectX::XMFLOAT3& GetAppliedTranslation() const noexcept;
-	const DirectX::XMFLOAT3& GetAppliedRotation() const noexcept;
-	const DirectX::XMFLOAT3& GetAppliedScale() const noexcept;
+	const Transform& GetRelativeTransform() const noexcept;
 
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG);
@@ -41,16 +40,14 @@ private:
 	std::vector<std::unique_ptr<Node>> childPtrs;
 	std::vector<Mesh*> meshPtrs;
 	std::string name;
-	DirectX::XMFLOAT4X4 transform;
-	DirectX::XMFLOAT3 appliedTranslation = { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3 appliedRotation = { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3 appliedScale = { 1.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4X4 bindLocalTransform;
+	Transform relativeTransform;
 };
 
 class Model : public DrawableBase<Model>
 {
 public:
-	Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity());
+	Model(Graphics& gfx, const std::string& fileName);
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 
@@ -66,5 +63,4 @@ private:
 	std::unique_ptr<Node> pRoot;
 	Node* pSelectedNode = nullptr;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
-	DirectX::XMFLOAT4X4 modelTransform;
 };

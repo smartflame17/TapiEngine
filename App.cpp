@@ -9,12 +9,14 @@ App::App():
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
 
 	// set editor cam starting position
-	editorCam.SetPosition(0.0f, 0.0f, -20.0f);
+	editorCam.SetPosition(0.0f, 2.0f, -5.0f);
 	activeCam = &editorCam;
-
+	
+	// send state to imgui for display and interaction
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
 		&isPlayMode,
 		&isPaused,
@@ -47,10 +49,14 @@ void App::ResetSimulation()
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
 	auto& gameCam = cameraObject.AddComponent<Camera>();
-	gameCam.SetPosition(0.0f, 0.0f, 0.0f);
+	cameraObject.SetPosition(0.0f, 2.0f, -5.0f);
 
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
+	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
+
+	auto& groundObject = scene.CreateGameObject("Ground");
+	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
 
 	auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
@@ -65,9 +71,10 @@ void App::ResetSimulation()
 	auto& suzanne = scene.CreateGameObject("suzanne");
 	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/suzanne.obj",
-		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+		"Graphics/Models/suzanne.obj"
 	));
+	//suzanne.SetPosition(2.0f, 0.0f, 0.0f);
+	//suzanne.SetScale(5.0f, 5.0f, 5.0f);
 
 	CacheSceneComponents();
 
@@ -175,7 +182,7 @@ void App::RenderFrame(float alpha)
 
 	// --- Simulation Draw ---
 	scene.Render(wnd.Gfx());
-	for (const auto* light : pointLights)
+	for (auto* light : pointLights)
 	{
 		if (light != nullptr)
 		{
@@ -187,12 +194,13 @@ void App::RenderFrame(float alpha)
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
 		&isPlayMode,
 		&isPaused,
 		[this]() { needsReset = true; }
 	});
-	imgui.StatWindow();
+	imgui.EditorWindow();
 
 	wnd.Gfx().Endframe();
 }
@@ -228,9 +236,17 @@ void App::HandleInput(float dt)
 	const int mouseDx = curMouseX - lastMouseX;
 	const int mouseDy = curMouseY - lastMouseY;
 
-	if (wnd.mouse.IsLeftPressed())
+	if (!isPlayMode)
 	{
-		// Holding left click + moving: standard fps style looking
+		if (wnd.mouse.IsLeftPressed())
+		{
+			// Holding left click + moving: standard fps style looking (in editor mode only)
+			activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
+		}
+	}
+	else
+	{
+		// in play mode, no left press required for fps-style looking, just mouse movement
 		activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
 	}
 
