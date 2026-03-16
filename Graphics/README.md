@@ -141,6 +141,31 @@ size_t SizeBytes()
 Returns the actual size of the vertex data in bytes, not to be confused with ```Size()``` which returns the number of vertices!
 
 
+## Model
+---
+The Model class is a wrapper for a 3D model, which contains the vertex buffer, index buffer, and any other data needed to render the model.  
+The engine uses assimp to load 3D models, which supports a wide range of file formats.  
+It has a hierarchical structure regarding Mesh and Node classes to account for the potential hierarchy in the 3D model, which can be used for animations and other purposes.
+
+The overall structure of the Model class should look like the following diagram:
+```
+Model : DrawableBase<Model>
+├── unique_ptr<Node> pRoot -> Node tree root, which contains the hierarchy of the model.
+├── vector<unique_ptr<Mesh>> meshPtrs
+├── XMFloat4x4 modelTransform -> The transform of the model, which is applied to all nodes and meshes.
+```
+
+A Node represents a node in the hierarchy of the 3D model, which can contain multiple child nodes and references to Mesh.
+```
+Node
+├── vector<unique_ptr<Node>> childPtrs
+├── vector<Mesh*> meshPtrs
+├── XMFloat4x4 transform -> Local transform of the node, which is applied to the child nodes.
+```
+
+When rendering a Model, the engine will traverse the hierarchy of the model and apply the transforms accordingly.  
+It also applies the transform of its owning GameObject beforehand. (check out README in Scene directory).
+
 ## Others
 ---
 I have used Microsoft's DirectXTK (DirectX Toolkit) for implementing sprite / text rendering.  

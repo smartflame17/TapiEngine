@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include "GameObject.h"
+#include "../Components/Component.h"
 #include "../Components/DrawableComponent.h"
+#include <algorithm>
 
 Scene::Scene() : name("Scene") {}
 
@@ -46,16 +48,16 @@ void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 
 void Scene::RegisterDrawable(DrawableComponent* drawable) noexcept
 {
-    drawables.push_back(drawable);
+	drawables.push_back(drawable);
 }
 
 void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
 {
-    auto it = std::find(drawables.begin(), drawables.end(), drawable);
-    if (it != drawables.end())
-    {
-        drawables.erase(it);
-    }
+	auto it = std::find(drawables.begin(), drawables.end(), drawable);
+	if (it != drawables.end())
+	{
+		drawables.erase(it);
+	}
 }
 
 void Scene::DrawHierarchyWindow() noexcept
@@ -91,7 +93,6 @@ void Scene::DrawHierarchyWindow() noexcept
 	ImGui::End();
 }
 
-
 GameObject* Scene::GetSelectedObject() const noexcept
 {
 	return selectedObject;
@@ -122,6 +123,15 @@ void Scene::DrawInspectorWindow() noexcept
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
 	ImGui::Separator();
 
+	auto& objectTransform = selectedObject->GetTransform();
+	ImGui::Text("Transform");
+	ImGui::TextUnformatted("(Gizmo edits this GameObject transform only)");
+	ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
+	ImGui::DragFloat3("Rotation", &objectTransform.rotation.x, 0.01f);
+	ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
+	ImGui::TextUnformatted("Model node relative transforms are in DrawableComponent inspector.");
+	ImGui::Separator();
+
 	const auto& components = selectedObject->GetComponents();
 	if (components.empty())
 	{
@@ -141,15 +151,43 @@ void Scene::DrawInspectorWindow() noexcept
 
 	ImGui::End();
 }
+
 const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const noexcept
 {
 	return rootObjects;
 }
 
+DirectX::XMMATRIX Scene::GetSelectedWorldTransformMatrix() const noexcept
+{
+	if (selectedObject != nullptr)
+	{
+		return selectedObject->GetWorldTransformMatrix();
+	}
+	return DirectX::XMMatrixIdentity();
+}
+
+void Scene::SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
+{
+	if (selectedObject != nullptr)
+	{
+		const auto* parent = selectedObject->GetParent();
+		if (parent != nullptr)
+		{
+			const auto parentWorld = parent->GetWorldTransformMatrix();
+			const auto local = matrix * DirectX::XMMatrixInverse(nullptr, parentWorld);
+			selectedObject->GetTransform() = MakeTransformFromMatrix(local);
+		}
+		else
+		{
+			selectedObject->GetTransform() = MakeTransformFromMatrix(matrix);
+		}
+	}
+}
+
 void Scene::DrawHierarchyNode(GameObject& object) noexcept
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DrawLinesToNodes;
-	if (object.GetChildren().empty())
+	if (object.GetChildren().empty() && object.GetComponents().empty())
 		flags |= ImGuiTreeNodeFlags_Leaf;
 	if (selectedObject == &object)
 		flags |= ImGuiTreeNodeFlags_Selected;
@@ -162,6 +200,24 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 
 	if (opened)
 	{
+		for (auto& component : object.GetComponents())
+		{
+			if (component == nullptr)
+			{
+				continue;
+			}
+			ImGui::TreeNodeEx(
+				reinterpret_cast<void*>(static_cast<uintptr_t>(component->GetId())),
+				ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen,
+				"Component (%llu)",
+				static_cast<unsigned long long>(component->GetId())
+			);
+			if (ImGui::IsItemClicked())
+			{
+				selectedObject = &object;
+			}
+		}
+
 		for (auto& child : object.GetChildren())
 		{
 			DrawHierarchyNode(*child);

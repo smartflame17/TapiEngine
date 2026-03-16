@@ -5,16 +5,14 @@ Node::Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::
 	meshPtrs(std::move(meshPtrs)),
 	name(name)
 {
-	DirectX::XMStoreFloat4x4(&this->transform, transform);
+	DirectX::XMStoreFloat4x4(&this->bindLocalTransform, transform);
 }
 
 void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
 {
 	const auto localTransform =
-		DirectX::XMMatrixScaling(appliedScale.x, appliedScale.y, appliedScale.z) *
-		DirectX::XMMatrixRotationRollPitchYaw(appliedRotation.x, appliedRotation.y, appliedRotation.z) *
-		DirectX::XMMatrixTranslation(appliedTranslation.x, appliedTranslation.y, appliedTranslation.z) *
-		DirectX::XMLoadFloat4x4(&transform);
+		MakeTransformMatrix(relativeTransform) *
+		DirectX::XMLoadFloat4x4(&bindLocalTransform);
 	const auto builtTransform = localTransform * accumulatedTransform;
 	for (const auto pMesh : meshPtrs)
 	{
@@ -32,11 +30,9 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG)
 	childPtrs.push_back(std::move(pChild));
 }
 
-void Node::SetAppliedTransform(const DirectX::XMFLOAT3& translation, const DirectX::XMFLOAT3& rotation, const DirectX::XMFLOAT3& scale) noexcept
+void Node::SetRelativeTransform(const Transform& transform) noexcept
 {
-	appliedTranslation = translation;
-	appliedRotation = rotation;
-	appliedScale = scale;
+	relativeTransform = transform;
 }
 
 const std::string& Node::GetName() const noexcept
@@ -49,25 +45,13 @@ const std::vector<std::unique_ptr<Node>>& Node::GetChildren() const noexcept
 	return childPtrs;
 }
 
-const DirectX::XMFLOAT3& Node::GetAppliedTranslation() const noexcept
+const Transform& Node::GetRelativeTransform() const noexcept
 {
-	return appliedTranslation;
+	return relativeTransform;
 }
 
-const DirectX::XMFLOAT3& Node::GetAppliedRotation() const noexcept
+Model::Model(Graphics& gfx, const std::string& fileName)
 {
-	return appliedRotation;
-}
-
-const DirectX::XMFLOAT3& Node::GetAppliedScale() const noexcept
-{
-	return appliedScale;
-}
-
-Model::Model(Graphics& gfx, const std::string& fileName, DirectX::XMMATRIX transform)
-{
-	DirectX::XMStoreFloat4x4(&modelTransform, transform);
-
 	Assimp::Importer importer;
 	const auto pScene = importer.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
@@ -92,13 +76,13 @@ void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (pRoot)
 	{
-		pRoot->Draw(gfx, DirectX::XMLoadFloat4x4(&modelTransform));
+		pRoot->Draw(gfx, GetAppliedTransformXM());
 	}
 }
 
 DirectX::XMMATRIX Model::GetTransformXM() const noexcept
 {
-	return DirectX::XMLoadFloat4x4(&modelTransform);
+	return GetAppliedTransformXM();
 }
 
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
@@ -145,7 +129,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	struct PSMaterialConstant
 	{
 		DirectX::XMFLOAT3 color = { 0.8f,0.3f,0.8f };
-		float padding;
+		float specularIntensity = 0.7f;
+		float specularPower = 32.0f;
+		DirectX::XMFLOAT3 specularColor = { 1.0f,1.0f,1.0f };
 	} material;
 	bindablePtrs.push_back(std::make_unique<PixelConstantBuffer<PSMaterialConstant>>(gfx, material, 0u));
 
@@ -229,9 +215,7 @@ void Model::DrawInspector() noexcept
 		pSelectedNode = pRoot.get();
 	}
 
-	auto translation = pSelectedNode->GetAppliedTranslation();
-	auto rotation = pSelectedNode->GetAppliedRotation();
-	auto scale = pSelectedNode->GetAppliedScale();
+	auto relativeTransform = pSelectedNode->GetRelativeTransform();
 
 	ImGui::Separator();
 	ImGui::Text("Transform Controls");
@@ -240,20 +224,18 @@ void Model::DrawInspector() noexcept
 	ImGui::Separator();
 
 	ImGui::Text("Translate");
-	ImGui::DragFloat3("##Translate", &translation.x, 0.05f);
+	ImGui::DragFloat3("##Translate", &relativeTransform.position.x, 0.05f);
 
 	ImGui::Text("Rotate (radians)");
-	ImGui::DragFloat3("##Rotate", &rotation.x, 0.01f);
+	ImGui::DragFloat3("##Rotate", &relativeTransform.rotation.x, 0.01f);
 
 	ImGui::Text("Scale");
-	ImGui::DragFloat3("##Scale", &scale.x, 0.01f);
+	ImGui::DragFloat3("##Scale", &relativeTransform.scale.x, 0.01f);
 
 	if (ImGui::Button("Reset"))
 	{
-		translation = { 0.0f, 0.0f, 0.0f };
-		rotation = { 0.0f, 0.0f, 0.0f };
-		scale = { 1.0f, 1.0f, 1.0f };
+		relativeTransform = {};
 	}
 
-	pSelectedNode->SetAppliedTransform(translation, rotation, scale);
+	pSelectedNode->SetRelativeTransform(relativeTransform);
 }

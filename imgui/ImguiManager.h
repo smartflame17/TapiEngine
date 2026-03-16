@@ -1,6 +1,7 @@
 #pragma once
 #include "imgui.h"
 #include "imfilebrowser.h"
+#include "ImGuizmo.h"
 #include <functional>
 #include <vector>
 #include <utility>
@@ -8,6 +9,7 @@
 
 #include "../Scene/Scene.h"
 #include "../Graphics/Camera.h"
+#include "../Graphics/Graphics.h"
 #include "../Graphics/Lighting/PointLight.h"
 
 class ImguiManager
@@ -17,6 +19,7 @@ public:
 	{
 		Scene* scene = nullptr;
 		Camera* activeCamera = nullptr;
+		Graphics* graphics = nullptr;
 		std::vector<PointLight*>* pointLights = nullptr;
 		bool* isPlayMode = nullptr;
 		bool* isPaused = nullptr;
@@ -28,9 +31,14 @@ public:
 	~ImguiManager();
 
 	void SetContext(UiContext context) noexcept;
-	void StatWindow(bool* p_open = nullptr);
+	void EditorWindow(bool* p_open = nullptr);
+
+private:
+	void DrawGizmo() noexcept;
 
 private:
 	UiContext context;
 	ImGui::FileBrowser fileDialog;
+	ImGuizmo::OPERATION currentOperation = ImGuizmo::TRANSLATE;
+	ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
 };

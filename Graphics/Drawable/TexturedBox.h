@@ -1,5 +1,8 @@
 #pragma once
 #include "DrawableBase.h"
+#include "Cone.h"
+#include "Cube.h"
+#include "../IBindable/IBindableBase.h"
 
 class TexturedBox : public DrawableBase<TexturedBox>
 {

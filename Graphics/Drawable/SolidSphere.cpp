@@ -1,7 +1,4 @@
 #include "SolidSphere.h"
-#include "../IBindable/IBindableBase.h"
-#include "../../ErrorHandling/GraphicsExceptionMacros.h"
-#include "Sphere.h"
 
 SolidSphere::SolidSphere(Graphics& gfx, float radius)
 {
@@ -47,7 +44,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 DirectX::XMMATRIX SolidSphere::GetTransformXM() const noexcept
 {
 	namespace dx = DirectX;
-	return dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	return GetAppliedTransformXM() * dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
 }
 
 void SolidSphere::Update(float dt) noexcept

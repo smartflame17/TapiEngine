@@ -1,7 +1,9 @@
 cbuffer MaterialCbuf : register(b0)
 {
     float3 materialColor;
-    float padding;
+    float specularIntensity;
+    float specularPower;
+    float3 specularColor;
 };
 
 cbuffer LightCbuf : register(b1)
@@ -16,8 +18,16 @@ cbuffer LightCbuf : register(b1)
     float3 lightPadding;
 };
 
+cbuffer CameraCbuf : register(b2)
+{
+    float3 cameraPos;
+    float cameraPadding;
+};
+
 float4 main(float3 worldPos: POSITION, float3 n : NORMAL) : SV_TARGET
 {
+    const float3 N = normalize(n);
+
     // fragment to light vector
     const float3 vToLight = lightpos - worldPos;
     const float distance = length(vToLight);
@@ -27,8 +37,14 @@ float4 main(float3 worldPos: POSITION, float3 n : NORMAL) : SV_TARGET
     const float att = attConst + attLinear * distance + attQuad * distance * distance;
 
     // diffuse + ambient lighting modulated by material color
-    const float3 diffuse = diffuseIntensity * diffuseColor * max(dot(n, L), 0.0f) / att;
-    const float3 color = materialColor * saturate(diffuse + ambientColor);
+    const float3 diffuse = diffuseIntensity * diffuseColor * max(dot(N, L), 0.0f) / att;
+
+    const float3 viewDir = normalize(cameraPos - worldPos);
+    const float3 reflectionDir = reflect(-L, N);
+    const float specularFactor = pow(max(dot(viewDir, reflectionDir), 0.0f), specularPower);
+    const float3 specular = specularIntensity * specularColor * specularFactor / att;
+
+    const float3 color = saturate(materialColor * (diffuse + ambientColor) + specular);
 
     return float4(color, 1.0f);
 }

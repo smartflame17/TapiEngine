@@ -1,4 +1,5 @@
 #include "DrawableComponent.h"
+#include "../../Scene/GameObject.h"
 
 DrawableComponent::DrawableComponent(std::unique_ptr<Drawable> drawablePtr) :
 	drawable(std::move(drawablePtr))
@@ -16,14 +17,19 @@ void DrawableComponent::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (drawable != nullptr)
 	{
+		drawable->SetExternalTransformMatrix(GetGameObject().GetWorldTransformMatrix());
 		drawable->Draw(gfx);
 	}
 }
 
 void DrawableComponent::OnInspector() noexcept
 {
-	if (drawable)
+	if (ImGui::TreeNodeEx("DrawableComponent", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		drawable->DrawInspector();
+		if (drawable)
+		{
+			drawable->DrawInspector();
+		}
+		ImGui::TreePop();
 	}
 }
