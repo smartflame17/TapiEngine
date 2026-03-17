@@ -126,7 +126,17 @@ void Scene::DrawInspectorWindow() noexcept
 	auto& objectTransform = selectedObject->GetTransform();
 	ImGui::Text("Transform");
 	ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
-	ImGui::DragFloat3("Rotation", &objectTransform.rotation.x, 0.01f);
+	DirectX::XMFLOAT3 rotationDegrees = {
+		DirectX::XMConvertToDegrees(objectTransform.rotation.x),
+		DirectX::XMConvertToDegrees(objectTransform.rotation.y),
+		DirectX::XMConvertToDegrees(objectTransform.rotation.z)
+	};
+	if (ImGui::DragFloat3("Rotation (degrees)", &rotationDegrees.x, 0.5f))
+	{
+		objectTransform.rotation.x = DirectX::XMConvertToRadians(rotationDegrees.x);
+		objectTransform.rotation.y = DirectX::XMConvertToRadians(rotationDegrees.y);
+		objectTransform.rotation.z = DirectX::XMConvertToRadians(rotationDegrees.z);
+	}
 	ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
 	ImGui::Separator();
 
