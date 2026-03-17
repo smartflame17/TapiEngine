@@ -16,7 +16,9 @@ App::App():
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
+		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
 		[this]() { ResetSimulation(); }
@@ -25,6 +27,8 @@ App::App():
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
 	lastMouseY = wnd.mouse.GetPosY();
+
+	wnd.DisableCursor();	// disable OS cursor, we'll handle it ourselves for better control in 3D space
 }
 
 App::~App()
@@ -48,15 +52,16 @@ void App::ResetSimulation()
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
 	auto& gameCam = cameraObject.AddComponent<Camera>();
-	gameCam.SetPosition(0.0f, 2.0f, 0.0f);
+	cameraObject.SetPosition(0.0f, 2.0f, -5.0f);
 
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
+	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
 
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
 
-	auto& root = scene.CreateGameObject("FlyingBoxes");
+	/*auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
 	{
 		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
@@ -64,14 +69,15 @@ void App::ResetSimulation()
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
-	}
+	}*/
 
 	auto& suzanne = scene.CreateGameObject("suzanne");
 	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/suzanne.obj",
-		DirectX::XMMatrixScaling(5.0f, 5.0f, 5.0f) * DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f)
+		"Graphics/Models/suzanne.obj"
 	));
+	//suzanne.SetPosition(2.0f, 0.0f, 0.0f);
+	//suzanne.SetScale(5.0f, 5.0f, 5.0f);
 
 	CacheSceneComponents();
 
@@ -136,6 +142,9 @@ int App::Begin()
 			needsReset = false;
 		}
 
+		if (isPlayMode) wnd.DisableCursor();
+		else wnd.EnableCursor();
+
 		// As long as we have enough accumulated time,
 		// run the update logic in fixed steps.
 		while (accumulator >= dt)
@@ -179,7 +188,7 @@ void App::RenderFrame(float alpha)
 
 	// --- Simulation Draw ---
 	scene.Render(wnd.Gfx());
-	for (const auto* light : pointLights)
+	for (auto* light : pointLights)
 	{
 		if (light != nullptr)
 		{
@@ -191,12 +200,14 @@ void App::RenderFrame(float alpha)
 	imgui.SetContext({
 		&scene,
 		activeCam,
+		&wnd.Gfx(),
 		&pointLights,
+		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
 		[this]() { needsReset = true; }
 	});
-	imgui.StatWindow();
+	imgui.EditorWindow();
 
 	wnd.Gfx().Endframe();
 }
@@ -229,8 +240,22 @@ void App::HandleInput(float dt)
 
 	const int curMouseX = wnd.mouse.GetPosX();
 	const int curMouseY = wnd.mouse.GetPosY();
-	const int mouseDx = curMouseX - lastMouseX;
-	const int mouseDy = curMouseY - lastMouseY;
+	int mouseDx = 0;
+	int mouseDy = 0;
+
+	if (wnd.mouse.RawEnabled())
+	{
+		while (const auto delta = wnd.mouse.ReadRawDelta())
+		{
+			mouseDx += delta->x;
+			mouseDy += delta->y;
+		}
+	}
+	else
+	{
+		mouseDx = curMouseX - lastMouseX;
+		mouseDy = curMouseY - lastMouseY;
+	}
 
 	if (!isPlayMode)
 	{
@@ -253,8 +278,17 @@ void App::HandleInput(float dt)
 		activeCam->Translate({ 0.0f, -(float)mouseDy * camSpeed * 0.1f, 0.0f });
 	}
 
-	lastMouseX = curMouseX;
-	lastMouseY = curMouseY;
+	if (!wnd.mouse.RawEnabled() && isPlayMode)
+	{
+		wnd.RecenterCursor();
+		lastMouseX = wnd.mouse.GetPosX();
+		lastMouseY = wnd.mouse.GetPosY();
+	}
+	else
+	{
+		lastMouseX = curMouseX;
+		lastMouseY = curMouseY;
+	}
 
 	// Keyboard Input (WASD / Arrows)
 	DirectX::XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
@@ -276,4 +310,11 @@ void App::HandleInput(float dt)
 	}
 	activeCam->Translate(translation);
 
+	if (wnd.kbd.IsKeyPressed(VK_ESCAPE))
+	{
+		if (isPlayMode)
+		{
+			isPlayMode = false;
+		}
+	}
 }

@@ -177,6 +177,11 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Components\Component.cpp" />
     <ClCompile Include="Components\DrawableComponent.cpp" />
+    <ClCompile Include="imgui\GraphEditor.cpp" />
+    <ClCompile Include="imgui\ImCurveEdit.cpp" />
+    <ClCompile Include="imgui\ImGradient.cpp" />
+    <ClCompile Include="imgui\ImGuizmo.cpp" />
+    <ClCompile Include="imgui\ImSequencer.cpp" />
     <ClCompile Include="Scene\GameObject.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="ErrorHandling\dxerr.cpp" />
@@ -223,7 +228,13 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Components\Component.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
+    <ClInclude Include="imgui\GraphEditor.h" />
+    <ClInclude Include="imgui\ImCurveEdit.h" />
     <ClInclude Include="imgui\imfilebrowser.h" />
+    <ClInclude Include="imgui\ImGradient.h" />
+    <ClInclude Include="imgui\ImGuizmo.h" />
+    <ClInclude Include="imgui\ImSequencer.h" />
+    <ClInclude Include="imgui\ImZoomSlider.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="assimp\include\ai_assert.h" />
@@ -352,6 +363,7 @@
     <ClInclude Include="Physics\PhysicsWorld.h" />
     <ClInclude Include="Physics\SpatialGrid.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Scene\Transform.h" />
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
     <ClInclude Include="Tools\Timer.h" />
@@ -378,7 +390,12 @@
       <SubType>
       </SubType>
     </None>
+    <None Include="imgui\README.md" />
     <None Include="packages.config" />
+    <None Include="Scene\README.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="Tools\README.md">
       <SubType>
       </SubType>

@@ -1,4 +1,5 @@
 #include "PointLight.h"
+#include "../../Scene/GameObject.h"
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
@@ -35,8 +36,9 @@ void PointLight::Reset() noexcept
 	pos = { 0.0f, 0.0f, 0.0f };
 }
 
-void PointLight::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
+void PointLight::Draw(Graphics& gfx) noexcept(!IS_DEBUG)
 {
+	pos = GetGameObject().GetTransform().position;
 	mesh.SetPos(pos);
 	mesh.Draw(gfx);
 }

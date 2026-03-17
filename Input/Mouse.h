@@ -1,11 +1,17 @@
  #pragma once
 #include <queue>
+#include <optional>
 
 // Very similar implementation to the Keyboard class
 class Mouse
 {
 	friend class Window;
 public:
+	struct RawDelta
+	{
+		int x;
+		int y;
+	};
 	class Event
 	{
 	public:
@@ -95,6 +101,7 @@ public:
 
 	// mouse position related
 	std::pair<int, int> GetPos() const noexcept;
+	std::optional<RawDelta> ReadRawDelta() noexcept;		// for raw input, returns delta of mouse movement since last event (for better precision and no acceleration)
 	int GetPosX() const noexcept;
 	int GetPosY() const noexcept;
 	bool IsInWindow() const noexcept;
@@ -104,6 +111,11 @@ public:
 	bool IsRightPressed() const noexcept;
 	bool IsMiddlePressed() const noexcept;
 	Mouse::Event Read() noexcept;
+
+	// raw input mode
+	void EnableRaw() noexcept;
+	void DisableRaw() noexcept;
+	bool RawEnabled() const noexcept;
 
 	// buffer related
 	bool isEmpty() const noexcept
@@ -129,7 +141,11 @@ private:	// Windows-side handling (invisible to user)
 	void OnWheelDown(int x, int y) noexcept;
 
 	void TrimBuffer() noexcept;
+	void TrimRawInputBuffer() noexcept;
 	void OnWheelDelta(int x, int y, int delta) noexcept;
+
+	// for raw input
+	void OnRawDelta(int dx, int dy) noexcept;
 
 private:
 	static constexpr unsigned int bufferSize = 16u;
@@ -139,6 +155,8 @@ private:
 	bool isRightPressed = false;
 	bool isMiddlePressed = false;
 	bool isInWindow = false;
+	bool rawEnabled = true;
 	int wheelDeltaCarry = 0;
 	std::queue<Event> buffer;
+	std::queue<RawDelta> rawDeltaBuffer;
 };

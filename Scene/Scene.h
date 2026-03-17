@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <DirectXMath.h>
 #include "../imgui/imgui.h"
 
 class Graphics;
@@ -30,6 +31,8 @@ public:
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 	GameObject* GetSelectedObject() const noexcept;
+	DirectX::XMMATRIX GetSelectedWorldTransformMatrix() const noexcept;
+	void SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept;
 
 private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
@@ -37,6 +40,6 @@ private:
 private:
 	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
-	std::vector<DrawableComponent*> drawables; // cache of all drawable components in the scene for easy access during rendering
+	std::vector<DrawableComponent*> drawables;
 	GameObject* selectedObject = nullptr;
 };

@@ -75,6 +75,16 @@ Window::Window(int width, int height, const char* name):
 
 	// create graphics object after handle initialized
 	pGfx = std::make_unique<Graphics>(hWnd, width, height);
+
+	// register raw input device for mouse (for relative movement and high precision)
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;
+	rid.usUsage = 0x02; // mouse usage
+	rid.dwFlags = 0;
+	rid.hwndTarget = nullptr; // capture input regardless of focus
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
+		throw SFWND_LAST_EXCEPT();
+
 }
 
 Window::~Window() {
@@ -86,6 +96,83 @@ void Window::SetTitle(const std::string& title)
 {
 	if (SetWindowText(hWnd, title.c_str()) == 0)
 		throw SFWND_LAST_EXCEPT();
+}
+
+void Window::EnableCursor() noexcept
+{
+	cursorEnabled = true;
+	ShowCursor();
+	EnableImGuiMouse();
+	FreeCursor();
+}
+
+void Window::DisableCursor() noexcept
+{
+	cursorEnabled = false;
+	HideCursor();
+	DisableImGuiMouse();
+	ConfineCursor();
+	SetCursorToClientCenter();
+}
+
+void Window::ConfineCursor() noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);		// map client rect to screen rect
+	ClipCursor(&rect);		// confine cursor to client region
+}
+
+void Window::FreeCursor() noexcept
+{
+	ClipCursor(nullptr);	// free cursor from confinement
+}
+
+void Window::RecenterCursor() noexcept
+{
+	SetCursorToClientCenter();
+}
+
+POINT Window::GetClientCenter() const noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	POINT center;
+	center.x = (rect.left + rect.right) / 2;
+	center.y = (rect.top + rect.bottom) / 2;
+	ClientToScreen(hWnd, &center);
+	return center;
+}
+
+void Window::SetCursorToClientCenter() noexcept
+{
+	const POINT center = GetClientCenter();
+	SetCursorPos(center.x, center.y);
+
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	mouse.x = (rect.left + rect.right) / 2;
+	mouse.y = (rect.top + rect.bottom) / 2;
+}
+
+void Window::ShowCursor() noexcept
+{
+	while (::ShowCursor(TRUE) < 0);		// show cursor until it is shown (counter is positive)
+}
+
+void Window::HideCursor() noexcept
+{
+	while (::ShowCursor(FALSE) >= 0);
+}
+
+void Window::EnableImGuiMouse() noexcept
+{
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+}
+
+void Window::DisableImGuiMouse() noexcept
+{
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }
 
 // Using PeekMessage instead of GetMessage (which blocks until new message) to allow loop continue without any user actions
@@ -177,6 +264,21 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 		// ----------- End Keyboard Message Handling ----------- //
 		
+	case WM_ACTIVATE:		// if user minimizes window, log the event to mouse buffer and release mouse capture (if any)
+		if (!cursorEnabled)
+		{
+			if (wParam & WA_ACTIVE)
+			{
+				ConfineCursor();
+				HideCursor();
+			}
+			else
+			{
+				FreeCursor();
+				ShowCursor();
+			}
+		}
+		break;
 		// ---------- Mouse message Handling ---------- //
 	case WM_MOUSEMOVE: {
 		// stifle mouse message when imgui is using mouse input
@@ -205,6 +307,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	}
 	case WM_LBUTTONDOWN: {
+		if (!cursorEnabled)
+		{
+			ConfineCursor();
+			HideCursor();
+		}
 		if (imio.WantCaptureMouse)
 			break;
 		const POINTS pt = MAKEPOINTS(lParam);
@@ -255,9 +362,40 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	}
 	// ---------- End Mouse message Handling ---------- //
+
+	// ---------- Raw Mouse Input Handling ---------- //
+	case WM_INPUT: {
+		if (!mouse.RawEnabled())
+			break;
+		if (imio.WantCaptureMouse)
+			break;
+
+		UINT size = 0;
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) == -1)
+		{
+			break;	// bail out if error
+		}
+		rawBuffer.resize(size);
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawBuffer.data(), &size, sizeof(RAWINPUTHEADER)) != size)
+		{
+			break;	// bail out if error
+		}
+		// process raw input
+		auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+		if (ri.header.dwType == RIM_TYPEMOUSE && ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0)
+		{
+			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+		}
+		break;
+	}
 	}
 	
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+bool Window::IsCursorEnabled() const noexcept
+{
+	return cursorEnabled;
 }
 
 // Exception handling
