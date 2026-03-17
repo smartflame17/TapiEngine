@@ -226,6 +226,21 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 		// ----------- End Keyboard Message Handling ----------- //
 		
+	case WM_ACTIVATE:		// if user minimizes window, log the event to mouse buffer and release mouse capture (if any)
+		if (!cursorEnabled)
+		{
+			if (wParam & WA_ACTIVE)
+			{
+				ConfineCursor();
+				HideCursor();
+			}
+			else
+			{
+				FreeCursor();
+				ShowCursor();
+			}
+		}
+		break;
 		// ---------- Mouse message Handling ---------- //
 	case WM_MOUSEMOVE: {
 		// stifle mouse message when imgui is using mouse input
@@ -254,6 +269,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	}
 	case WM_LBUTTONDOWN: {
+		if (!cursorEnabled)
+		{
+			ConfineCursor();
+			HideCursor();
+		}
 		if (imio.WantCaptureMouse)
 			break;
 		const POINTS pt = MAKEPOINTS(lParam);
