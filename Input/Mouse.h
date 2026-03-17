@@ -112,6 +112,11 @@ public:
 	bool IsMiddlePressed() const noexcept;
 	Mouse::Event Read() noexcept;
 
+	// raw input mode
+	void EnableRaw() noexcept;
+	void DisableRaw() noexcept;
+	bool RawEnabled() const noexcept;
+
 	// buffer related
 	bool isEmpty() const noexcept
 	{
@@ -141,10 +146,6 @@ private:	// Windows-side handling (invisible to user)
 
 	// for raw input
 	void OnRawDelta(int dx, int dy) noexcept;
-
-	void EnableRaw() noexcept;
-	void DisableRaw() noexcept;
-	bool RawEnabled() const noexcept;
 
 private:
 	static constexpr unsigned int bufferSize = 16u;

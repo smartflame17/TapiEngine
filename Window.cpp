@@ -112,6 +112,7 @@ void Window::DisableCursor() noexcept
 	HideCursor();
 	DisableImGuiMouse();
 	ConfineCursor();
+	SetCursorToClientCenter();
 }
 
 void Window::ConfineCursor() noexcept
@@ -125,6 +126,33 @@ void Window::ConfineCursor() noexcept
 void Window::FreeCursor() noexcept
 {
 	ClipCursor(nullptr);	// free cursor from confinement
+}
+
+void Window::RecenterCursor() noexcept
+{
+	SetCursorToClientCenter();
+}
+
+POINT Window::GetClientCenter() const noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	POINT center;
+	center.x = (rect.left + rect.right) / 2;
+	center.y = (rect.top + rect.bottom) / 2;
+	ClientToScreen(hWnd, &center);
+	return center;
+}
+
+void Window::SetCursorToClientCenter() noexcept
+{
+	const POINT center = GetClientCenter();
+	SetCursorPos(center.x, center.y);
+
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	mouse.x = (rect.left + rect.right) / 2;
+	mouse.y = (rect.top + rect.bottom) / 2;
 }
 
 void Window::ShowCursor() noexcept
