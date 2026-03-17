@@ -169,6 +169,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 	ImGui::PopStyleVar();
 
 	MultipurposeWindow();
+	SettingsWindow();
 
 	if (context.scene != nullptr)
 	{
@@ -194,6 +195,33 @@ void ImguiManager::EditorWindow(bool* p_open)
 		}
 	}
 	MainMenuBar();
+}
+
+
+inline void ImguiManager::SettingsWindow()
+{
+	if (!settingsWindowOpen)
+	{
+		return;
+	}
+
+	ImGui::Begin("Settings", &settingsWindowOpen);
+	if (context.mouse != nullptr)
+	{
+		bool rawEnabled = context.mouse->RawEnabled();
+		if (ImGui::Checkbox("Enable Raw Mouse Input", &rawEnabled))
+		{
+			if (rawEnabled)
+			{
+				context.mouse->EnableRaw();
+			}
+			else
+			{
+				context.mouse->DisableRaw();
+			}
+		}
+	}
+	ImGui::End();
 }
 
 inline void ImguiManager::MultipurposeWindow()
@@ -261,6 +289,7 @@ inline void ImguiManager::MainMenuBar()
 			}
 			ImGui::MenuItem("Open Scene", "Ctrl+O");
 			ImGui::MenuItem("Save Scene", "Ctrl+S");
+			ImGui::MenuItem("Open Settings", nullptr, &settingsWindowOpen);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))

@@ -18,6 +18,7 @@ App::App():
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
 		[this]() { ResetSimulation(); }
@@ -201,6 +202,7 @@ void App::RenderFrame(float alpha)
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
 		[this]() { needsReset = true; }
@@ -238,8 +240,22 @@ void App::HandleInput(float dt)
 
 	const int curMouseX = wnd.mouse.GetPosX();
 	const int curMouseY = wnd.mouse.GetPosY();
-	const int mouseDx = curMouseX - lastMouseX;
-	const int mouseDy = curMouseY - lastMouseY;
+	int mouseDx = 0;
+	int mouseDy = 0;
+
+	if (wnd.mouse.RawEnabled())
+	{
+		while (const auto delta = wnd.mouse.ReadRawDelta())
+		{
+			mouseDx += delta->x;
+			mouseDy += delta->y;
+		}
+	}
+	else
+	{
+		mouseDx = curMouseX - lastMouseX;
+		mouseDy = curMouseY - lastMouseY;
+	}
 
 	if (!isPlayMode)
 	{
@@ -262,8 +278,17 @@ void App::HandleInput(float dt)
 		activeCam->Translate({ 0.0f, -(float)mouseDy * camSpeed * 0.1f, 0.0f });
 	}
 
-	lastMouseX = curMouseX;
-	lastMouseY = curMouseY;
+	if (!wnd.mouse.RawEnabled() && isPlayMode)
+	{
+		wnd.RecenterCursor();
+		lastMouseX = wnd.mouse.GetPosX();
+		lastMouseY = wnd.mouse.GetPosY();
+	}
+	else
+	{
+		lastMouseX = curMouseX;
+		lastMouseY = curMouseY;
+	}
 
 	// Keyboard Input (WASD / Arrows)
 	DirectX::XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };

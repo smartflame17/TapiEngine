@@ -58,6 +58,7 @@ public:
 	void SetTitle(const std::string& title);
 	void EnableCursor() noexcept;
 	void DisableCursor() noexcept;
+	void RecenterCursor() noexcept;
 	static std::optional<int> ProcessMessages();	// c++17 feature allows returning int or nullopt if no message
 	Graphics& Gfx();
 private:
@@ -65,6 +66,8 @@ private:
 	void HideCursor() noexcept;
 	void FreeCursor() noexcept;
 	void ConfineCursor() noexcept;
+	POINT GetClientCenter() const noexcept;
+	void SetCursorToClientCenter() noexcept;
 	void EnableImGuiMouse() noexcept;
 	void DisableImGuiMouse() noexcept;
 	bool IsCursorEnabled() const noexcept;
