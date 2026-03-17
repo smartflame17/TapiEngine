@@ -67,6 +67,7 @@ private:
 	void ConfineCursor() noexcept;
 	void EnableImGuiMouse() noexcept;
 	void DisableImGuiMouse() noexcept;
+	bool IsCursorEnabled() const noexcept;
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;		// static function so that winapi can register as callback procedure without class pointer
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;							// little hack needed to pass member function to static function
@@ -80,4 +81,5 @@ private:
 	bool cursorEnabled = true;
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
+	std::vector<char> rawBuffer;		// buffer for raw input (for mouse)
 };

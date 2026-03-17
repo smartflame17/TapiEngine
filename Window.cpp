@@ -75,6 +75,16 @@ Window::Window(int width, int height, const char* name):
 
 	// create graphics object after handle initialized
 	pGfx = std::make_unique<Graphics>(hWnd, width, height);
+
+	// register raw input device for mouse (for relative movement and high precision)
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;
+	rid.usUsage = 0x02; // mouse usage
+	rid.dwFlags = 0;
+	rid.hwndTarget = nullptr; // capture input regardless of focus
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
+		throw SFWND_LAST_EXCEPT();
+
 }
 
 Window::~Window() {
@@ -324,9 +334,40 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	}
 	// ---------- End Mouse message Handling ---------- //
+
+	// ---------- Raw Mouse Input Handling ---------- //
+	case WM_INPUT: {
+		if (!mouse.RawEnabled())
+			break;
+		if (imio.WantCaptureMouse)
+			break;
+
+		UINT size = 0;
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) == -1)
+		{
+			break;	// bail out if error
+		}
+		rawBuffer.resize(size);
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawBuffer.data(), &size, sizeof(RAWINPUTHEADER)) != size)
+		{
+			break;	// bail out if error
+		}
+		// process raw input
+		auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+		if (ri.header.dwType == RIM_TYPEMOUSE && ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0)
+		{
+			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+		}
+		break;
+	}
 	}
 	
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+bool Window::IsCursorEnabled() const noexcept
+{
+	return cursorEnabled;
 }
 
 // Exception handling

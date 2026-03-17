@@ -60,7 +60,7 @@ void App::ResetSimulation()
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
 
-	auto& root = scene.CreateGameObject("FlyingBoxes");
+	/*auto& root = scene.CreateGameObject("FlyingBoxes");
 	for (auto i = 0; i < 120; i++)
 	{
 		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
@@ -68,7 +68,7 @@ void App::ResetSimulation()
 			wnd.Gfx(), rng, adist,
 			ddist, odist, rdist, bdist
 		));
-	}
+	}*/
 
 	auto& suzanne = scene.CreateGameObject("suzanne");
 	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
