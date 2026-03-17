@@ -155,7 +155,7 @@ private:
 	bool isRightPressed = false;
 	bool isMiddlePressed = false;
 	bool isInWindow = false;
-	bool rawEnabled = false;
+	bool rawEnabled = true;
 	int wheelDeltaCarry = 0;
 	std::queue<Event> buffer;
 	std::queue<RawDelta> rawDeltaBuffer;
