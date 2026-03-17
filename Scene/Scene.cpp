@@ -131,7 +131,7 @@ void Scene::DrawInspectorWindow() noexcept
 		DirectX::XMConvertToDegrees(objectTransform.rotation.y),
 		DirectX::XMConvertToDegrees(objectTransform.rotation.z)
 	};
-	if (ImGui::DragFloat3("Rotation (degrees)", &rotationDegrees.x, 0.5f))
+	if (ImGui::DragFloat3("Rotation", &rotationDegrees.x, 0.5f))
 	{
 		objectTransform.rotation.x = DirectX::XMConvertToRadians(rotationDegrees.x);
 		objectTransform.rotation.y = DirectX::XMConvertToRadians(rotationDegrees.y);
