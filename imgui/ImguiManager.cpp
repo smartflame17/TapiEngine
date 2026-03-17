@@ -168,6 +168,36 @@ void ImguiManager::EditorWindow(bool* p_open)
 	ImGui::End();
 	ImGui::PopStyleVar();
 
+	MultipurposeWindow();
+
+	if (context.scene != nullptr)
+	{
+		context.scene->DrawHierarchyWindow();
+		context.scene->DrawInspectorWindow();
+	}
+
+	DrawGizmo();
+
+	if (context.activeCamera != nullptr)
+	{
+		context.activeCamera->SpawnControlWindow();
+	}
+
+	if (context.pointLights != nullptr)
+	{
+		for (auto* light : *context.pointLights)
+		{
+			if (light != nullptr)
+			{
+				light->SpawnControlWindow();
+			}
+		}
+	}
+	MainMenuBar();
+}
+
+inline void ImguiManager::MultipurposeWindow()
+{
 	ImGui::SetNextWindowSize(ImVec2(1280, 300), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(300, 780), ImGuiCond_Always);
 	ImGui::Begin("Multipurpose", nullptr,
@@ -193,30 +223,10 @@ void ImguiManager::EditorWindow(bool* p_open)
 	}
 	ImGui::End();
 
-	if (context.scene != nullptr)
-	{
-		context.scene->DrawHierarchyWindow();
-		context.scene->DrawInspectorWindow();
-	}
+}
 
-	DrawGizmo();
-
-	if (context.activeCamera != nullptr)
-	{
-		context.activeCamera->SpawnControlWindow();
-	}
-
-	if (context.pointLights != nullptr)
-	{
-		for (auto* light : *context.pointLights)
-		{
-			if (light != nullptr)
-			{
-				light->SpawnControlWindow();
-			}
-		}
-	}
-
+inline void ImguiManager::MainMenuBar()
+{
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))

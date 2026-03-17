@@ -32,6 +32,8 @@ public:
 
 	void SetContext(UiContext context) noexcept;
 	void EditorWindow(bool* p_open = nullptr);
+	inline void MainMenuBar();
+	inline void MultipurposeWindow();
 
 private:
 	void DrawGizmo() noexcept;

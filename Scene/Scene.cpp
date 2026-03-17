@@ -125,11 +125,9 @@ void Scene::DrawInspectorWindow() noexcept
 
 	auto& objectTransform = selectedObject->GetTransform();
 	ImGui::Text("Transform");
-	ImGui::TextUnformatted("(Gizmo edits this GameObject transform only)");
 	ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
 	ImGui::DragFloat3("Rotation", &objectTransform.rotation.x, 0.01f);
 	ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
-	ImGui::TextUnformatted("Model node relative transforms are in DrawableComponent inspector.");
 	ImGui::Separator();
 
 	const auto& components = selectedObject->GetComponents();
