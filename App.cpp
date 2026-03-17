@@ -26,6 +26,8 @@ App::App():
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
 	lastMouseY = wnd.mouse.GetPosY();
+
+	wnd.DisableCursor();	// disable OS cursor, we'll handle it ourselves for better control in 3D space
 }
 
 App::~App()
@@ -138,6 +140,9 @@ int App::Begin()
 			ResetSimulation();
 			needsReset = false;
 		}
+
+		if (isPlayMode) wnd.DisableCursor();
+		else wnd.EnableCursor();
 
 		// As long as we have enough accumulated time,
 		// run the update logic in fixed steps.
@@ -280,4 +285,11 @@ void App::HandleInput(float dt)
 	}
 	activeCam->Translate(translation);
 
+	if (wnd.kbd.IsKeyPressed(VK_ESCAPE))
+	{
+		if (isPlayMode)
+		{
+			isPlayMode = false;
+		}
+	}
 }

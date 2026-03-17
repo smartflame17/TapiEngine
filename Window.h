@@ -63,6 +63,8 @@ public:
 private:
 	void ShowCursor() noexcept;
 	void HideCursor() noexcept;
+	void FreeCursor() noexcept;
+	void ConfineCursor() noexcept;
 	void EnableImGuiMouse() noexcept;
 	void DisableImGuiMouse() noexcept;
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;		// static function so that winapi can register as callback procedure without class pointer

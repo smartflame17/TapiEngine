@@ -93,6 +93,7 @@ void Window::EnableCursor() noexcept
 	cursorEnabled = true;
 	ShowCursor();
 	EnableImGuiMouse();
+	FreeCursor();
 }
 
 void Window::DisableCursor() noexcept
@@ -100,6 +101,20 @@ void Window::DisableCursor() noexcept
 	cursorEnabled = false;
 	HideCursor();
 	DisableImGuiMouse();
+	ConfineCursor();
+}
+
+void Window::ConfineCursor() noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);		// map client rect to screen rect
+	ClipCursor(&rect);		// confine cursor to client region
+}
+
+void Window::FreeCursor() noexcept
+{
+	ClipCursor(nullptr);	// free cursor from confinement
 }
 
 void Window::ShowCursor() noexcept
