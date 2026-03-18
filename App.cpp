@@ -71,13 +71,13 @@ void App::ResetSimulation()
 		));
 	}*/
 
-	auto& suzanne = scene.CreateGameObject("suzanne");
-	suzanne.AddComponent<DrawableComponent>(std::make_unique<Model>(
+	auto& two_b = scene.CreateGameObject("2B");
+	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/suzanne.obj"
+		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
-	//suzanne.SetPosition(2.0f, 0.0f, 0.0f);
-	//suzanne.SetScale(5.0f, 5.0f, 5.0f);
+	two_b.SetPosition(1.0f, 0.0f, 0.0f);
+	two_b.SetScale(10.0f, 10.0f, 10.0f);
 
 	CacheSceneComponents();
 
