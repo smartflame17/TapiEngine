@@ -151,8 +151,8 @@ The overall structure of the Model class should look like the following diagram:
 ```
 Model : DrawableBase<Model>
 ├── unique_ptr<Node> pRoot -> Node tree root, which contains the hierarchy of the model.
-├── vector<unique_ptr<Mesh>> meshPtrs
-├── XMFloat4x4 modelTransform -> The transform of the model, which is applied to all nodes and meshes.
+├── vector<unique_ptr<Mesh>> meshPtrs -> The Model class holds all meshes in the model, which can be referenced by the nodes.
+├── XMFloat4x4 transform -> The transform of the model (in Drawable class), which is applied to all nodes and meshes.
 ```
 
 A Node represents a node in the hierarchy of the 3D model, which can contain multiple child nodes and references to Mesh.

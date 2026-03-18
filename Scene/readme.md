@@ -5,6 +5,20 @@ A scene graph is a hierarchical structure that allows for efficient rendering an
 
 Each scene keeps a list of root GameObjects, which are the top-level objects in the scene. Each GameObject can have child GameObjects, creating a tree-like structure.  
 
+## Scene
+
+A Scene is the main container for GameObjects and a unit for rendering and updating. It manages the lifecycle of GameObjects, including their creation, update, and destruction.  
+
+(Note: Though not implemented yet, it will be serialized and deserialized to and from a file, allowing for saving and loading scenes.)  
+
+Currently, the following is the structure of the Scene class:  
+```
+Scene
+├── name: string
+├── rootObjects: vector<unique_ptr<GameObject>> -> List of root GameObjects in the scene
+├── std::vector<DrawableComponent*> drawables -> Cached list of drawable components for efficient rendering
+```
+
 ## GameObject
 
 A GameObject is a fundamental entity in the scene. It has a name, a transform (position, rotation, scale), and can have multiple components as well as child objects attached to it.  
@@ -24,7 +38,7 @@ Components are modular pieces of functionality that can be added to GameObjects 
 
 ```DrawableComponent``` is an example of a component that can be attached to a GameObject to make it renderable. 
 
-A typical GameObject with a DrawableComponent (say, a Model) would have the following structure:  
+A typical GameObject with a ```DrawableComponent``` (say, a ```Model```) would have the following structure:  
 ```
 GameObject
 ├── Transform (position, rotation, scale)
@@ -32,7 +46,7 @@ GameObject
        ├── unique_ptr<Model>
              
 ```
-When rendering a DrawableComponent, the transform will be propagated as follows:  
+When rendering a ```DrawableComponent```, the transform will be propagated as follows:  
 
 ```
 (Parent GameObjects' Transform) * (Current GameObject's Transform) -> Saved into externalTransform as XMFloat4x4
@@ -48,7 +62,7 @@ When manipulating the ImGuizmo, the engine will pass the transform in the follow
 ```
 modelMatrix = scene.GetSelectedWorldTransformMatrix() -> 
               GameObject.GetWorldTransformMatrix() -> 
-              Transform,MakeTransformMatrix() -> Returns modelMatrix as XMFloat4x4
+              Transform.MakeTransformMatrix() -> Returns modelMatrix as XMFloat4x4
 
 ImGuizmo::Manipulate(modelMatrix) -> Manipulates the passed modelMatrix
 
@@ -65,8 +79,5 @@ The following is the flow of how the transform is applied on rendering:
 Scene.Render() -> DrawableComponent.OnRender() (We cache only the drawable components in the scene to reduce redundant looping)
                -> DrawableComponent.SetExternalTransformMatrix(GetGameObject().GetWorldTransformMatrix()) (Passes transform as 4x4 matrix)
                -> Drawable.Draw() (virtual function)
-
-               as for Model
-               -> Model.Draw() -> 
 
 ```
