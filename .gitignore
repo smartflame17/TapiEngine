@@ -54,3 +54,6 @@ Desktop.ini
 
 # compiled shaders
 *.cso
+
+# 3d model files
+Graphics/Models/
