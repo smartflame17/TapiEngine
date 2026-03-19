@@ -241,7 +241,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 	}
 
 	std::vector<std::unique_ptr<IBindable>> bindablePtrs;
-	bindablePtrs.push_back(std::make_unique<VertexBuffer>(gfx, vertexBuffer));
+	bindablePtrs.push_back(std::make_unique<Bind::VertexBuffer>(gfx, vertexBuffer));
 	bindablePtrs.push_back(std::make_unique<IndexBuffer>(gfx, indices));
 
 	const aiMaterial* pMaterial = mesh.mMaterialIndex < scene.mNumMaterials ? scene.mMaterials[mesh.mMaterialIndex] : nullptr;

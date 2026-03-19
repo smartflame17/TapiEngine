@@ -101,6 +101,12 @@ namespace Dvtx
 			return elements.front();
 		}
 		const Element& ResolveByIndex(size_t i) const noexcept(!IS_DEBUG);
+		bool Has(ElementType type) const noexcept;
+		template<ElementType Type>
+		bool Has() const noexcept
+		{
+			return Has(Type);
+		}
 		VertexLayout& Append(ElementType type) noexcept(!IS_DEBUG);
 		size_t Size() const noexcept(!IS_DEBUG);
 		size_t GetElementCount() const noexcept;

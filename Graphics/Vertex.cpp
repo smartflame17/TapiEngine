@@ -7,6 +7,17 @@ namespace Dvtx
 	{
 		return elements[i];
 	}
+	bool VertexLayout::Has(ElementType type) const noexcept
+	{
+		for (const auto& element : elements)
+		{
+			if (element.GetType() == type)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	VertexLayout& VertexLayout::Append(ElementType type) noexcept(!IS_DEBUG)
 	{
 		elements.emplace_back(type, Size());

@@ -22,39 +22,13 @@ Box::Box(Graphics& gfx,
 	namespace dx = DirectX;
 	if (!IsStaticInitialized())	// we initialize static binds for the same type of object only once
 	{
-		struct Vertex
-		{
-			dx::XMFLOAT3 pos;
-			dx::XMFLOAT3 n;
-		};
-		auto model = Cube::MakeIndependent<Vertex>();
+		using Type = Dvtx::VertexLayout::ElementType;
+		auto model = Cube::MakeIndependent(Dvtx::VertexLayout{}
+			.Append(Type::Position3D)
+			.Append(Type::Normal));
 		model.SetNormalsIndependentFlat();
-		/*
-		enum class ModelType { Sphere, Box, Prism, Plane };
 
-		// ·£´ý ¸ðµ¨ Å¸ÀÔ ¼±ÅÃ
-		std::uniform_int_distribution<int> modelDist(0, 3);
-		ModelType selectedModel = static_cast<ModelType>(modelDist(rng));
-
-		decltype(Sphere::MakeTesselated<Vertex>(12, 12)) model;
-
-		switch (selectedModel)
-		{
-		case ModelType::Sphere:
-			model = Sphere::MakeTesselated<Vertex>(12, 12);
-			break;
-		case ModelType::Box:
-			model = Cube::Make<Vertex>();
-			break;
-		case ModelType::Prism:
-			model = Prism::Make<Vertex>();
-			break;
-		case ModelType::Plane:
-			model = Geometry::Plane::Make<Vertex>();
-			break;
-		}
-		*/
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));		// add vertex data
+		AddStaticBind(std::make_unique<Bind::VertexBuffer>(gfx, model.vertices));		// add vertex data
 
 		// add shader data
 		auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");
@@ -65,12 +39,7 @@ Box::Box(Graphics& gfx,
 
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));	// add index buffer
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		};
-		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));	// bind input layout with vertex shader info
+		AddStaticBind(std::make_unique<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
 
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}

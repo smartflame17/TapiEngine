@@ -1,53 +1,65 @@
 #pragma once
 #include "IndexedTriangleList.h"
+#include "../Vertex.h"
 #include <DirectXMath.h>
 #include "../../Tools/TapiMath.h"
+#include <optional>
 
 // A prism with subdivisions can represent all 'column'-like primitives
 // Prism with sufficient division == cylinder
 class Prism
 {
 public:
-	static IndexedTriangleList MakeTesselated(int longDiv)
+	static IndexedTriangleList MakeTesselated(int longDiv, std::optional<Dvtx::VertexLayout> layout = {})
 	{
 		namespace dx = DirectX;
+		using Type = Dvtx::VertexLayout::ElementType;
 		assert(longDiv >= 3);	// minimum division
+
+		if (!layout)
+		{
+			layout = Dvtx::VertexLayout{};
+			layout->Append(Type::Position3D);
+		}
 
 		const auto base = dx::XMVectorSet(1.0f, 0.0f, -1.0f, 0.0f);
 		const auto offset = dx::XMVectorSet(0.0f, 0.0f, 2.0f, 0.0f);
 		const float longitudeAngle = 2.0f * PI / longDiv;
 
+		Dvtx::VertexBuffer vertices{ std::move(*layout) };
+
 		// near center
-		std::vector<V> vertices;
-		vertices.emplace_back();
-		vertices.back().pos = { 0.0f,0.0f,-1.0f };
-		const auto iCenterNear = (unsigned short)(vertices.size() - 1);
+		vertices.Resize(vertices.Size() + 1u);
+		vertices.Back().Attr<Type::Position3D>() = { 0.0f,0.0f,-1.0f };
+		const auto iCenterNear = (unsigned short)(vertices.Size() - 1);
 		// far center
-		vertices.emplace_back();
-		vertices.back().pos = { 0.0f,0.0f,1.0f };
-		const auto iCenterFar = (unsigned short)(vertices.size() - 1);
+		vertices.Resize(vertices.Size() + 1u);
+		vertices.Back().Attr<Type::Position3D>() = { 0.0f,0.0f,1.0f };
+		const auto iCenterFar = (unsigned short)(vertices.Size() - 1);
 
 		// base vertices
 		for (int iLong = 0; iLong < longDiv; iLong++)
 		{
 			// near base
 			{
-				vertices.emplace_back();
+				vertices.Resize(vertices.Size() + 1u);
+				auto vertex = vertices.Back();
 				auto v = dx::XMVector3Transform(
 					base,
 					dx::XMMatrixRotationZ(longitudeAngle * iLong)
 				);
-				dx::XMStoreFloat3(&vertices.back().pos, v);
+				dx::XMStoreFloat3(&vertex.Attr<Type::Position3D>(), v);
 			}
 			// far base
 			{
-				vertices.emplace_back();
+				vertices.Resize(vertices.Size() + 1u);
+				auto vertex = vertices.Back();
 				auto v = dx::XMVector3Transform(
 					base,
 					dx::XMMatrixRotationZ(longitudeAngle * iLong)
 				);
 				v = dx::XMVectorAdd(v, offset);
-				dx::XMStoreFloat3(&vertices.back().pos, v);
+				dx::XMStoreFloat3(&vertex.Attr<Type::Position3D>(), v);
 			}
 		}
 
@@ -82,9 +94,8 @@ public:
 	}
 
 	// Default prism is a cylinder-like (24-polygon)
-	template<class V>
-	static IndexedTriangleList<V> Make()
+	static IndexedTriangleList Make()
 	{
-		return MakeTesselated<V>(24);
+		return MakeTesselated(24);
 	}
 };

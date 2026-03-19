@@ -30,7 +30,8 @@ public:
 	// new constructor that handles dynamic vertex system
 	VertexBuffer(Graphics& gfx, const Dvtx::VertexBuffer& vbuf)
 		:
-		stride((UINT)vbuf.GetLayout().Size())
+		stride((UINT)vbuf.GetLayout().Size()),
+		layout(vbuf.GetLayout())
 	{
 		HRESULT hr;
 
