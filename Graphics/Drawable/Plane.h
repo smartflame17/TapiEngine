@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include "IndexedTriangleList.h"
+#include "../Vertex.h"
 #include "../../Tools/TapiMath.h"
 
 namespace Geometry
@@ -11,8 +12,7 @@ class Plane
 {
 public:
 	// Create planes with many divisions for tesselated texture or deformation on vertices
-	template<class V>
-	static IndexedTriangleList<V> MakeTesselated(int divisions_x, int divisions_y)
+	static IndexedTriangleList MakeTesselated(Dvtx::VertexLayout layout, int divisions_x, int divisions_y)
 	{
 		namespace dx = DirectX;
 		assert(divisions_x >= 1);
@@ -22,7 +22,7 @@ public:
 		constexpr float height = 2.0f;
 		const int nVertices_x = divisions_x + 1;
 		const int nVertices_y = divisions_y + 1;
-		std::vector<V> vertices(nVertices_x * nVertices_y);
+		Dvtx::VertexBuffer vb{ std::move(layout) };
 
 		// Divide vertex coordinates by division size and save position to vector<V> vertices
 		{
@@ -37,11 +37,11 @@ public:
 				const float y_pos = float(y) * divisionSize_y;
 				for (int x = 0; x < nVertices_x; x++, i++)
 				{
-					const auto v = dx::XMVectorAdd(
-						bottomLeft,
-						dx::XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
+					const float x_pos = float(x) * divisionSize_x - side_x;
+					vb.EmplaceBack(
+						dx::XMFLOAT3{ x_pos,y_pos,0.0f },
+						dx::XMFLOAT3{ 0.0f,0.0f,-1.0f }
 					);
-					dx::XMStoreFloat3(&vertices[i].pos, v);
 				}
 			}
 		}
@@ -74,14 +74,21 @@ public:
 			}
 		}
 
-		return{ std::move(vertices),std::move(indices) };
+		return{ std::move(vb),std::move(indices) };
 	}
 
 	// default plane is 2x2 subplanes
-	template<class V>
-	static IndexedTriangleList<V> Make()
+
+	static IndexedTriangleList Make()
 	{
-		return MakeTesselated<V>(1, 1);
+		using Dvtx::VertexLayout;
+		VertexLayout vl;
+		vl.Append(VertexLayout::Position3D);
+		vl.Append(VertexLayout::Normal);
+		//vl.Append(VertexLayout::Texture2D);
+
+		return MakeTesselated(std::move(vl), 1, 1);
+
 	}
 };
 }

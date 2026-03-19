@@ -16,7 +16,7 @@ Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 		auto model = Geometry::Plane::MakeTesselated<Vertex>(divisionsX, divisionsY);
 		model.SetNormalsIndependentFlat();
 
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
+		AddStaticBind(std::make_unique<Bind::VertexBuffer>(gfx, model.vertices));
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
 
 		auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");

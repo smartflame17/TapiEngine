@@ -8,8 +8,7 @@
 class Prism
 {
 public:
-	template<class V>
-	static IndexedTriangleList<V> MakeTesselated(int longDiv)
+	static IndexedTriangleList MakeTesselated(int longDiv)
 	{
 		namespace dx = DirectX;
 		assert(longDiv >= 3);	// minimum division

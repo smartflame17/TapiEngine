@@ -105,9 +105,6 @@
     <ClCompile Include="Graphics\IBindable\Sampler.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\Drawable\TexturedBox.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -303,9 +300,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Scene.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\Drawable\TexturedBox.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\Mesh.h">
@@ -614,6 +608,9 @@
     <ClInclude Include="imgui\ImZoomSlider.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Scene\Transform.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -657,6 +654,7 @@
     <None Include="assimp\bin\assimp-vc143-mtd.dll" />
     <None Include="Tools\README.md" />
     <None Include="imgui\README.md" />
+    <None Include="Scene\README.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -671,6 +669,8 @@
     <FxCompile Include="Shaders\TexturedPhongVS.hlsl" />
     <FxCompile Include="Shaders\SolidVS.hlsl" />
     <FxCompile Include="Shaders\SolidPS.hlsl" />
+    <FxCompile Include="Shaders\Skybox_VS.hlsl" />
+    <FxCompile Include="Shaders\Skybox_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
