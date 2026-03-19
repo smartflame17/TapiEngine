@@ -5,6 +5,7 @@
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
+#include "Graphics/Drawable/CubeMap.h"
 #include "Graphics/Drawable/Ground.h"
 #include "Graphics/Drawable/Model.h"
 #include "Graphics/Lighting/PointLight.h"

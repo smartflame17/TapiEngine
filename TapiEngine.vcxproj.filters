@@ -96,11 +96,26 @@
     <ClCompile Include="Graphics\Drawable\Box.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Drawable\CubeMap.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\Drawable\Ground.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\IBindable\Texture.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\CubeTexture.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\DepthStencilState.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\RasterizerState.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\SkyboxTransformCbuf.cpp">
+      <Filter>소스 파일\IBindable</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\IBindable\Sampler.cpp">
       <Filter>소스 파일</Filter>
@@ -257,6 +272,9 @@
     <ClInclude Include="Graphics\Drawable\Box.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Drawable\CubeMap.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="Graphics\IBindable\IBindableBase.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -286,6 +304,18 @@
     </ClInclude>
     <ClInclude Include="Graphics\IBindable\Texture.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\CubeTexture.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\DepthStencilState.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\RasterizerState.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\SkyboxTransformCbuf.h">
+      <Filter>헤더 파일\IBindable</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\IBindable\Sampler.h">
       <Filter>헤더 파일</Filter>

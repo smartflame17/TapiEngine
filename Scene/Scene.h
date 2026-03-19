@@ -10,6 +10,7 @@
 class Graphics;
 class GameObject;
 class DrawableComponent;
+class Drawable;
 
 class Scene
 {
@@ -24,6 +25,7 @@ public:
 	void Clear() noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
 	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
+	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
 	void DrawHierarchyWindow() noexcept;
@@ -40,6 +42,7 @@ private:
 private:
 	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
+	std::unique_ptr<Drawable> skybox;
 	std::vector<DrawableComponent*> drawables;
 	GameObject* selectedObject = nullptr;
 };

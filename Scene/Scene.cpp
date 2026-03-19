@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "../Components/Component.h"
 #include "../Components/DrawableComponent.h"
+#include "../Graphics/Drawable/Drawable.h"
 #include <algorithm>
 
 Scene::Scene() : name("Scene") {}
@@ -27,6 +28,7 @@ GameObject& Scene::CreateChildGameObject(GameObject& parent, const std::string& 
 void Scene::Clear() noexcept
 {
 	rootObjects.clear();
+	skybox.reset();
 	selectedObject = nullptr;
 }
 
@@ -40,10 +42,20 @@ void Scene::Update(float dt, bool isSimulationRunning) noexcept
 
 void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
+	if (skybox)
+	{
+		skybox->Draw(gfx);
+		gfx.RestoreDefaultStates();
+	}
 	for (const auto& drawable : drawables)
 	{
 		drawable->OnRender(gfx);
 	}
+}
+
+void Scene::SetSkybox(std::unique_ptr<Drawable> drawable)
+{
+	skybox = std::move(drawable);
 }
 
 void Scene::RegisterDrawable(DrawableComponent* drawable) noexcept

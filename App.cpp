@@ -44,6 +44,11 @@ void App::ResetSimulation()
 
 	std::mt19937 rng(std::random_device{}());
 
+	scene.SetSkybox(std::make_unique<CubeMap>(
+		wnd.Gfx(),
+		"Graphics/Textures/Skybox/WaterMountain"
+	));
+
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
 	auto& gameCam = cameraObject.AddComponent<Camera>();
