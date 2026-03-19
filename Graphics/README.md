@@ -178,3 +178,15 @@ MakeSpriteFont "My Font" myfont.spritefont /FontSize:16
 ```
 
 Good old imgui is used for the debug / editor UI, which is rendered on top of everything else.  
+
+### Skybox
+The skybox is a cubemap rendered with a special shader that ignores depth.
+For textures 0 to 5, they correspond to the following faces of the cubemap respectively:
+- Positive X (right) : 0
+- Negative X (left) : 1
+- Positive Y (top) : 2
+- Negative Y (bottom) : 3
+- Positive Z (front) : 4
+- Negative Z (back) : 5
+
+Name the textures accordingly when loading the skybox, or else the textures will be mapped incorrectly.
