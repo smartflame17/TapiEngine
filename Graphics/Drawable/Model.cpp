@@ -12,7 +12,7 @@ namespace
 	struct PSMaterialConstant
 	{
 		DirectX::XMFLOAT3 color = { 0.8f,0.3f,0.8f };
-		float specularIntensity = 0.7f;
+		float specularIntensity = 0.5f;
 		float specularPower = 32.0f;
 		DirectX::XMFLOAT3 specularColor = { 1.0f,1.0f,1.0f };
 	};

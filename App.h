@@ -47,6 +47,9 @@ private:
 
 	std::vector<PointLight*> pointLights;
 
+	// Persistent game objects for inter-scene use (e.g. player character)
+	std::vector<GameObject*> persistentObjects;
+
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
 	bool isPaused = false;   // true = Simulation Paused (while in Play Mode)

@@ -43,11 +43,6 @@ void App::ResetSimulation()
 	pointLights.clear();
 
 	std::mt19937 rng(std::random_device{}());
-	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
-	std::uniform_real_distribution<float> ddist(0.0f, 3.1415f * 2.0f);
-	std::uniform_real_distribution<float> odist(0.0f, 3.1415f * 0.3f);
-	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
-	std::uniform_real_distribution<float> bdist{ 0.4f, 3.0f };
 
 	// GO initialization
 	auto& cameraObject = scene.CreateGameObject("Camera");
@@ -60,16 +55,6 @@ void App::ResetSimulation()
 
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
-
-	/*auto& root = scene.CreateGameObject("FlyingBoxes");
-	for (auto i = 0; i < 120; i++)
-	{
-		auto& object = scene.CreateChildGameObject(root, "Box " + std::to_string(i));
-		object.AddComponent<DrawableComponent>(std::make_unique<Box>(
-			wnd.Gfx(), rng, adist,
-			ddist, odist, rdist, bdist
-		));
-	}*/
 
 	auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
@@ -221,9 +206,6 @@ void App::HandleInput(float dt)
 		activeCam = gameCams.front();
 	}
 
-	const float camSpeed = 12.0f * dt;
-	const float rotateSpeed = 0.004f;
-
 	if (activeCam == nullptr)
 	{
 		return;
@@ -233,9 +215,9 @@ void App::HandleInput(float dt)
 	const Mouse::Event e = wnd.mouse.Read();
 
 	if (e.GetType() == Mouse::Event::Type::WheelUp)
-		activeCam->Translate({ 0.0f, 0.0f, camSpeed * 3.0f }); // Zoom in (move forward)
+		activeCam->Translate({ 0.0f, 0.0f, activeCam->camSpeed * 3.0f }); // Zoom in (move forward)
 	else if (e.GetType() == Mouse::Event::Type::WheelDown)
-		activeCam->Translate({ 0.0f, 0.0f, -camSpeed * 3.0f }); // Zoom out (move backward)
+		activeCam->Translate({ 0.0f, 0.0f, -activeCam->camSpeed * 3.0f }); // Zoom out (move backward)
 
 
 	const int curMouseX = wnd.mouse.GetPosX();
@@ -262,20 +244,20 @@ void App::HandleInput(float dt)
 		if (wnd.mouse.IsLeftPressed())
 		{
 			// Holding left click + moving: standard fps style looking (in editor mode only)
-			activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
+			activeCam->Rotate((float)mouseDx * activeCam->rotateSpeed, (float)mouseDy * activeCam->rotateSpeed);
 		}
 	}
 	else
 	{
 		// in play mode, no left press required for fps-style looking, just mouse movement
-		activeCam->Rotate((float)mouseDx * rotateSpeed, (float)mouseDy * rotateSpeed);
+		activeCam->Rotate((float)mouseDx * activeCam->rotateSpeed, (float)mouseDy * activeCam->rotateSpeed);
 	}
 
 	if (wnd.mouse.IsMiddlePressed())
 	{
 		// Holding middle click + moving: move up / down (relative to view, stored in local Y)
-		activeCam->Translate({ (float)mouseDx * camSpeed * 0.1f, 0.0f, 0.0f });
-		activeCam->Translate({ 0.0f, -(float)mouseDy * camSpeed * 0.1f, 0.0f });
+		activeCam->Translate({ (float)mouseDx * activeCam->camSpeed * 0.1f, 0.0f, 0.0f });
+		activeCam->Translate({ 0.0f, -(float)mouseDy * activeCam->camSpeed * 0.1f, 0.0f });
 	}
 
 	if (!wnd.mouse.RawEnabled() && isPlayMode)
@@ -294,19 +276,19 @@ void App::HandleInput(float dt)
 	DirectX::XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
 	if (wnd.kbd.IsKeyPressed('W') || wnd.kbd.IsKeyPressed(VK_UP))
 	{
-		translation.z += camSpeed;
+		translation.z += activeCam->camSpeed;
 	}
 	if (wnd.kbd.IsKeyPressed('S') || wnd.kbd.IsKeyPressed(VK_DOWN))
 	{
-		translation.z -= camSpeed;
+		translation.z -= activeCam->camSpeed;
 	}
 	if (wnd.kbd.IsKeyPressed('A') || wnd.kbd.IsKeyPressed(VK_LEFT))
 	{
-		translation.x -= camSpeed;
+		translation.x -= activeCam->camSpeed;
 	}
 	if (wnd.kbd.IsKeyPressed('D') || wnd.kbd.IsKeyPressed(VK_RIGHT))
 	{
-		translation.x += camSpeed;
+		translation.x += activeCam->camSpeed;
 	}
 	activeCam->Translate(translation);
 
