@@ -3,6 +3,8 @@
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include "../Vertex.h"
 
+namespace Bind
+{ 
 class VertexBuffer : public IBindable
 {
 public:
@@ -43,9 +45,11 @@ public:
 		sd.pSysMem = vbuf.GetData();
 		GFX_THROW_FAILED(GetDevice(gfx)->CreateBuffer(&bd, &sd, &pVertexBuffer));
 	}
-
+	const Dvtx::VertexLayout& GetLayout() const noexcept;
 	void Bind(Graphics& gfx) noexcept override;
 protected:
 	UINT stride;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
+	Dvtx::VertexLayout layout;
 };
+}
