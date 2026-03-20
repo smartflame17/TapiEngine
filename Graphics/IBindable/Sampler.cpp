@@ -1,17 +1,60 @@
 #include "Sampler.h"
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 
-Sampler::Sampler(Graphics& gfx)
+Sampler::Sampler(Graphics& gfx, Type type)
+	:
+	type(type)
+{
+	CreateSampler(gfx, type);
+}
+
+void Sampler::CreateSampler(Graphics& gfx, Type type)
 {
 	HRESULT hr;
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // Linear filtering for smooth look
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;   // Wrap texture if coord > 1.0
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	switch (type)
+	{
+	case Type::LinearWrap:
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		break;
+	case Type::PointWrap:
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		break;
+	case Type::LinearClamp:
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		break;
+	case Type::PointClamp:
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		break;
+	case Type::AnisotropicWrap:
+		samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.MaxAnisotropy = 16u;
+		break;
+	case Type::AnisotropicClamp:
+		samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.MaxAnisotropy = 16u;
+		break;
+	}
 
-	// Default comparison function (never typically used for standard textures)
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
@@ -21,6 +64,16 @@ Sampler::Sampler(Graphics& gfx)
 
 void Sampler::Bind(Graphics& gfx) noexcept
 {
-	// Bind to slot 0 of the Pixel Shader
 	GetContext(gfx)->PSSetSamplers(0u, 1u, pSampler.GetAddressOf());
+}
+
+void Sampler::SetType(Graphics& gfx, Type newType)
+{
+	type = newType;
+	CreateSampler(gfx, type);
+}
+
+Sampler::Type Sampler::GetType() const noexcept
+{
+	return type;
 }

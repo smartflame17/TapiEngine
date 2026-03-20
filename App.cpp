@@ -61,6 +61,23 @@ void App::ResetSimulation()
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
 
+	auto& texturedCube = scene.CreateGameObject("Textured Cube");
+	texturedCube.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
+		wnd.Gfx(),
+		Primitive::Shape::Cube,
+		Primitive::SurfaceMode::Textured,
+		"Graphics/Textures/obama.jpg"
+	));
+	texturedCube.SetPosition(-1.5f, 1.0f, 0.0f);
+
+	auto& materialCube = scene.CreateGameObject("Material Cube");
+	materialCube.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
+		wnd.Gfx(),
+		Primitive::Shape::Cube,
+		Primitive::SurfaceMode::Material
+	));
+	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
+
 	/*auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),

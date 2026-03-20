@@ -159,6 +159,9 @@
     <ClCompile Include="Graphics\Drawable\Model.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Drawable\Primitive.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -288,6 +291,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\Plane.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Drawable\Primitive.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Tools\TapiMath.h">

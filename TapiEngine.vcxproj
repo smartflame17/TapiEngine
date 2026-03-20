@@ -193,6 +193,7 @@
     <ClCompile Include="Graphics\Drawable\Ground.cpp" />
     <ClCompile Include="Graphics\Drawable\Mesh.cpp" />
     <ClCompile Include="Graphics\Drawable\Model.cpp" />
+    <ClCompile Include="Graphics\Drawable\Primitive.cpp" />
     <ClCompile Include="Graphics\Drawable\SolidSphere.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\IBindable\IBindable.cpp" />
@@ -332,6 +333,7 @@
     <ClInclude Include="Graphics\Drawable\Mesh.h" />
     <ClInclude Include="Graphics\Drawable\Model.h" />
     <ClInclude Include="Graphics\Drawable\Plane.h" />
+    <ClInclude Include="Graphics\Drawable\Primitive.h" />
     <ClInclude Include="Graphics\Drawable\Prism.h" />
     <ClInclude Include="Graphics\Drawable\SolidSphere.h" />
     <ClInclude Include="Graphics\Drawable\Sphere.h" />
