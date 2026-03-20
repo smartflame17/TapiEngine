@@ -168,6 +168,11 @@ void Scene::DrawInspectorWindow() noexcept
 			}
 		}
 	}
+	ImGui::Separator();
+	if (ImGui::Button("Add Component"))
+	{
+		//TODO: Button hook for adding components in editor-time
+	}
 
 	ImGui::End();
 }
