@@ -61,13 +61,13 @@ void App::ResetSimulation()
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
 
-	auto& two_b = scene.CreateGameObject("2B");
+	/*auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	two_b.SetPosition(1.0f, 0.0f, 0.0f);
-	two_b.SetScale(10.0f, 10.0f, 10.0f);
+	two_b.SetScale(10.0f, 10.0f, 10.0f);*/
 
 	CacheSceneComponents();
 

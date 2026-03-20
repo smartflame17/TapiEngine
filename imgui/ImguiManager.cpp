@@ -4,6 +4,7 @@ ImguiManager::ImguiManager()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	fileDialog.SetTitle("Select Model File");
 }
 
 ImguiManager::~ImguiManager()

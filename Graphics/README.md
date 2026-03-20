@@ -61,6 +61,8 @@ The standard way of handling vertex data is to specify the data layout and creat
 
 However, this can be inefficient if there are many objects with the same data layout, and can lead to redundant code.  
 
+Also, in cases where some data for a 3D object has different attributes (ex. some have texture coordinates, some don't), it can lead to a lot of redundant code and potential bugs.  
+
 The new system will require the vertex data layout defined once, then automatically handle vertex buffer for each unique data layout.  
 It can also handle Input Element Descriptions and Input Layouts, which can be tedious to manage for each 3D object.
 
