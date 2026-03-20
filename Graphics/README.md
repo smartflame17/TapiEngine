@@ -61,6 +61,8 @@ The standard way of handling vertex data is to specify the data layout and creat
 
 However, this can be inefficient if there are many objects with the same data layout, and can lead to redundant code.  
 
+Also, in cases where some data for a 3D object has different attributes (ex. some have texture coordinates, some don't), it can lead to a lot of redundant code and potential bugs.  
+
 The new system will require the vertex data layout defined once, then automatically handle vertex buffer for each unique data layout.  
 It can also handle Input Element Descriptions and Input Layouts, which can be tedious to manage for each 3D object.
 
@@ -178,3 +180,15 @@ MakeSpriteFont "My Font" myfont.spritefont /FontSize:16
 ```
 
 Good old imgui is used for the debug / editor UI, which is rendered on top of everything else.  
+
+### Skybox
+The skybox is a cubemap rendered with a special shader that ignores depth.
+For textures 0 to 5, they correspond to the following faces of the cubemap respectively:
+- Positive X (right) : 0
+- Negative X (left) : 1
+- Positive Y (top) : 2
+- Negative Y (bottom) : 3
+- Positive Z (front) : 4
+- Negative Z (back) : 5
+
+Name the textures accordingly when loading the skybox, or else the textures will be mapped incorrectly.

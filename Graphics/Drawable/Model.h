@@ -11,6 +11,7 @@
 #include "../../imgui/imgui.h"
 #include "../../Components/Component.h"
 #include <assimp/Importer.hpp>
+#include <filesystem>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <string>
@@ -55,7 +56,7 @@ public:
 	void SpawnControlWindow() noexcept;
 
 private:
-	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh);
+	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiScene& scene, const aiMesh& mesh, const std::filesystem::path& modelDirectory);
 	std::unique_ptr<Node> ParseNode(const aiNode& node);
 	void DrawInspectorNode(Node& node) noexcept;
 

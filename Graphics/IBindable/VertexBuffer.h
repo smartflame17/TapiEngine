@@ -3,6 +3,8 @@
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include "../Vertex.h"
 
+namespace Bind
+{ 
 class VertexBuffer : public IBindable
 {
 public:
@@ -28,7 +30,8 @@ public:
 	// new constructor that handles dynamic vertex system
 	VertexBuffer(Graphics& gfx, const Dvtx::VertexBuffer& vbuf)
 		:
-		stride((UINT)vbuf.GetLayout().Size())
+		stride((UINT)vbuf.GetLayout().Size()),
+		layout(vbuf.GetLayout())
 	{
 		HRESULT hr;
 
@@ -43,9 +46,11 @@ public:
 		sd.pSysMem = vbuf.GetData();
 		GFX_THROW_FAILED(GetDevice(gfx)->CreateBuffer(&bd, &sd, &pVertexBuffer));
 	}
-
+	const Dvtx::VertexLayout& GetLayout() const noexcept;
 	void Bind(Graphics& gfx) noexcept override;
 protected:
 	UINT stride;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
+	Dvtx::VertexLayout layout;
 };
+}

@@ -188,18 +188,22 @@
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\Drawable\Box.cpp" />
+    <ClCompile Include="Graphics\Drawable\CubeMap.cpp" />
     <ClCompile Include="Graphics\Drawable\Drawable.cpp" />
     <ClCompile Include="Graphics\Drawable\Ground.cpp" />
     <ClCompile Include="Graphics\Drawable\Mesh.cpp" />
     <ClCompile Include="Graphics\Drawable\Model.cpp" />
     <ClCompile Include="Graphics\Drawable\SolidSphere.cpp" />
-    <ClCompile Include="Graphics\Drawable\TexturedBox.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\IBindable\IBindable.cpp" />
+    <ClCompile Include="Graphics\IBindable\CubeTexture.cpp" />
+    <ClCompile Include="Graphics\IBindable\DepthStencilState.cpp" />
     <ClCompile Include="Graphics\IBindable\IndexBuffer.cpp" />
     <ClCompile Include="Graphics\IBindable\InputLayout.cpp" />
     <ClCompile Include="Graphics\IBindable\PixelShader.cpp" />
+    <ClCompile Include="Graphics\IBindable\RasterizerState.cpp" />
     <ClCompile Include="Graphics\IBindable\Sampler.cpp" />
+    <ClCompile Include="Graphics\IBindable\SkyboxTransformCbuf.cpp" />
     <ClCompile Include="Graphics\IBindable\Texture.cpp" />
     <ClCompile Include="Graphics\IBindable\Topology.cpp" />
     <ClCompile Include="Graphics\IBindable\TransformCBuf.cpp" />
@@ -320,6 +324,7 @@
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\Color.h" />
     <ClInclude Include="Graphics\Drawable\Box.h" />
+    <ClInclude Include="Graphics\Drawable\CubeMap.h" />
     <ClInclude Include="Graphics\Drawable\Cone.h" />
     <ClInclude Include="Graphics\Drawable\Cube.h" />
     <ClInclude Include="Graphics\Drawable\DrawableBase.h" />
@@ -330,8 +335,9 @@
     <ClInclude Include="Graphics\Drawable\Prism.h" />
     <ClInclude Include="Graphics\Drawable\SolidSphere.h" />
     <ClInclude Include="Graphics\Drawable\Sphere.h" />
-    <ClInclude Include="Graphics\Drawable\TexturedBox.h" />
     <ClInclude Include="Graphics\IBindable\ConstantBuffers.h" />
+    <ClInclude Include="Graphics\IBindable\CubeTexture.h" />
+    <ClInclude Include="Graphics\IBindable\DepthStencilState.h" />
     <ClInclude Include="Graphics\Drawable\Drawable.h" />
     <ClInclude Include="Graphics\Drawable\Ground.h" />
     <ClInclude Include="Graphics\IBindable\IBindable.h" />
@@ -340,7 +346,9 @@
     <ClInclude Include="Graphics\IBindable\IndexBuffer.h" />
     <ClInclude Include="Graphics\IBindable\InputLayout.h" />
     <ClInclude Include="Graphics\IBindable\PixelShader.h" />
+    <ClInclude Include="Graphics\IBindable\RasterizerState.h" />
     <ClInclude Include="Graphics\IBindable\Sampler.h" />
+    <ClInclude Include="Graphics\IBindable\SkyboxTransformCbuf.h" />
     <ClInclude Include="Graphics\IBindable\Texture.h" />
     <ClInclude Include="Graphics\IBindable\Topology.h" />
     <ClInclude Include="Graphics\IBindable\TransformCBuf.h" />
@@ -443,6 +451,38 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\PhongVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\Skybox_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\Skybox_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\TexturedPhongPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\TexturedPhongVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

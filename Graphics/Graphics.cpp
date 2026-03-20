@@ -91,6 +91,14 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	// bind state to pipeline
 	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
 
+	D3D11_RASTERIZER_DESC rsDesc = {};
+	rsDesc.FillMode = D3D11_FILL_SOLID;
+	rsDesc.CullMode = D3D11_CULL_BACK;
+	rsDesc.FrontCounterClockwise = FALSE;
+	rsDesc.DepthClipEnable = TRUE;
+	GFX_THROW_FAILED(pDevice->CreateRasterizerState(&rsDesc, &pRSState));
+	pContext->RSSetState(pRSState.Get());
+
 	// create depth stencil texture
 	wrl::ComPtr<ID3D11Texture2D> pDepthStencil;
 	D3D11_TEXTURE2D_DESC descDepth = {};
@@ -423,6 +431,12 @@ void Graphics::DisableImGui() noexcept
 bool Graphics::IsImGuiEnabled() const noexcept
 {
 	return isImGuiEnabled;
+}
+
+void Graphics::RestoreDefaultStates() noexcept
+{
+	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
+	pContext->RSSetState(pRSState.Get());
 }
 
 //////////////// Exception handling ////////////////

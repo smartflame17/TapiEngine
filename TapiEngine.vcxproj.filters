@@ -96,16 +96,28 @@
     <ClCompile Include="Graphics\Drawable\Box.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Drawable\CubeMap.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\Drawable\Ground.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\IBindable\Texture.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\IBindable\Sampler.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="Graphics\IBindable\CubeTexture.cpp">
+      <Filter>소스 파일\IBindable</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\Drawable\TexturedBox.cpp">
+    <ClCompile Include="Graphics\IBindable\DepthStencilState.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\RasterizerState.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\SkyboxTransformCbuf.cpp">
+      <Filter>소스 파일\IBindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\IBindable\Sampler.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
@@ -260,6 +272,9 @@
     <ClInclude Include="Graphics\Drawable\Box.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Drawable\CubeMap.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="Graphics\IBindable\IBindableBase.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -290,6 +305,18 @@
     <ClInclude Include="Graphics\IBindable\Texture.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\IBindable\CubeTexture.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\DepthStencilState.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\RasterizerState.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\SkyboxTransformCbuf.h">
+      <Filter>헤더 파일\IBindable</Filter>
+    </ClInclude>
     <ClInclude Include="Graphics\IBindable\Sampler.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -303,9 +330,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Scene.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics\Drawable\TexturedBox.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Drawable\Mesh.h">
@@ -614,6 +638,9 @@
     <ClInclude Include="imgui\ImZoomSlider.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Scene\Transform.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -657,6 +684,7 @@
     <None Include="assimp\bin\assimp-vc143-mtd.dll" />
     <None Include="Tools\README.md" />
     <None Include="imgui\README.md" />
+    <None Include="Scene\README.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -667,8 +695,12 @@
     <FxCompile Include="Shaders\TexturePS.hlsl" />
     <FxCompile Include="Shaders\PhongPS.hlsl" />
     <FxCompile Include="Shaders\PhongVS.hlsl" />
+    <FxCompile Include="Shaders\TexturedPhongPS.hlsl" />
+    <FxCompile Include="Shaders\TexturedPhongVS.hlsl" />
     <FxCompile Include="Shaders\SolidVS.hlsl" />
     <FxCompile Include="Shaders\SolidPS.hlsl" />
+    <FxCompile Include="Shaders\Skybox_VS.hlsl" />
+    <FxCompile Include="Shaders\Skybox_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />

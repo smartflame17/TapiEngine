@@ -7,16 +7,13 @@ Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 	namespace dx = DirectX;
 	if (!IsStaticInitialized())
 	{
-		struct Vertex
-		{
-			dx::XMFLOAT3 pos;
-			dx::XMFLOAT3 n;
-		};
-
-		auto model = Geometry::Plane::MakeTesselated<Vertex>(divisionsX, divisionsY);
+		using Type = Dvtx::VertexLayout::ElementType;
+		auto model = Geometry::Plane::MakeTesselated(divisionsX, divisionsY, Dvtx::VertexLayout{}
+			.Append(Type::Position3D)
+			.Append(Type::Normal));
 		model.SetNormalsIndependentFlat();
 
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
+		AddStaticBind(std::make_unique<Bind::VertexBuffer>(gfx, model.vertices));
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
 
 		auto pvs = std::make_unique<VertexShader>(gfx, L"PhongVS.cso");
@@ -25,12 +22,7 @@ Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 
 		AddStaticBind(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		};
-		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
+		AddStaticBind(std::make_unique<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
 
 		struct MaterialCbuf
 		{

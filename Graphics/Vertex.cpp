@@ -7,6 +7,17 @@ namespace Dvtx
 	{
 		return elements[i];
 	}
+	bool VertexLayout::Has(ElementType type) const noexcept
+	{
+		for (const auto& element : elements)
+		{
+			if (element.GetType() == type)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	VertexLayout& VertexLayout::Append(ElementType type) noexcept(!IS_DEBUG)
 	{
 		elements.emplace_back(type, Size());
@@ -119,10 +130,19 @@ namespace Dvtx
 
 
 	// VertexBuffer
-	VertexBuffer::VertexBuffer(VertexLayout layout) noexcept(!IS_DEBUG)
+	VertexBuffer::VertexBuffer(VertexLayout layout, size_t size) noexcept(!IS_DEBUG)
 		:
 	layout(std::move(layout))
 	{
+		Resize(size);
+	}
+	void VertexBuffer::Resize(size_t newSize) noexcept(!IS_DEBUG)
+	{
+		const auto size = Size();
+		if (size < newSize)
+		{
+			buffer.resize(buffer.size() + layout.Size() * (newSize - size));
+		}
 	}
 	const char* VertexBuffer::GetData() const noexcept(!IS_DEBUG)
 	{

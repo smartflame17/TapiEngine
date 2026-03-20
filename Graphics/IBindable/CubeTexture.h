@@ -1,13 +1,14 @@
 #pragma once
 #include "IBindable.h"
+#include <filesystem>
 
-class Texture : public IBindable
+class CubeTexture : public IBindable
 {
 public:
-	// Loads image from file path using DirectXTK
-	Texture(Graphics& gfx, const std::wstring& path, UINT slot = 0u);
+	CubeTexture(Graphics& gfx, const std::filesystem::path& directory, UINT slot = 0u);
 	void Bind(Graphics& gfx) noexcept override;
-protected:
+
+private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 	UINT slot = 0u;
 };

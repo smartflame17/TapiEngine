@@ -101,6 +101,12 @@ namespace Dvtx
 			return elements.front();
 		}
 		const Element& ResolveByIndex(size_t i) const noexcept(!IS_DEBUG);
+		bool Has(ElementType type) const noexcept;
+		template<ElementType Type>
+		bool Has() const noexcept
+		{
+			return Has(Type);
+		}
 		VertexLayout& Append(ElementType type) noexcept(!IS_DEBUG);
 		size_t Size() const noexcept(!IS_DEBUG);
 		size_t GetElementCount() const noexcept;
@@ -196,9 +202,10 @@ namespace Dvtx
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(VertexLayout layout) noexcept(!IS_DEBUG);
+		VertexBuffer(VertexLayout layout, size_t size = 0u) noexcept(!IS_DEBUG);
 		const char* GetData() const noexcept(!IS_DEBUG);
 		const VertexLayout& GetLayout() const noexcept;
+		void Resize(size_t newSize) noexcept(!IS_DEBUG);
 		size_t Size() const noexcept(!IS_DEBUG);
 		size_t SizeBytes() const noexcept(!IS_DEBUG);
 		template<typename ...Params>

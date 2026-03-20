@@ -1,36 +1,37 @@
 #pragma once
 #include "IndexedTriangleList.h"
+#include "../Vertex.h"
 #include <DirectXMath.h>
+#include <optional>
 
 class Cube
 {
 public:
-	// Creates an IndexedTriangleList from vertex data
-	// template V must contain pos (position data) at least
-	template<class V>
-	static IndexedTriangleList<V> Make()
+	static IndexedTriangleList Make(std::optional<Dvtx::VertexLayout> layout = {})
 	{
-		namespace dx = DirectX;
+		using namespace Dvtx;
+		using Type = Dvtx::VertexLayout::ElementType;
+		
+		if (!layout)
+		{
+			layout = Dvtx::VertexLayout{};
+			layout->Append(Type::Position3D);
+		}
 
 		constexpr float side = 1.0f / 2.0f;
 
-		std::vector<dx::XMFLOAT3> vertices;
-		vertices.emplace_back(-side, -side, -side); // 0
-		vertices.emplace_back(side, -side, -side); // 1
-		vertices.emplace_back(-side, side, -side); // 2
-		vertices.emplace_back(side, side, -side); // 3
-		vertices.emplace_back(-side, -side, side); // 4
-		vertices.emplace_back(side, -side, side); // 5
-		vertices.emplace_back(-side, side, side); // 6
-		vertices.emplace_back(side, side, side); // 7
+		VertexBuffer vertices(std::move(*layout), 8u);
+		vertices[0].Attr<Type::Position3D>() = { -side,-side,-side };
+		vertices[1].Attr<Type::Position3D>() = { side,-side,-side };
+		vertices[2].Attr<Type::Position3D>() = { -side,side,-side };
+		vertices[3].Attr<Type::Position3D>() = { side,side,-side };
+		vertices[4].Attr<Type::Position3D>() = { -side,-side,side };
+		vertices[5].Attr<Type::Position3D>() = { side,-side,side };
+		vertices[6].Attr<Type::Position3D>() = { -side,side,side };
+		vertices[7].Attr<Type::Position3D>() = { side,side,side };
 
-		std::vector<V> verts(vertices.size());
-		for (size_t i = 0; i < vertices.size(); i++)
-		{
-			verts[i].pos = vertices[i];
-		}
 		return{
-			std::move(verts),{
+			std::move(vertices),{
 				0,2,1, 2,3,1,
 				1,3,5, 3,7,5,
 				2,6,3, 3,6,7,
@@ -43,64 +44,87 @@ public:
 
 	// 24-vertex cube (independent faces). 
 	// Allows each face to have its own normal/texture coordinates.
-	template<class V>
-	static IndexedTriangleList<V> MakeIndependent()
+	static IndexedTriangleList MakeIndependent(Dvtx::VertexLayout layout)
 	{
-		namespace dx = DirectX;
+		using namespace Dvtx;
+		using Type = Dvtx::VertexLayout::ElementType;
+
 		constexpr float side = 1.0f / 2.0f;
+		VertexBuffer vertices(std::move(layout), 24u);
 
-		std::vector<V> vertices(24);
-
-		// Lambda to set pos and tex easily
-		auto SetVert = [&vertices](int i, float x, float y, float z) {
-			vertices[i].pos = dx::XMFLOAT3(x, y, z);
-			};
-
-		// Front Face
-		SetVert(0, -side, -side, -side);
-		SetVert(1, -side, side, -side);
-		SetVert(2, side, side, -side);
-		SetVert(3, side, -side, -side);
-
-		// Right Face
-		SetVert(4, side, -side, -side);
-		SetVert(5, side, side, -side);
-		SetVert(6, side, side, side);
-		SetVert(7, side, -side, side);
-
-		// Back Face
-		SetVert(8, side, -side, side);
-		SetVert(9, side, side, side);
-		SetVert(10, -side, side, side);
-		SetVert(11, -side, -side, side);
-
-		// Left Face
-		SetVert(12, -side, -side, side);
-		SetVert(13, -side, side, side);
-		SetVert(14, -side, side, -side);
-		SetVert(15, -side, -side, -side);
-
-		// Top Face
-		SetVert(16, -side, side, -side);
-		SetVert(17, -side, side, side);
-		SetVert(18, side, side, side);
-		SetVert(19, side, side, -side);
-
-		// Bottom Face
-		SetVert(20, -side, -side, side);
-		SetVert(21, -side, -side, -side);
-		SetVert(22, side, -side, -side);
-		SetVert(23, side, -side, side);
+		vertices[0].Attr<Type::Position3D>() = { -side,-side,-side };// 0 near side
+		vertices[1].Attr<Type::Position3D>() = { side,-side,-side };// 1
+		vertices[2].Attr<Type::Position3D>() = { -side,side,-side };// 2
+		vertices[3].Attr<Type::Position3D>() = { side,side,-side };// 3
+		vertices[4].Attr<Type::Position3D>() = { -side,-side,side };// 4 far side
+		vertices[5].Attr<Type::Position3D>() = { side,-side,side };// 5
+		vertices[6].Attr<Type::Position3D>() = { -side,side,side };// 6
+		vertices[7].Attr<Type::Position3D>() = { side,side,side };// 7
+		vertices[8].Attr<Type::Position3D>() = { -side,-side,-side };// 8 left side
+		vertices[9].Attr<Type::Position3D>() = { -side,side,-side };// 9
+		vertices[10].Attr<Type::Position3D>() = { -side,-side,side };// 10
+		vertices[11].Attr<Type::Position3D>() = { -side,side,side };// 11
+		vertices[12].Attr<Type::Position3D>() = { side,-side,-side };// 12 right side
+		vertices[13].Attr<Type::Position3D>() = { side,side,-side };// 13
+		vertices[14].Attr<Type::Position3D>() = { side,-side,side };// 14
+		vertices[15].Attr<Type::Position3D>() = { side,side,side };// 15
+		vertices[16].Attr<Type::Position3D>() = { -side,-side,-side };// 16 bottom side
+		vertices[17].Attr<Type::Position3D>() = { side,-side,-side };// 17
+		vertices[18].Attr<Type::Position3D>() = { -side,-side,side };// 18
+		vertices[19].Attr<Type::Position3D>() = { side,-side,side };// 19
+		vertices[20].Attr<Type::Position3D>() = { -side,side,-side };// 20 top side
+		vertices[21].Attr<Type::Position3D>() = { side,side,-side };// 21
+		vertices[22].Attr<Type::Position3D>() = { -side,side,side };// 22
+		vertices[23].Attr<Type::Position3D>() = { side,side,side };// 23
 
 		return{
 			std::move(vertices),{
-				0,1,2, 0,2,3,		// Front
-				4,5,6, 4,6,7,		// Right
-				8,9,10, 8,10,11,	// Back
-				12,13,14, 12,14,15, // Left
-				16,17,18, 16,18,19, // Top
-				20,21,22, 20,22,23  // Bottom
+				0,2, 1,    2,3,1,
+				4,5, 7,    4,7,6,
+				8,10, 9,  10,11,9,
+				12,13,15, 12,15,14,
+				16,17,18, 18,17,19,
+				20,23,21, 20,22,23
 			}
 		};
+	}
+
+	static IndexedTriangleList MakeIndependentTextured()
+	{
+		using namespace Dvtx;
+		using Type = Dvtx::VertexLayout::ElementType;
+
+		auto itl = MakeIndependent(std::move(VertexLayout{}
+			.Append(Type::Position3D)
+			.Append(Type::Normal)
+			.Append(Type::Texture2D)
+		));
+
+		itl.vertices[0].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[1].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[2].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[3].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+		itl.vertices[4].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[5].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[6].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[7].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+		itl.vertices[8].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[9].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[10].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[11].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+		itl.vertices[12].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[13].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[14].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[15].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+		itl.vertices[16].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[17].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[18].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[19].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+		itl.vertices[20].Attr<Type::Texture2D>() = { 0.0f,0.0f };
+		itl.vertices[21].Attr<Type::Texture2D>() = { 1.0f,0.0f };
+		itl.vertices[22].Attr<Type::Texture2D>() = { 0.0f,1.0f };
+		itl.vertices[23].Attr<Type::Texture2D>() = { 1.0f,1.0f };
+
+		return itl;
 	}
 };

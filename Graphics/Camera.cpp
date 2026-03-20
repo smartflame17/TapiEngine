@@ -77,6 +77,9 @@ void Camera::OnInspector() noexcept
 	ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
 	ImGui::SliderFloat("Y", &y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
 	ImGui::SliderFloat("Z", &z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	ImGui::Separator();
+	ImGui::SliderFloat("Speed", &camSpeed, 0.1f, 10.0f, "%.1f");
+	ImGui::SliderFloat("Sensitivity", &rotateSpeed, 0.001f, 0.01f, "%.3f");
 
 	if (ImGui::Button("Reset"))
 	{

@@ -3,7 +3,9 @@
 #include <vector>
 #include <array>
 #include "IndexedTriangleList.h"
+#include "../Vertex.h"
 #include "../../Tools/TapiMath.h"
+#include <optional>
 
 namespace Geometry
 {
@@ -11,37 +13,55 @@ class Plane
 {
 public:
 	// Create planes with many divisions for tesselated texture or deformation on vertices
-	template<class V>
-	static IndexedTriangleList<V> MakeTesselated(int divisions_x, int divisions_y)
+	static IndexedTriangleList MakeTesselated(int divisions_x, int divisions_y, std::optional<Dvtx::VertexLayout> layout = {})
 	{
 		namespace dx = DirectX;
+		using Type = Dvtx::VertexLayout::ElementType;
 		assert(divisions_x >= 1);
 		assert(divisions_y >= 1);
+
+		if (!layout)
+		{
+			layout = Dvtx::VertexLayout{};
+			layout->Append(Type::Position3D)
+				.Append(Type::Normal);
+		}
 
 		constexpr float width = 2.0f;
 		constexpr float height = 2.0f;
 		const int nVertices_x = divisions_x + 1;
 		const int nVertices_y = divisions_y + 1;
-		std::vector<V> vertices(nVertices_x * nVertices_y);
+		Dvtx::VertexBuffer vb{ std::move(*layout) };
+		const auto& vertexLayout = vb.GetLayout();
+		const bool hasNormal = vertexLayout.Has(Type::Normal);
+		const bool hasTexcoord = vertexLayout.Has(Type::Texture2D);
 
 		// Divide vertex coordinates by division size and save position to vector<V> vertices
 		{
 			const float side_x = width / 2.0f;
-			const float side_y = height / 2.0f;
 			const float divisionSize_x = width / float(divisions_x);
 			const float divisionSize_y = height / float(divisions_y);
-			const auto bottomLeft = dx::XMVectorSet(-side_x, -side_y, 0.0f, 0.0f);
 
 			for (int y = 0, i = 0; y < nVertices_y; y++)
 			{
 				const float y_pos = float(y) * divisionSize_y;
 				for (int x = 0; x < nVertices_x; x++, i++)
 				{
-					const auto v = dx::XMVectorAdd(
-						bottomLeft,
-						dx::XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
-					);
-					dx::XMStoreFloat3(&vertices[i].pos, v);
+					const float x_pos = float(x) * divisionSize_x - side_x;
+					vb.Resize(vb.Size() + 1u);
+					auto vertex = vb.Back();
+					vertex.Attr<Type::Position3D>() = { x_pos,y_pos,0.0f };
+					if (hasNormal)
+					{
+						vertex.Attr<Type::Normal>() = { 0.0f,0.0f,-1.0f };
+					}
+					if (hasTexcoord)
+					{
+						vertex.Attr<Type::Texture2D>() = {
+							float(x) / float(divisions_x),
+							1.0f - float(y) / float(divisions_y)
+						};
+					}
 				}
 			}
 		}
@@ -74,14 +94,14 @@ public:
 			}
 		}
 
-		return{ std::move(vertices),std::move(indices) };
+		return{ std::move(vb),std::move(indices) };
 	}
 
 	// default plane is 2x2 subplanes
-	template<class V>
-	static IndexedTriangleList<V> Make()
+
+	static IndexedTriangleList Make()
 	{
-		return MakeTesselated<V>(1, 1);
+		return MakeTesselated(1, 1);
 	}
 };
 }

@@ -5,6 +5,7 @@
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
+#include "Graphics/Drawable/CubeMap.h"
 #include "Graphics/Drawable/Ground.h"
 #include "Graphics/Drawable/Model.h"
 #include "Graphics/Lighting/PointLight.h"
@@ -46,6 +47,9 @@ private:
 	Camera* activeCam = nullptr; // reference to currently active camera
 
 	std::vector<PointLight*> pointLights;
+
+	// Persistent game objects for inter-scene use (e.g. player character)
+	std::vector<GameObject*> persistentObjects;
 
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode

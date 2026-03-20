@@ -5,13 +5,11 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	namespace dx = DirectX;
 	if (!IsStaticInitialized())
 	{
-		struct Vertex
-		{
-			dx::XMFLOAT3 pos;
-		};
-		auto model = Sphere::Make<Vertex>();
+		using Type = Dvtx::VertexLayout::ElementType;
+		auto model = Sphere::MakeTesselated(12, 24, Dvtx::VertexLayout{}
+			.Append(Type::Position3D));
 		model.Transform(dx::XMMatrixScaling(radius, radius, radius));
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
+		AddStaticBind(std::make_unique<Bind::VertexBuffer>(gfx, model.vertices));
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
 
 		auto pvs = std::make_unique<VertexShader>(gfx, L"SolidVS.cso");
@@ -27,11 +25,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 
 		AddStaticBind(std::make_unique<PixelConstantBuffer<PSColorConstant>>(gfx, colorConst));
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		};
-		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
+		AddStaticBind(std::make_unique<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
 	else 

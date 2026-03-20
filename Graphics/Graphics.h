@@ -60,6 +60,7 @@ public:
 	void EnableImGui() noexcept;
 	void DisableImGui() noexcept;
 	bool IsImGuiEnabled() const noexcept;
+	void RestoreDefaultStates() noexcept;
 
 	ID3D11DepthStencilState* GetDepthStencilState();
 
@@ -87,6 +88,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTarget = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRSState = nullptr;
 
 public:
 	std::unique_ptr<DirectX::SpriteBatch> pSpriteBatch;
