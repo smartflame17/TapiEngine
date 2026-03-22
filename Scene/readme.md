@@ -81,3 +81,13 @@ Scene.Render() -> DrawableComponent.OnRender() (We cache only the drawable compo
                -> Drawable.Draw() (virtual function)
 
 ```
+
+# Custom Behaviour Scripting
+The engine allows for custom behavior scripting by creating new components that inherit from the base ```CustomBehaviour``` class.  
+
+With inspiration from the beloved Unity engine, the ```CustomBehaviour``` class provides virtual functions that can be overridden to define custom behavior for GameObjects.  
+
+The following is the execution order of the ```CustomBehaviour``` class in the engine, as well as some simple use cases:  
+```
+
+```

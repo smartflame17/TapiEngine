@@ -1,7 +1,7 @@
 #include "App.h"
 
 App::App():
-	wnd (1920, 1080, "TapiEngine v0.4")
+	wnd (1920, 1080, "TapiEngine v0.5")
 {
 	// Initialize scene objects
 	ResetSimulation();

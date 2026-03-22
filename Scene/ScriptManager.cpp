@@ -13,6 +13,7 @@ void ScriptManager::RegisterScript(CustomBehaviour& script) noexcept
 
 void ScriptManager::HandleEnableStateChanged(CustomBehaviour& script) noexcept
 {
+	// Early exit for invalid scipts
 	if (script.GetGameObject().IsPendingKill())
 	{
 		return;
