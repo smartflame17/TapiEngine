@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "../Components/CustomBehaviour.h"
 
 std::uint64_t GameObject::nextId = 1;
 
@@ -47,6 +48,21 @@ const std::vector<std::unique_ptr<GameObject>>& GameObject::GetChildren() const 
 const std::vector<std::unique_ptr<Component>>& GameObject::GetComponents() const noexcept
 {
 	return components;
+}
+
+Scene& GameObject::GetScene() const noexcept
+{
+	return scene;
+}
+
+bool GameObject::IsPendingKill() const noexcept
+{
+	return isPendingKill;
+}
+
+void GameObject::Destroy() noexcept
+{
+	scene.DestroyGameObject(*this);
 }
 
 void GameObject::SetPosition(float x, float y, float z) noexcept
@@ -116,13 +132,26 @@ void GameObject::Update(float dt, bool isSimulationRunning) noexcept
 {
 	for (auto& component : components)
 	{
+		if (dynamic_cast<CustomBehaviour*>(component.get()) != nullptr)
+		{
+			continue;
+		}
 		component->OnUpdate(dt, isSimulationRunning);
 	}
 
 	for (auto& child : children)
 	{
+		if (child->IsPendingKill())
+		{
+			continue;
+		}
 		child->Update(dt, isSimulationRunning);
 	}
+}
+
+void GameObject::MarkPendingKill() noexcept
+{
+	isPendingKill = true;
 }
 
 void GameObject::SetParent(GameObject* newParent) noexcept
