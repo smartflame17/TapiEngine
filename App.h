@@ -8,6 +8,7 @@
 #include "Graphics/Drawable/CubeMap.h"
 #include "Graphics/Drawable/Ground.h"
 #include "Graphics/Drawable/Model.h"
+#include "Graphics/Drawable/Primitive.h"
 #include "Graphics/Lighting/PointLight.h"
 
 #include "Physics/PhysicsWorld.h"
