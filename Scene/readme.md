@@ -87,7 +87,35 @@ The engine allows for custom behavior scripting by creating new components that 
 
 With inspiration from the beloved Unity engine, the ```CustomBehaviour``` class provides virtual functions that can be overridden to define custom behavior for GameObjects.  
 
+A per-scene ```ScriptManager``` is responsible for managing the lifecycle of these custom behavior components, including their creation, update, and destruction.
+
 The following is the execution order of the ```CustomBehaviour``` class in the engine, as well as some simple use cases:  
 ```
-
+ Engine calculates Delta time and handles input
+ |
+ v
+ ScriptManager checks if CustomBehaviour is enabled / owning GameObject is active
+ |
+ v
+ CustomBehaviour,Awake()
+ CustomBehaviour.Start() [Use for initialization that requires other components to be initialized as well]
+ |
+ v
+ Engine steps the physics simulation
+ |
+ v
+ CustomBehaviour.FixedUpdate() [Use for physics-related updates, as it is called at a fixed time step]]
+ CustomBehaviour.Update() [Use for regular updates, such as handling input or non-physics related logic]
+ CustomBehaviour.LateUpdate() [Use for animation or camera updates]
+ |
+ v
+ Engine renders the scene
+ |
+ v
+ ScriptManager cleans up destroyed CustomBehaviour components / GameObjects
 ```
+
+The ```ScriptManager``` class uses deferred operations on the list of ```CustomBehaviour``` components to avoid modifying the list while iterating through it.  
+
+For example, when a ```GameObject``` is destoyed via a ```CustomBehaviour``` script during ```Update()```, it is simply marked as destroyed, 
+and the actual destruction is handled at the end of the frame by the ```ScriptManager```, ensuring that the list of components is not modified while it is being iterated through.  

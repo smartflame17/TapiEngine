@@ -25,6 +25,7 @@ public:
 	CustomBehaviour() = default;
 	virtual ~CustomBehaviour() = default;
 
+	// Lifecycle methods to be overridden by derived classes
 	virtual void Awake();
 	virtual void OnEnable();
 	virtual void Start();
@@ -40,6 +41,7 @@ public:
 
 	Scene& GetScene() const noexcept;
 
+	// Helper methods for lifecycle management
 	bool SupportsAwake() const noexcept;
 	bool SupportsOnEnable() const noexcept;
 	bool SupportsStart() const noexcept;
