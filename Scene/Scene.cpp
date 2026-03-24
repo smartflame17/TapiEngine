@@ -10,7 +10,7 @@ Scene::Scene() : name("Scene") {}
 
 Scene::Scene(const std::string& sceneName) : name(sceneName) {}
 
-Scene::~Scene() { Clear(); }
+Scene::~Scene() { Clear(); }	// fix: explicitly clear the scene to ensure proper destruction order of GameObjects and their components
 
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
