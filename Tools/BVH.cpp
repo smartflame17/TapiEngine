@@ -163,6 +163,7 @@ void BVH::NodePool::Reset() noexcept
 	nextFree = 0u;
 }
 
+// SAH-based BVH construction
 BVHNode* BVH::BuildRecursive(std::vector<SpatialProxy*>& objects, BVHNode* parent)
 {
 	if (objects.empty())
