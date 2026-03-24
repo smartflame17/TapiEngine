@@ -1,13 +1,33 @@
 #include "Ground.h"
+#include <vector>
 
 Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 	:
 	scale(scale)
 {
 	namespace dx = DirectX;
+	using Type = Dvtx::VertexLayout::ElementType;
+
+	auto boundsModel = Geometry::Plane::MakeTesselated(divisionsX, divisionsY, Dvtx::VertexLayout{}
+		.Append(Type::Position3D)
+		.Append(Type::Normal));
+	std::vector<DirectX::XMFLOAT3> positions;
+	positions.reserve(boundsModel.vertices.Size());
+	for (std::size_t i = 0; i < boundsModel.vertices.Size(); ++i)
+	{
+		positions.push_back(boundsModel.vertices[i].Attr<Type::Position3D>());
+	}
+
+	DirectX::BoundingBox localBounds;
+	DirectX::BoundingBox::CreateFromPoints(localBounds, positions.size(), positions.data(), sizeof(DirectX::XMFLOAT3));
+	DirectX::BoundingBox transformedBounds;
+	localBounds.Transform(transformedBounds,
+		DirectX::XMMatrixRotationX(DirectX::XM_PIDIV2) *
+		DirectX::XMMatrixScaling(scale, 1.0f, scale));
+	SetLocalBounds(transformedBounds);
+
 	if (!IsStaticInitialized())
 	{
-		using Type = Dvtx::VertexLayout::ElementType;
 		auto model = Geometry::Plane::MakeTesselated(divisionsX, divisionsY, Dvtx::VertexLayout{}
 			.Append(Type::Position3D)
 			.Append(Type::Normal));

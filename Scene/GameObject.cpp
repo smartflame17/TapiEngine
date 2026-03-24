@@ -34,6 +34,16 @@ void GameObject::SetName(std::string newName) noexcept
 	name = std::move(newName);
 }
 
+bool GameObject::IsStatic() const noexcept
+{
+	return isStatic;
+}
+
+void GameObject::SetStatic(bool value) noexcept
+{
+	isStatic = value;
+}
+
 GameObject* GameObject::GetParent() const noexcept
 {
 	return parent;

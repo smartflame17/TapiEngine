@@ -25,6 +25,8 @@ public:
 	std::uint64_t GetId() const noexcept;
 	const std::string& GetName() const noexcept;
 	void SetName(std::string newName) noexcept;
+	bool IsStatic() const noexcept;
+	void SetStatic(bool value) noexcept;
 
 	GameObject* GetParent() const noexcept;
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
@@ -112,6 +114,7 @@ private:
 	std::uint64_t id = 0;
 	Scene& scene;
 	std::string name;
+	bool isStatic = false;
 	GameObject* parent = nullptr;
 	Transform transform;
 	std::vector<std::unique_ptr<GameObject>> children;

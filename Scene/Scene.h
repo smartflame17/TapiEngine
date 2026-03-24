@@ -6,11 +6,13 @@
 #include <cstdint>
 #include <DirectXMath.h>
 #include "../imgui/imgui.h"
+#include "BVHManager.h"
 
 class Graphics;
 class GameObject;
 class DrawableComponent;
 class Drawable;
+class Camera;
 
 class Scene
 {
@@ -24,7 +26,7 @@ public:
 
 	void Clear() noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
-	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
+	void Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG);
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
@@ -44,5 +46,6 @@ private:
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	std::unique_ptr<Drawable> skybox;
 	std::vector<DrawableComponent*> drawables;
+	BVHManager bvhManager;
 	GameObject* selectedObject = nullptr;
 };

@@ -183,6 +183,7 @@
     <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\ImSequencer.cpp" />
     <ClCompile Include="Scene\GameObject.cpp" />
+    <ClCompile Include="Scene\BVHManager.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="ErrorHandling\dxerr.cpp" />
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
@@ -226,6 +227,7 @@
     <ClCompile Include="Physics\SpatialGrid.cpp" />
     <ClCompile Include="Tools\Timer.cpp" />
     <ClCompile Include="Tools\DungeonGenerator.cpp" />
+    <ClCompile Include="Tools\BVH.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -241,6 +243,7 @@
     <ClInclude Include="imgui\ImSequencer.h" />
     <ClInclude Include="imgui\ImZoomSlider.h" />
     <ClInclude Include="Scene\GameObject.h" />
+    <ClInclude Include="Scene\BVHManager.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="assimp\include\ai_assert.h" />
     <ClInclude Include="assimp\include\anim.h" />
@@ -376,6 +379,7 @@
     <ClInclude Include="Scene\Transform.h" />
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
+    <ClInclude Include="Tools\BVH.h" />
     <ClInclude Include="Tools\Timer.h" />
     <ClInclude Include="Tools\DungeonGenerator.h" />
     <ClInclude Include="Window.h" />

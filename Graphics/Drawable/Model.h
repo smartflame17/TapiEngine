@@ -10,6 +10,7 @@
 #include "../../Scene/Transform.h"
 #include "../../imgui/imgui.h"
 #include "../../Components/Component.h"
+#include <DirectXCollision.h>
 #include <assimp/Importer.hpp>
 #include <filesystem>
 #include <assimp/postprocess.h>
@@ -56,7 +57,7 @@ public:
 	void SpawnControlWindow() noexcept;
 
 private:
-	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiScene& scene, const aiMesh& mesh, const std::filesystem::path& modelDirectory);
+	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiScene& scene, const aiMesh& mesh, const std::filesystem::path& modelDirectory, DirectX::BoundingBox& outBounds);
 	std::unique_ptr<Node> ParseNode(const aiNode& node);
 	void DrawInspectorNode(Node& node) noexcept;
 
@@ -64,4 +65,5 @@ private:
 	std::unique_ptr<Node> pRoot;
 	Node* pSelectedNode = nullptr;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
+	std::vector<DirectX::BoundingBox> meshBounds;
 };

@@ -93,6 +93,39 @@ namespace
 		}
 		return {};
 	}
+
+	void AppendBoundingBoxCorners(const DirectX::BoundingBox& box, DirectX::FXMMATRIX transform, std::vector<DirectX::XMFLOAT3>& points)
+	{
+		DirectX::XMFLOAT3 corners[DirectX::BoundingBox::CORNER_COUNT];
+		box.GetCorners(corners);
+		for (const auto& corner : corners)
+		{
+			DirectX::XMFLOAT3 transformed;
+			DirectX::XMStoreFloat3(&transformed,
+				DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&corner), transform));
+			points.push_back(transformed);
+		}
+	}
+
+	void CollectNodeBounds(const aiNode& node, DirectX::FXMMATRIX parentTransform, const std::vector<DirectX::BoundingBox>& meshBounds, std::vector<DirectX::XMFLOAT3>& points)
+	{
+		namespace dx = DirectX;
+		const auto localTransform = dx::XMMatrixTranspose(dx::XMLoadFloat4x4(
+			reinterpret_cast<const dx::XMFLOAT4X4*>(&node.mTransformation)
+		));
+		const auto worldTransform = localTransform * parentTransform;
+
+		for (unsigned int meshIndex = 0; meshIndex < node.mNumMeshes; ++meshIndex)
+		{
+			const auto currentMeshIndex = node.mMeshes[meshIndex];
+			AppendBoundingBoxCorners(meshBounds.at(currentMeshIndex), worldTransform, points);
+		}
+
+		for (unsigned int childIndex = 0; childIndex < node.mNumChildren; ++childIndex)
+		{
+			CollectNodeBounds(*node.mChildren[childIndex], worldTransform, meshBounds, points);
+		}
+	}
 }
 
 Node::Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG)
@@ -151,7 +184,8 @@ Model::Model(Graphics& gfx, const std::string& fileName)
 	const auto pScene = importer.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices |
-		aiProcess_GenSmoothNormals
+		aiProcess_GenSmoothNormals |
+		aiProcess_GenBoundingBoxes
 	);
 
 	if (pScene == nullptr)
@@ -162,11 +196,22 @@ Model::Model(Graphics& gfx, const std::string& fileName)
 	const auto modelDirectory = std::filesystem::path(fileName).parent_path();
 	for (size_t meshIndex = 0; meshIndex < pScene->mNumMeshes; meshIndex++)
 	{
-		meshPtrs.push_back(ParseMesh(gfx, *pScene, *pScene->mMeshes[meshIndex], modelDirectory));
+		DirectX::BoundingBox meshBounds;
+		meshPtrs.push_back(ParseMesh(gfx, *pScene, *pScene->mMeshes[meshIndex], modelDirectory, meshBounds));
+		this->meshBounds.push_back(meshBounds);
 	}
 
 	pRoot = ParseNode(*pScene->mRootNode);
 	pSelectedNode = pRoot.get();
+
+	std::vector<DirectX::XMFLOAT3> modelPoints;
+	CollectNodeBounds(*pScene->mRootNode, DirectX::XMMatrixIdentity(), meshBounds, modelPoints);
+	if (!modelPoints.empty())
+	{
+		DirectX::BoundingBox modelBounds;
+		DirectX::BoundingBox::CreateFromPoints(modelBounds, modelPoints.size(), modelPoints.data(), sizeof(DirectX::XMFLOAT3));
+		SetLocalBounds(modelBounds);
+	}
 }
 
 void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
@@ -182,7 +227,7 @@ DirectX::XMMATRIX Model::GetTransformXM() const noexcept
 	return GetAppliedTransformXM();
 }
 
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, const aiMesh& mesh, const std::filesystem::path& modelDirectory)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, const aiMesh& mesh, const std::filesystem::path& modelDirectory, DirectX::BoundingBox& outBounds)
 {
 	namespace dx = DirectX;
 	using Dvtx::VertexLayout;
@@ -201,10 +246,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 		layout.Append(VertexLayout::Texture2D);
 	}
 	Dvtx::VertexBuffer vertexBuffer(std::move(layout));
+	std::vector<dx::XMFLOAT3> positions;
+	positions.reserve(mesh.mNumVertices);
 
 	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
 	{
 		const auto position = *reinterpret_cast<const dx::XMFLOAT3*>(&mesh.mVertices[i]);
+		positions.push_back(position);
 		const auto normal = mesh.HasNormals() ?
 			*reinterpret_cast<const dx::XMFLOAT3*>(&mesh.mNormals[i]) :
 			dx::XMFLOAT3{ 0.0f, 1.0f, 0.0f };
@@ -222,6 +270,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 			vertexBuffer.EmplaceBack(position, normal);
 		}
 	}
+
+	DirectX::BoundingBox::CreateFromPoints(outBounds, positions.size(), positions.data(), sizeof(dx::XMFLOAT3));
 
 	std::vector<unsigned short> indices;
 	indices.reserve(mesh.mNumFaces * 3);

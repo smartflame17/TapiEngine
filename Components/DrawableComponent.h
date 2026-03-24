@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include "../Graphics/Drawable/Drawable.h"
+#include <DirectXCollision.h>
 #include "../imgui/imgui.h"
 #include <memory>
 
@@ -13,6 +14,9 @@ public:
 	void OnUpdate(float dt, bool isSimulationRunning) noexcept override;
 	void OnRender(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void OnInspector() noexcept override;
+	Drawable* GetDrawable() noexcept;
+	const Drawable* GetDrawable() const noexcept;
+	DirectX::BoundingBox GetWorldBounds() const noexcept;
 
 private:
 	std::unique_ptr<Drawable> drawable;

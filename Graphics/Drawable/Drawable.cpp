@@ -3,6 +3,8 @@
 Drawable::Drawable() noexcept
 {
 	DirectX::XMStoreFloat4x4(&externalTransform, DirectX::XMMatrixIdentity());
+	localBounds.Center = { 0.0f, 0.0f, 0.0f };
+	localBounds.Extents = { 0.5f, 0.5f, 0.5f };
 }
 
 
@@ -32,6 +34,27 @@ const Transform& Drawable::GetTransform() const noexcept
 void Drawable::SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
 {
 	DirectX::XMStoreFloat4x4(&externalTransform, matrix);
+}
+
+void Drawable::SetLocalBounds(const DirectX::BoundingBox& bounds) noexcept
+{
+	localBounds = bounds;
+}
+
+const DirectX::BoundingBox& Drawable::GetLocalBounds() const noexcept
+{
+	return localBounds;
+}
+
+DirectX::BoundingBox Drawable::GetWorldBounds(DirectX::FXMMATRIX externalMatrix) const noexcept
+{
+	DirectX::BoundingBox worldBounds;
+	localBounds.Transform(worldBounds,
+		DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
+		DirectX::XMMatrixRotationRollPitchYaw(transform.rotation.x, transform.rotation.y, transform.rotation.z) *
+		DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z) *
+		externalMatrix);
+	return worldBounds;
 }
 
 DirectX::XMMATRIX Drawable::GetAppliedTransformXM() const noexcept
