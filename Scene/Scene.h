@@ -7,12 +7,14 @@
 #include <DirectXMath.h>
 #include "../imgui/imgui.h"
 #include "BVHManager.h"
+#include "ScriptManager.h"
 
 class Graphics;
 class GameObject;
 class DrawableComponent;
 class Drawable;
 class Camera;
+class CustomBehaviour;
 
 class Scene
 {
@@ -25,11 +27,19 @@ public:
 	GameObject& CreateChildGameObject(GameObject& parent, const std::string& name);
 
 	void Clear() noexcept;
+	void ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept;
+	void FixedUpdate(bool isSimulationRunning) noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
 	void Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG);
+	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
+	void CleanupDestroyedObjects() noexcept;
+	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
+	void RegisterScript(CustomBehaviour& script) noexcept;
+	void HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept;
+	void DestroyGameObject(GameObject& object) noexcept;
 	void DrawHierarchyWindow() noexcept;
 	void DrawInspectorWindow() noexcept;
 
@@ -47,5 +57,6 @@ private:
 	std::unique_ptr<Drawable> skybox;
 	std::vector<DrawableComponent*> drawables;
 	BVHManager bvhManager;
+	ScriptManager scriptManager;
 	GameObject* selectedObject = nullptr;
 };

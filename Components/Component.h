@@ -14,6 +14,7 @@ public:
 
 	void SetOwner(GameObject* gameObject) noexcept;
 	GameObject& GetGameObject() const noexcept;
+	GameObject* TryGetGameObject() const noexcept;
 	std::uint64_t GetId() const noexcept;
 
 	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept;

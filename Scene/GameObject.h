@@ -10,6 +10,7 @@
 #include "Scene.h"
 #include "Transform.h"
 #include "../Components/Component.h"
+#include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
 
 class Graphics;
@@ -31,6 +32,9 @@ public:
 	GameObject* GetParent() const noexcept;
 	const std::vector<std::unique_ptr<GameObject>>& GetChildren() const noexcept;
 	const std::vector<std::unique_ptr<Component>>& GetComponents() const noexcept;
+	Scene& GetScene() const noexcept;
+	bool IsPendingKill() const noexcept;
+	void Destroy() noexcept;
 
 	void SetPosition(float x, float y, float z) noexcept;
 	void SetRotation(float x, float y, float z) noexcept;
@@ -45,6 +49,23 @@ public:
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;
 
+	template<typename Fn>
+	void ForEachScript(Fn&& fn) noexcept
+	{
+		for (auto& component : components)
+		{
+			if (auto* script = dynamic_cast<CustomBehaviour*>(component.get()))
+			{
+				fn(*script);
+			}
+		}
+
+		for (auto& child : children)
+		{
+			child->ForEachScript(std::forward<Fn>(fn));
+		}
+	}
+
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
@@ -57,6 +78,11 @@ public:
 		if constexpr (std::is_base_of_v<DrawableComponent, T>)
 		{
 			scene.RegisterDrawable(&componentRef);
+		}
+		if constexpr (std::is_base_of_v<CustomBehaviour, T>)
+		{
+			componentRef.ConfigureLifecycle(BuildScriptLifecycleMask<T>());
+			scene.RegisterScript(componentRef);
 		}
 		return componentRef;
 	}
@@ -107,6 +133,39 @@ public:
 	void Update(float dt, bool isSimulationRunning) noexcept;
 
 private:
+	void MarkPendingKill() noexcept;
+	template<typename T>
+	static constexpr std::uint8_t BuildScriptLifecycleMask() noexcept
+	{
+		if constexpr (!std::is_base_of_v<CustomBehaviour, T>)
+		{
+			return CustomBehaviour::None;
+		}
+		else
+		{
+			std::uint8_t mask = CustomBehaviour::None;
+
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Awake) != &CustomBehaviour::Awake)
+				mask |= CustomBehaviour::AwakeFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnEnable) != &CustomBehaviour::OnEnable)
+				mask |= CustomBehaviour::OnEnableFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Start) != &CustomBehaviour::Start)
+				mask |= CustomBehaviour::StartFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::Update) != &CustomBehaviour::Update)
+				mask |= CustomBehaviour::UpdateFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::FixedUpdate) != &CustomBehaviour::FixedUpdate)
+				mask |= CustomBehaviour::FixedUpdateFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::LateUpdate) != &CustomBehaviour::LateUpdate)
+				mask |= CustomBehaviour::LateUpdateFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDisable) != &CustomBehaviour::OnDisable)
+				mask |= CustomBehaviour::OnDisableFlag;
+			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDestroy) != &CustomBehaviour::OnDestroy)
+				mask |= CustomBehaviour::OnDestroyFlag;
+
+			return mask;
+		}
+	}
+
 	void SetParent(GameObject* newParent) noexcept;
 
 private:
@@ -119,6 +178,9 @@ private:
 	Transform transform;
 	std::vector<std::unique_ptr<GameObject>> children;
 	std::vector<std::unique_ptr<Component>> components;
+	bool isPendingKill = false;
+
+	friend class Scene;
 };
 
 template<typename T>

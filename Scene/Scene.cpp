@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "GameObject.h"
 #include "../Components/Component.h"
+#include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
 #include "../Graphics/Camera.h"
 #include "../Graphics/Drawable/Drawable.h"
@@ -28,6 +29,8 @@ GameObject& Scene::CreateChildGameObject(GameObject& parent, const std::string& 
 
 void Scene::Clear() noexcept
 {
+	scriptManager.Clear();
+	drawables.clear();
 	rootObjects.clear();
 	drawables.clear();
 	bvhManager.Clear();
@@ -35,15 +38,83 @@ void Scene::Clear() noexcept
 	selectedObject = nullptr;
 }
 
+void Scene::ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept
+{
+	if (!isSimulationRunning)
+	{
+		return;
+	}
+
+	scriptManager.ProcessAwakeAndStart();
+}
+
+void Scene::FixedUpdate(bool isSimulationRunning) noexcept
+{
+	if (!isSimulationRunning)
+	{
+		return;
+	}
+
+	scriptManager.FixedUpdate();
+}
+
 void Scene::Update(float dt, bool isSimulationRunning) noexcept
 {
+	if (isSimulationRunning)
+	{
+		scriptManager.Update(dt);
+	}
+
 	for (auto& object : rootObjects)
 	{
+		if (object->IsPendingKill())
+		{
+			continue;
+		}
 		object->Update(dt, isSimulationRunning);
 	}
 }
 
-void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
+void Scene::LateUpdate(float dt, bool isSimulationRunning) noexcept
+{
+	if (!isSimulationRunning)
+	{
+		return;
+	}
+
+	scriptManager.LateUpdate(dt);
+}
+
+void Scene::CleanupDestroyedObjects() noexcept
+{
+	scriptManager.Cleanup();
+
+	auto sweep = [&](auto& self, std::vector<std::unique_ptr<GameObject>>& objects) -> void
+	{
+		for (auto it = objects.begin(); it != objects.end(); )
+		{
+			GameObject& object = *(*it);
+			self(self, object.children);
+
+			if (object.IsPendingKill())
+			{
+				if (selectedObject == &object)
+				{
+					selectedObject = nullptr;
+				}
+				it = objects.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+	};
+
+	sweep(sweep, rootObjects);
+}
+
+void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (skybox)
 	{
@@ -94,6 +165,37 @@ void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
 	bvhManager.UnregisterDrawable(drawable);
 }
 
+void Scene::RegisterScript(CustomBehaviour& script) noexcept
+{
+	scriptManager.RegisterScript(script);
+}
+
+void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
+{
+	scriptManager.HandleEnableStateChanged(script);
+}
+
+void Scene::DestroyGameObject(GameObject& object) noexcept
+{
+	if (object.IsPendingKill())
+	{
+		return;
+	}
+
+	object.MarkPendingKill();
+	for (const auto& child : object.GetChildren())
+	{
+		DestroyGameObject(*child);
+	}
+
+	if (selectedObject == &object)
+	{
+		selectedObject = nullptr;
+	}
+
+	scriptManager.QueueDestroy(object);
+}
+
 void Scene::DrawHierarchyWindow() noexcept
 {
 	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
@@ -110,6 +212,10 @@ void Scene::DrawHierarchyWindow() noexcept
 
 	for (auto& object : rootObjects)
 	{
+		if (object->IsPendingKill())
+		{
+			continue;
+		}
 		DrawHierarchyNode(*object);
 	}
 
@@ -146,8 +252,9 @@ void Scene::DrawInspectorWindow() noexcept
 		return;
 	}
 
-	if (selectedObject == nullptr)
+	if (selectedObject == nullptr || selectedObject->IsPendingKill())
 	{
+		selectedObject = nullptr;
 		ImGui::TextUnformatted("No GameObject selected.");
 		ImGui::End();
 		return;
@@ -273,6 +380,10 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 
 		for (auto& child : object.GetChildren())
 		{
+			if (child->IsPendingKill())
+			{
+				continue;
+			}
 			DrawHierarchyNode(*child);
 		}
 		ImGui::TreePop();

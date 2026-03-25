@@ -176,6 +176,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Components\Component.cpp" />
+    <ClCompile Include="Components\CustomBehaviour.cpp" />
     <ClCompile Include="Components\DrawableComponent.cpp" />
     <ClCompile Include="imgui\GraphEditor.cpp" />
     <ClCompile Include="imgui\ImCurveEdit.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="imgui\ImSequencer.cpp" />
     <ClCompile Include="Scene\GameObject.cpp" />
     <ClCompile Include="Scene\BVHManager.cpp" />
+    <ClCompile Include="Scene\ScriptManager.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="ErrorHandling\dxerr.cpp" />
     <ClCompile Include="ErrorHandling\SmflmException.cpp" />
@@ -234,6 +236,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Components\Component.h" />
+    <ClInclude Include="Components\CustomBehaviour.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
     <ClInclude Include="imgui\GraphEditor.h" />
     <ClInclude Include="imgui\ImCurveEdit.h" />
@@ -244,6 +247,7 @@
     <ClInclude Include="imgui\ImZoomSlider.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\BVHManager.h" />
+    <ClInclude Include="Scene\ScriptManager.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="assimp\include\ai_assert.h" />
     <ClInclude Include="assimp\include\anim.h" />
