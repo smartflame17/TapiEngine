@@ -221,8 +221,7 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-		return true;
+	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 	const auto imio = ImGui::GetIO();
 	switch (msg) {
 	case WM_CLOSE:

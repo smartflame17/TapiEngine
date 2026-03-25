@@ -178,4 +178,6 @@ void Camera::Reset() noexcept
 	roll = 0.0f;
 	pitch = 0.0f;
 	yaw = 0.0f;
+	SetPosition(0.0f, 0.0f, 0.0f);
+	SetRotation(0.0f, 0.0f, 0.0f);
 }
