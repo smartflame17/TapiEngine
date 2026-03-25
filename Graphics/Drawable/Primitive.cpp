@@ -15,6 +15,20 @@ namespace
 {
 	using Type = Dvtx::VertexLayout::ElementType;
 
+	DirectX::BoundingBox ComputeBounds(const Dvtx::VertexBuffer& vertices)
+	{
+		std::vector<DirectX::XMFLOAT3> positions;
+		positions.reserve(vertices.Size());
+		for (std::size_t i = 0; i < vertices.Size(); ++i)
+		{
+			positions.push_back(vertices[i].Attr<Type::Position3D>());
+		}
+
+		DirectX::BoundingBox bounds;
+		DirectX::BoundingBox::CreateFromPoints(bounds, positions.size(), positions.data(), sizeof(DirectX::XMFLOAT3));
+		return bounds;
+	}
+
 	DirectX::XMFLOAT3 ComputeNormal(const DirectX::XMFLOAT3& p0, const DirectX::XMFLOAT3& p1, const DirectX::XMFLOAT3& p2)
 	{
 		namespace dx = DirectX;
@@ -244,6 +258,7 @@ Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::s
 	texturePath(std::move(texturePath))
 {
 	auto model = BuildMesh(shape, surfaceMode);
+	SetLocalBounds(ComputeBounds(model.vertices));
 
 	AddBind(std::make_unique<Bind::VertexBuffer>(gfx, model.vertices));
 	AddIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));

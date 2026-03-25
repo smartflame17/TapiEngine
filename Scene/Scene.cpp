@@ -3,6 +3,7 @@
 #include "../Components/Component.h"
 #include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
+#include "../Graphics/Camera.h"
 #include "../Graphics/Drawable/Drawable.h"
 #include <algorithm>
 
@@ -10,7 +11,7 @@ Scene::Scene() : name("Scene") {}
 
 Scene::Scene(const std::string& sceneName) : name(sceneName) {}
 
-Scene::~Scene() = default;
+Scene::~Scene() { Clear(); }	// fix: explicitly clear the scene to ensure proper destruction order of GameObjects and their components
 
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
@@ -31,6 +32,8 @@ void Scene::Clear() noexcept
 	scriptManager.Clear();
 	drawables.clear();
 	rootObjects.clear();
+	drawables.clear();
+	bvhManager.Clear();
 	skybox.reset();
 	selectedObject = nullptr;
 }
@@ -118,13 +121,26 @@ void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 		skybox->Draw(gfx);
 		gfx.RestoreDefaultStates();
 	}
-	for (const auto& drawable : drawables)
+
+	bvhManager.Sync();
+
+	std::vector<DrawableComponent*> visibleDrawables;
+	if (activeCamera != nullptr)
 	{
-		if (drawable == nullptr || drawable->GetGameObject().IsPendingKill())
+		activeCamera->UpdateFrustum(gfx.GetProjection());
+		bvhManager.QueryVisibleDrawables(activeCamera->GetFrustum(), visibleDrawables);
+	}
+	else
+	{
+		visibleDrawables = drawables;
+	}
+
+	for (const auto* drawable : visibleDrawables)
+	{
+		if (drawable != nullptr)
 		{
-			continue;
+			drawable->OnRender(gfx);
 		}
-		drawable->OnRender(gfx);
 	}
 }
 
@@ -136,6 +152,7 @@ void Scene::SetSkybox(std::unique_ptr<Drawable> drawable)
 void Scene::RegisterDrawable(DrawableComponent* drawable) noexcept
 {
 	drawables.push_back(drawable);
+	bvhManager.RegisterDrawable(drawable);
 }
 
 void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
@@ -145,6 +162,7 @@ void Scene::UnregisterDrawable(DrawableComponent* drawable) noexcept
 	{
 		drawables.erase(it);
 	}
+	bvhManager.UnregisterDrawable(drawable);
 }
 
 void Scene::RegisterScript(CustomBehaviour& script) noexcept
@@ -244,6 +262,12 @@ void Scene::DrawInspectorWindow() noexcept
 
 	ImGui::Text("GameObject: %s", selectedObject->GetName().c_str());
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
+	ImGui::Separator();
+	bool isStatic = selectedObject->IsStatic();
+	if (ImGui::Checkbox("Static", &isStatic))
+	{
+		selectedObject->SetStatic(isStatic);
+	}
 	ImGui::Separator();
 
 	auto& objectTransform = selectedObject->GetTransform();

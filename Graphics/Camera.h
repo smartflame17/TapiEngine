@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics.h"
+#include <DirectXCollision.h>
 #include "../Components/Component.h"
 #include "../imgui/imgui.h"
 
@@ -9,6 +10,8 @@ public:
 	Camera() = default;
 
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
+	const DirectX::BoundingFrustum& GetFrustum() const noexcept;
+	void UpdateFrustum(DirectX::FXMMATRIX projection) noexcept;
 	void SetPosition(float x, float y, float z) noexcept;
 	void SetRotation(float pitch, float yaw, float roll) noexcept;
 	void Reset() noexcept;
@@ -27,6 +30,7 @@ private:
 	float pitch = 0.0f; // rotation around x-axis
 	float yaw = 0.0f;   // rotation around y-axis
 	float roll = 0.0f;  // rotation around z-axis
+	DirectX::BoundingFrustum frustum;
 
 public:
 	float camSpeed = 1.0f;		// movement speed

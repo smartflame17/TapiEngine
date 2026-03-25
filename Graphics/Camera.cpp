@@ -28,6 +28,18 @@ DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 	return XMMatrixLookToLH(pos, forward, up);
 }
 
+const DirectX::BoundingFrustum& Camera::GetFrustum() const noexcept
+{
+	return frustum;
+}
+
+void Camera::UpdateFrustum(DirectX::FXMMATRIX projection) noexcept
+{
+	DirectX::BoundingFrustum viewSpaceFrustum;
+	DirectX::BoundingFrustum::CreateFromMatrix(viewSpaceFrustum, projection);
+	viewSpaceFrustum.Transform(frustum, DirectX::XMMatrixInverse(nullptr, GetViewMatrix()));
+}
+
 void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 {
 	using namespace DirectX;

@@ -33,3 +33,23 @@ void DrawableComponent::OnInspector() noexcept
 		ImGui::TreePop();
 	}
 }
+
+Drawable* DrawableComponent::GetDrawable() noexcept
+{
+	return drawable.get();
+}
+
+const Drawable* DrawableComponent::GetDrawable() const noexcept
+{
+	return drawable.get();
+}
+
+DirectX::BoundingBox DrawableComponent::GetWorldBounds() const noexcept
+{
+	if (drawable == nullptr)
+	{
+		return {};
+	}
+
+	return drawable->GetWorldBounds(GetGameObject().GetWorldTransformMatrix());
+}

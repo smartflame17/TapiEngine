@@ -207,7 +207,7 @@ void App::RenderFrame(float alpha)
 	}
 
 	// --- Simulation Draw ---
-	scene.Render(wnd.Gfx());
+	scene.Render(wnd.Gfx(), activeCam);
 	for (auto* light : pointLights)
 	{
 		if (light != nullptr && !light->GetGameObject().IsPendingKill())

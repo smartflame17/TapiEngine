@@ -1,5 +1,6 @@
 #pragma once
 #include "../Graphics.h"
+#include <DirectXCollision.h>
 #include <DirectXMath.h>
 #include "../IBindable/IndexBuffer.h"
 #include <cassert>
@@ -24,6 +25,9 @@ public:
 	void SetTransform(const Transform& transform) noexcept;
 	const Transform& GetTransform() const noexcept;
 	void SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) noexcept;
+	void SetLocalBounds(const DirectX::BoundingBox& bounds) noexcept;
+	const DirectX::BoundingBox& GetLocalBounds() const noexcept;
+	DirectX::BoundingBox GetWorldBounds(DirectX::FXMMATRIX externalMatrix) const noexcept;
 
 protected:
 	void AddBind(std::unique_ptr<IBindable> bind) noexcept(!IS_DEBUG);
@@ -36,6 +40,7 @@ private:
 private:
 	Transform transform;
 	DirectX::XMFLOAT4X4 externalTransform;
+	DirectX::BoundingBox localBounds;
 	const IndexBuffer* pIndexBuffer = nullptr;
 	std::vector<std::unique_ptr<IBindable>> binds;
 };
