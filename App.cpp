@@ -1,7 +1,7 @@
 #include "App.h"
 
 App::App():
-	wnd (1920, 1080, "TapiEngine v0.4")
+	wnd (1920, 1080, "TapiEngine v0.5")
 {
 	// Initialize scene objects
 	ResetSimulation();
@@ -106,6 +106,11 @@ void App::CacheSceneComponents() noexcept
 
 	auto collect = [&](auto& self, const GameObject& gameObject) -> void
 	{
+		if (gameObject.IsPendingKill())
+		{
+			return;
+		}
+
 		for (const auto& component : gameObject.GetComponents())
 		{
 			if (auto camera = dynamic_cast<Camera*>(component.get()))
@@ -152,19 +157,25 @@ int App::Begin()
 		if (isPlayMode) wnd.DisableCursor();
 		else wnd.EnableCursor();
 
+		HandleInput(dt);
+
 		// As long as we have enough accumulated time,
 		// run the update logic in fixed steps.
 		while (accumulator >= dt)
 		{
-			HandleInput(dt);
+			const bool isSimulationRunning = isPlayMode && !isPaused;
+
+			scene.ProcessScriptAwakeAndStart(isSimulationRunning);
 
 			// Step Physics
-			if (isPlayMode && !isPaused)
+			if (isSimulationRunning)
 			{
 				physicsWorld.Update(dt);
 			}
-			
-			scene.Update(dt, isPlayMode && !isPaused);
+
+			scene.FixedUpdate(isSimulationRunning);
+			scene.Update(dt, isSimulationRunning);
+			scene.LateUpdate(dt, isSimulationRunning);
 
 			accumulator -= dt;
 		}
@@ -172,6 +183,8 @@ int App::Begin()
 		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
 		const float alpha = accumulator / dt;
 		RenderFrame(alpha);
+		scene.CleanupDestroyedObjects();
+		CacheSceneComponents();
 	}
 }
 
@@ -187,7 +200,7 @@ void App::RenderFrame(float alpha)
 
 	for (const auto* light : pointLights)
 	{
-		if (light != nullptr)
+		if (light != nullptr && !light->GetGameObject().IsPendingKill())
 		{
 			light->Bind(wnd.Gfx());
 		}
@@ -197,7 +210,7 @@ void App::RenderFrame(float alpha)
 	scene.Render(wnd.Gfx());
 	for (auto* light : pointLights)
 	{
-		if (light != nullptr)
+		if (light != nullptr && !light->GetGameObject().IsPendingKill())
 		{
 			light->Draw(wnd.Gfx());
 		}
@@ -225,7 +238,14 @@ void App::HandleInput(float dt)
 	activeCam = &editorCam;
 	if (isPlayMode && !gameCams.empty())
 	{
-		activeCam = gameCams.front();
+		for (auto* camera : gameCams)
+		{
+			if (camera != nullptr && !camera->GetGameObject().IsPendingKill())
+			{
+				activeCam = camera;
+				break;
+			}
+		}
 	}
 
 	if (activeCam == nullptr)

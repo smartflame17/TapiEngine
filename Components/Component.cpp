@@ -18,6 +18,11 @@ GameObject& Component::GetGameObject() const noexcept
 	return *owner;
 }
 
+GameObject* Component::TryGetGameObject() const noexcept
+{
+	return owner;
+}
+
 std::uint64_t Component::GetId() const noexcept
 {
 	return id;

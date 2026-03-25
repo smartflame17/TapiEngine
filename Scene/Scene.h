@@ -6,11 +6,13 @@
 #include <cstdint>
 #include <DirectXMath.h>
 #include "../imgui/imgui.h"
+#include "ScriptManager.h"
 
 class Graphics;
 class GameObject;
 class DrawableComponent;
 class Drawable;
+class CustomBehaviour;
 
 class Scene
 {
@@ -23,11 +25,18 @@ public:
 	GameObject& CreateChildGameObject(GameObject& parent, const std::string& name);
 
 	void Clear() noexcept;
+	void ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept;
+	void FixedUpdate(bool isSimulationRunning) noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
+	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
+	void CleanupDestroyedObjects() noexcept;
 	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
+	void RegisterScript(CustomBehaviour& script) noexcept;
+	void HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept;
+	void DestroyGameObject(GameObject& object) noexcept;
 	void DrawHierarchyWindow() noexcept;
 	void DrawInspectorWindow() noexcept;
 
@@ -44,5 +53,6 @@ private:
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	std::unique_ptr<Drawable> skybox;
 	std::vector<DrawableComponent*> drawables;
+	ScriptManager scriptManager;
 	GameObject* selectedObject = nullptr;
 };
