@@ -80,9 +80,9 @@ void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 	position.z += worldTrans.z;
 
 	// Clamp position to max distance
-	position.x = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, x));
-	position.y = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, y));
-	position.z = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, z));
+	position.x = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, position.x));
+	position.y = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, position.y));
+	position.z = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, position.z));
 
 	SetPosition(position.x, position.y, position.z);
 }
