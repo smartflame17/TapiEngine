@@ -3,15 +3,35 @@
 #define PI 3.14159265359f
 #define MAX_DISTANCE 1000.0f		// max distance camera can move in any direction
 
+DirectX::XMFLOAT3 Camera::GetPosition() const noexcept
+{
+	if (const GameObject* owner = TryGetGameObject())
+	{
+		return owner->GetTransform().position;
+	}
+	return { x, y, z };
+}
+
+DirectX::XMFLOAT3 Camera::GetRotation() const noexcept
+{
+	if (const GameObject* owner = TryGetGameObject())
+	{
+		return owner->GetTransform().rotation;
+	}
+	return { pitch, yaw, roll };
+}
+
 DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 {
 	using namespace DirectX;
+	const XMFLOAT3 position = GetPosition();
+	const XMFLOAT3 rotation = GetRotation();
 
 	// Load position
-	XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
+	XMVECTOR pos = XMVectorSet(position.x, position.y, position.z, 1.0f);
 
 	// Build orientation
-	XMMATRIX rot = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
 
 	// Camera forward direction (LH: +Z)
 	XMVECTOR forward = XMVector3TransformNormal(
@@ -43,8 +63,11 @@ void Camera::UpdateFrustum(DirectX::FXMMATRIX projection) noexcept
 void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 {
 	using namespace DirectX;
+	const XMFLOAT3 rotation = GetRotation();
+	XMFLOAT3 position = GetPosition();
+
 	// Build orientation
-	XMMATRIX rot = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
 	// Transform translation vector by camera rotation
 	XMVECTOR transVec = XMLoadFloat3(&translation);
 	XMVECTOR worldTransVec = XMVector3TransformNormal(transVec, rot);
@@ -52,24 +75,30 @@ void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 	XMFLOAT3 worldTrans;
 	XMStoreFloat3(&worldTrans, worldTransVec);
 
-	x += worldTrans.x;
-	y += worldTrans.y;
-	z += worldTrans.z;
+	position.x += worldTrans.x;
+	position.y += worldTrans.y;
+	position.z += worldTrans.z;
 
 	// Clamp position to max distance
-	x = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, x));
-	y = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, y));
-	z = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, z));
+	position.x = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, x));
+	position.y = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, y));
+	position.z = std::max(-MAX_DISTANCE, std::min(MAX_DISTANCE, z));
+
+	SetPosition(position.x, position.y, position.z);
 }
 
 void Camera::Rotate(float dx, float dy) noexcept
 {
-	yaw += dx;
-	pitch += dy;
+	DirectX::XMFLOAT3 rotation = GetRotation();
+	rotation.y += dx;
+	rotation.x += dy;
 
 	// Clamp pitch to approx 90 degrees (just under PI/2)
 	constexpr float limit = PI / 2.0f - 0.01f;
-	pitch = std::max(-limit, std::min(limit, pitch));
+	//pitch = std::max(-limit, std::min(limit, pitch));
+	rotation.x = std::max(-limit, std::min(limit, rotation.x));
+
+	SetRotation(rotation.x, rotation.y, rotation.z);
 }
 
 void Camera::SpawnControlWindow() noexcept
@@ -83,13 +112,33 @@ void Camera::SpawnControlWindow() noexcept
 
 void Camera::OnInspector() noexcept
 {
+	DirectX::XMFLOAT3 position = GetPosition();
+	DirectX::XMFLOAT3 rotation = GetRotation();
+
 	ImGui::Text("Camera");
 	ImGui::Separator();
 	ImGui::Text("Position");
-	ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	/*ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
 	ImGui::SliderFloat("Y", &y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
-	ImGui::SliderFloat("Z", &z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	ImGui::SliderFloat("Z", &z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");*/
+	bool positionChanged = false;
+	positionChanged |= ImGui::SliderFloat("X", &position.x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	positionChanged |= ImGui::SliderFloat("Y", &position.y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	positionChanged |= ImGui::SliderFloat("Z", &position.z, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
+	if (positionChanged)
+	{
+		SetPosition(position.x, position.y, position.z);
+	}
 	ImGui::Separator();
+	bool rotationChanged = false;
+	rotationChanged |= ImGui::SliderFloat("Pitch", &rotation.x, -PI / 2.0f + 0.01f, PI / 2.0f - 0.01f, "%.3f");
+	rotationChanged |= ImGui::SliderFloat("Yaw", &rotation.y, -PI, PI, "%.3f");
+	rotationChanged |= ImGui::SliderFloat("Roll", &rotation.z, -PI, PI, "%.3f");
+	if (rotationChanged)
+	{
+		SetRotation(rotation.x, rotation.y, rotation.z);
+	}
+
 	ImGui::SliderFloat("Speed", &camSpeed, 0.1f, 10.0f, "%.1f");
 	ImGui::SliderFloat("Sensitivity", &rotateSpeed, 0.001f, 0.01f, "%.3f");
 
@@ -101,16 +150,24 @@ void Camera::OnInspector() noexcept
 
 void Camera::SetPosition(float x, float y, float z) noexcept
 {
+	if (GameObject* owner = TryGetGameObject())
+	{
+		owner->SetPosition(x, y, z);
+	}
 	this->x = x;
 	this->y = y;
 	this->z = z;
 }
 
-void Camera::SetRotation(float roll, float pitch, float yaw) noexcept
+void Camera::SetRotation(float pitch, float yaw, float roll) noexcept
 {
-	this->roll = roll;
+	if (GameObject* owner = TryGetGameObject())
+	{
+		owner->SetRotation(pitch, yaw, roll);
+	}
 	this->pitch = pitch;
 	this->yaw = yaw;
+	this->roll = roll;
 }
 
 void Camera::Reset() noexcept

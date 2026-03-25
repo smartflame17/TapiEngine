@@ -1,7 +1,9 @@
 #pragma once
 #include "Graphics.h"
 #include <DirectXCollision.h>
+#include <algorithm>
 #include "../Components/Component.h"
+#include "../Scene/GameObject.h"
 #include "../imgui/imgui.h"
 
 class Camera : public Component
@@ -22,7 +24,9 @@ public:
 
 	void SpawnControlWindow() noexcept;	// imgui window for controlling camera
 	void OnInspector() noexcept override;
-
+private:
+	DirectX::XMFLOAT3 GetPosition() const noexcept;
+	DirectX::XMFLOAT3 GetRotation() const noexcept;
 private:
 	float x = 0.0f;
 	float y = 0.0f;
