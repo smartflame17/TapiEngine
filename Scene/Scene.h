@@ -41,6 +41,7 @@ public:
 	void DestroyGameObject(GameObject& object) noexcept;
 	void DrawHierarchyWindow() noexcept;
 	void DrawInspectorWindow() noexcept;
+	void SelectGameObjectByRay(const DirectX::SimpleMath::Ray& ray) noexcept;
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 	GameObject* GetSelectedObject() const noexcept;

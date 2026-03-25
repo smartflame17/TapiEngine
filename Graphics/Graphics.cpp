@@ -198,6 +198,16 @@ DirectX::XMMATRIX Graphics::GetProjection() const noexcept
 	return projection;
 }
 
+int Graphics::GetWidth() const noexcept
+{
+	return width;
+}
+
+int Graphics::GetHeight() const noexcept
+{
+	return height;
+}
+
 void Graphics::SetCamera(DirectX::FXMMATRIX cam) noexcept
 {
 	camera = cam;

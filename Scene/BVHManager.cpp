@@ -1,6 +1,7 @@
 #include "BVHManager.h"
 #include "../Components/DrawableComponent.h"
 #include "../Scene/GameObject.h"
+#include <limits>
 
 void BVHManager::Clear() noexcept
 {
@@ -118,4 +119,32 @@ void BVHManager::QueryVisibleDrawables(const DirectX::BoundingFrustum& frustum, 
 			results.push_back(static_cast<DrawableComponent*>(proxy->userData));
 		}
 	}
+}
+
+DrawableComponent* BVHManager::RaycastClosestDrawable(const DirectX::SimpleMath::Ray& ray) const noexcept
+{
+	std::vector<SpatialProxy*> hitProxies;
+	hitProxies.reserve(drawableEntries.size());
+
+	staticBVH.Raycast(ray, hitProxies, RenderLayerMask, ProxyType::Renderable);
+	dynamicBVH.Raycast(ray, hitProxies, RenderLayerMask, ProxyType::Renderable);
+
+	DrawableComponent* closestDrawable = nullptr;
+	float closestDistance = (std::numeric_limits<float>::max)();
+	for (auto* proxy : hitProxies)
+	{
+		float hitDistance = 0.0f;
+		if (proxy == nullptr || !ray.Intersects(proxy->bounds, hitDistance))
+		{
+			continue;
+		}
+
+		if (hitDistance < closestDistance)
+		{
+			closestDistance = hitDistance;
+			closestDrawable = static_cast<DrawableComponent*>(proxy->userData);
+		}
+	}
+
+	return closestDrawable;
 }

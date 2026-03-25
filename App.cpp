@@ -78,11 +78,11 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
-	auto& bistro = scene.CreateGameObject("Bistro Scene");
+	/*auto& bistro = scene.CreateGameObject("Bistro Scene");
 	bistro.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/Bistro_Godot.glb"
-	));
+	));*/
 
 	/*auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
@@ -238,6 +238,43 @@ void App::RenderFrame(float alpha)
 	wnd.Gfx().Endframe();
 }
 
+DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept
+{
+	namespace dx = DirectX;
+
+	const auto nearPoint = dx::XMVector3Unproject(
+		dx::XMVectorSet(static_cast<float>(mouseX), static_cast<float>(mouseY), 0.0f, 1.0f),
+		0.0f,
+		0.0f,
+		static_cast<float>(wnd.Gfx().GetWidth()),
+		static_cast<float>(wnd.Gfx().GetHeight()),
+		0.0f,
+		1.0f,
+		wnd.Gfx().GetProjection(),
+		activeCam->GetViewMatrix(),
+		dx::XMMatrixIdentity()
+	);
+
+	const auto farPoint = dx::XMVector3Unproject(
+		dx::XMVectorSet(static_cast<float>(mouseX), static_cast<float>(mouseY), 1.0f, 1.0f),
+		0.0f,
+		0.0f,
+		static_cast<float>(wnd.Gfx().GetWidth()),
+		static_cast<float>(wnd.Gfx().GetHeight()),
+		0.0f,
+		1.0f,
+		wnd.Gfx().GetProjection(),
+		activeCam->GetViewMatrix(),
+		dx::XMMatrixIdentity()
+	);
+
+	dx::XMFLOAT3 origin;
+	dx::XMFLOAT3 direction;
+	dx::XMStoreFloat3(&origin, nearPoint);
+	dx::XMStoreFloat3(&direction, dx::XMVector3Normalize(dx::XMVectorSubtract(farPoint, nearPoint)));
+	return { origin, direction };
+}
+
 void App::HandleInput(float dt)
 {
 	// --- Input Handling & Camera Control ---
@@ -260,12 +297,27 @@ void App::HandleInput(float dt)
 	}
 
 	// Mouse Input Polling
-	const Mouse::Event e = wnd.mouse.Read();
-
-	if (e.GetType() == Mouse::Event::Type::WheelUp)
-		activeCam->Translate({ 0.0f, 0.0f, activeCam->camSpeed * 3.0f }); // Zoom in (move forward)
-	else if (e.GetType() == Mouse::Event::Type::WheelDown)
-		activeCam->Translate({ 0.0f, 0.0f, -activeCam->camSpeed * 3.0f }); // Zoom out (move backward)
+	bool leftClicked = false;
+	int clickX = 0;
+	int clickY = 0;
+	Mouse::Event e;
+	while ((e = wnd.mouse.Read()).IsValid())
+	{
+		if (e.GetType() == Mouse::Event::Type::WheelUp)
+		{
+			activeCam->Translate({ 0.0f, 0.0f, activeCam->camSpeed * 3.0f }); // Zoom in (move forward)
+		}
+		else if (e.GetType() == Mouse::Event::Type::WheelDown)
+		{
+			activeCam->Translate({ 0.0f, 0.0f, -activeCam->camSpeed * 3.0f }); // Zoom out (move backward)
+		}
+		else if (!isPlayMode && e.GetType() == Mouse::Event::Type::LPressed)
+		{
+			leftClicked = true;
+			clickX = e.GetPosX();
+			clickY = e.GetPosY();
+		}
+	}
 
 
 	const int curMouseX = wnd.mouse.GetPosX();
@@ -289,7 +341,7 @@ void App::HandleInput(float dt)
 
 	if (!isPlayMode)
 	{
-		if (wnd.mouse.IsLeftPressed())
+		if (wnd.mouse.IsRightPressed())
 		{
 			// Holding left click + moving: standard fps style looking (in editor mode only)
 			activeCam->Rotate((float)mouseDx * activeCam->rotateSpeed, (float)mouseDy * activeCam->rotateSpeed);
@@ -318,6 +370,11 @@ void App::HandleInput(float dt)
 	{
 		lastMouseX = curMouseX;
 		lastMouseY = curMouseY;
+	}
+
+	if (leftClicked)
+	{
+		scene.SelectGameObjectByRay(BuildMouseRay(clickX, clickY));
 	}
 
 	// Keyboard Input (WASD / Arrows)

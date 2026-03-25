@@ -15,6 +15,7 @@ public:
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
 	void Sync();
 	void QueryVisibleDrawables(const DirectX::BoundingFrustum& frustum, std::vector<DrawableComponent*>& results) const;
+	DrawableComponent* RaycastClosestDrawable(const DirectX::SimpleMath::Ray& ray) const noexcept;
 
 private:
 	struct DrawableProxyEntry

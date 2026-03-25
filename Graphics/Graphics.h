@@ -51,6 +51,8 @@ public:
 
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;		// Sets final projection matrix after all calculation for a single frame is done
 	DirectX::XMMATRIX GetProjection() const noexcept;
+	int GetWidth() const noexcept;
+	int GetHeight() const noexcept;
 
 	void SetCamera(DirectX::FXMMATRIX cam) noexcept;			// Sets camera matrix for the frame
 	DirectX::XMMATRIX GetCamera() const noexcept;

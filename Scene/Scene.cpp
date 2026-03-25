@@ -233,6 +233,21 @@ void Scene::DrawHierarchyWindow() noexcept
 	ImGui::End();
 }
 
+void Scene::SelectGameObjectByRay(const DirectX::SimpleMath::Ray& ray) noexcept
+{
+	bvhManager.Sync();
+
+	if (auto* drawable = bvhManager.RaycastClosestDrawable(ray))
+	{
+		GameObject& owner = drawable->GetGameObject();
+		selectedObject = owner.IsPendingKill() ? nullptr : &owner;
+	}
+	else
+	{
+		selectedObject = nullptr;
+	}
+}
+
 GameObject* Scene::GetSelectedObject() const noexcept
 {
 	return selectedObject;

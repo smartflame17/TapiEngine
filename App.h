@@ -33,6 +33,7 @@ private:
 	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
 	void ResetSimulation();	// resets camera, light, and all drawables to initial state
 	void CacheSceneComponents() noexcept;
+	DirectX::SimpleMath::Ray BuildMouseRay(int mouseX, int mouseY) noexcept;
 
 	void HandleInput(float dt); // handles input per frame
 private:
