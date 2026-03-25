@@ -33,7 +33,6 @@ public:
 	void Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG);
 	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
 	void CleanupDestroyedObjects() noexcept;
-	void Render(Graphics& gfx) const noexcept(!IS_DEBUG);
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;

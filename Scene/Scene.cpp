@@ -114,7 +114,7 @@ void Scene::CleanupDestroyedObjects() noexcept
 	sweep(sweep, rootObjects);
 }
 
-void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
+void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
 {
 	if (skybox)
 	{
@@ -137,7 +137,7 @@ void Scene::Render(Graphics& gfx) const noexcept(!IS_DEBUG)
 
 	for (const auto* drawable : visibleDrawables)
 	{
-		if (drawable != nullptr)
+		if (drawable != nullptr && !drawable->GetGameObject().IsPendingKill())
 		{
 			drawable->OnRender(gfx);
 		}
