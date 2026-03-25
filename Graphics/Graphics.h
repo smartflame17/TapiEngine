@@ -53,6 +53,10 @@ public:
 	DirectX::XMMATRIX GetProjection() const noexcept;
 	int GetWidth() const noexcept;
 	int GetHeight() const noexcept;
+	float GetViewportWidth() const noexcept;
+	float GetViewportHeight() const noexcept;
+	float GetViewportTopLeftX() const noexcept;
+	float GetViewportTopLeftY() const noexcept;
 
 	void SetCamera(DirectX::FXMMATRIX cam) noexcept;			// Sets camera matrix for the frame
 	DirectX::XMMATRIX GetCamera() const noexcept;
@@ -80,6 +84,11 @@ private:
 	bool isImGuiEnabled = true;
 	int width;
 	int height;
+
+	float viewportWidth;
+	float viewportHeight;
+	float viewportTopLeftX;
+	float viewportTopLeftY;
 
 	DirectX::XMMATRIX projection = DirectX::XMMATRIX();								// projection matrix
 	DirectX::XMMATRIX camera = DirectX::XMMATRIX();									// camera matrix

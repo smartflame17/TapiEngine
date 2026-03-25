@@ -15,7 +15,11 @@ namespace dx = DirectX;
 Graphics::Graphics(HWND hWnd, int width, int height)
 	:
 	width(width),
-	height(height)
+	height(height),
+	viewportWidth(1280.0f),
+	viewportHeight(720.0f),
+	viewportTopLeftX(300.0f),
+	viewportTopLeftY(60.0f)
 {
 	// Descriptor object to configure init function
 	DXGI_SWAP_CHAIN_DESC sd = {};
@@ -133,12 +137,12 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	D3D11_VIEWPORT vp = {};
 	//vp.Width = (float) width;
 	//vp.Height = (float) height;
-	vp.Width = 1280.0f;
-	vp.Height = 720.0f;
+	vp.Width = viewportWidth;
+	vp.Height = viewportHeight;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 300.0f;
-	vp.TopLeftY = 60.0f;
+	vp.TopLeftX = viewportTopLeftX;
+	vp.TopLeftY = viewportTopLeftY;
 	pContext->RSSetViewports(1u, &vp);
 
 	// init imgui for directx11
@@ -206,6 +210,26 @@ int Graphics::GetWidth() const noexcept
 int Graphics::GetHeight() const noexcept
 {
 	return height;
+}
+
+float Graphics::GetViewportWidth() const noexcept
+{
+	return viewportWidth;
+}
+
+float Graphics::GetViewportHeight() const noexcept
+{
+	return viewportHeight;
+}
+
+float Graphics::GetViewportTopLeftX() const noexcept
+{
+	return viewportTopLeftX;
+}
+
+float Graphics::GetViewportTopLeftY() const noexcept
+{
+	return viewportTopLeftY;
 }
 
 void Graphics::SetCamera(DirectX::FXMMATRIX cam) noexcept
