@@ -339,6 +339,7 @@ void App::HandleInput(float dt)
 		if (isPlayMode)
 		{
 			isPlayMode = false;
+			ResetSimulation();
 		}
 	}
 }
