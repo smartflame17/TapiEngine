@@ -272,6 +272,9 @@ DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept
 	dx::XMFLOAT3 direction;
 	dx::XMStoreFloat3(&origin, nearPoint);
 	dx::XMStoreFloat3(&direction, dx::XMVector3Normalize(dx::XMVectorSubtract(farPoint, nearPoint)));
+
+	std::cout << "[DEBUG] Mouse Ray Origin: (" << origin.x << ", " << origin.y << ", " << origin.z << ")\n";
+	std::cout << "[DEBUG] Mouse Ray Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")\n";
 	return { origin, direction };
 }
 
@@ -343,13 +346,13 @@ void App::HandleInput(float dt)
 	{
 		if (wnd.mouse.IsRightPressed())
 		{
-			// Holding left click + moving: standard fps style looking (in editor mode only)
+			// Holding right click + moving: standard fps style looking (in editor mode only)
 			activeCam->Rotate((float)mouseDx * activeCam->rotateSpeed, (float)mouseDy * activeCam->rotateSpeed);
 		}
 	}
 	else
 	{
-		// in play mode, no left press required for fps-style looking, just mouse movement
+		// in play mode, no press required for fps-style looking, just mouse movement
 		activeCam->Rotate((float)mouseDx * activeCam->rotateSpeed, (float)mouseDy * activeCam->rotateSpeed);
 	}
 

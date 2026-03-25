@@ -6,6 +6,7 @@
 #include "../Graphics/Camera.h"
 #include "../Graphics/Drawable/Drawable.h"
 #include <algorithm>
+#include <iostream>
 
 Scene::Scene() : name("Scene") {}
 
@@ -140,6 +141,7 @@ void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
 		if (drawable != nullptr && !drawable->GetGameObject().IsPendingKill())
 		{
 			drawable->OnRender(gfx);
+			std::cout << "[DEBUG] Rendered drawable from GameObject: " << drawable->GetGameObject().GetName() << std::endl;
 		}
 	}
 }
