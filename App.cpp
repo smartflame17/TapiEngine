@@ -244,10 +244,12 @@ DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept
 
 	const auto nearPoint = dx::XMVector3Unproject(
 		dx::XMVectorSet(static_cast<float>(mouseX), static_cast<float>(mouseY), 0.0f, 1.0f),
-		0.0f,
-		0.0f,
-		static_cast<float>(wnd.Gfx().GetWidth()),
-		static_cast<float>(wnd.Gfx().GetHeight()),
+		300.0f,
+		60.0f,
+		//static_cast<float>(wnd.Gfx().GetWidth()),
+		//static_cast<float>(wnd.Gfx().GetHeight()),
+		1280.0f,
+		720.0f,
 		0.0f,
 		1.0f,
 		wnd.Gfx().GetProjection(),
@@ -257,10 +259,12 @@ DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept
 
 	const auto farPoint = dx::XMVector3Unproject(
 		dx::XMVectorSet(static_cast<float>(mouseX), static_cast<float>(mouseY), 1.0f, 1.0f),
-		0.0f,
-		0.0f,
-		static_cast<float>(wnd.Gfx().GetWidth()),
-		static_cast<float>(wnd.Gfx().GetHeight()),
+		300.0f,
+		60.0f,
+		//static_cast<float>(wnd.Gfx().GetWidth()),
+		//static_cast<float>(wnd.Gfx().GetHeight()),
+		1280.0f,
+		720.0f,
 		0.0f,
 		1.0f,
 		wnd.Gfx().GetProjection(),
