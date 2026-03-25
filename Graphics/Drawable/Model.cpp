@@ -2,8 +2,8 @@
 #include "../IBindable/Sampler.h"
 #include "../IBindable/Texture.h"
 #include <assimp/material.h>
+#include <cstdint>
 #include <filesystem>
-#include <limits>
 #include <optional>
 #include <string_view>
 
@@ -232,11 +232,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 	namespace dx = DirectX;
 	using Dvtx::VertexLayout;
 
-	if (mesh.mNumVertices > std::numeric_limits<unsigned short>::max())
-	{
-		throw std::runtime_error("Mesh has too many vertices for 16-bit indices: " + std::string(mesh.mName.C_Str()));
-	}
-
 	const bool hasTextureCoords = mesh.HasTextureCoords(0);
 	auto layout = VertexLayout{}
 		.Append(VertexLayout::Position3D)
@@ -273,18 +268,12 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 
 	DirectX::BoundingBox::CreateFromPoints(outBounds, positions.size(), positions.data(), sizeof(dx::XMFLOAT3));
 
-	std::vector<unsigned short> indices;
+	std::vector<std::uint32_t> indices;
 	indices.reserve(mesh.mNumFaces * 3);
 	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
 	{
 		const auto& face = mesh.mFaces[i];
 		assert(face.mNumIndices == 3);
-		if (face.mIndices[0] > std::numeric_limits<unsigned short>::max() ||
-			face.mIndices[1] > std::numeric_limits<unsigned short>::max() ||
-			face.mIndices[2] > std::numeric_limits<unsigned short>::max())
-		{
-			throw std::runtime_error("Mesh index exceeds 16-bit range: " + std::string(mesh.mName.C_Str()));
-		}
 		indices.push_back(face.mIndices[0]);
 		indices.push_back(face.mIndices[1]);
 		indices.push_back(face.mIndices[2]);

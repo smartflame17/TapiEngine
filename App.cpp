@@ -78,11 +78,11 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
-	/*auto& bistro = scene.CreateGameObject("Bistro Scene");
+	auto& bistro = scene.CreateGameObject("Bistro Scene");
 	bistro.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/Bistro_Godot.glb"
-	));*/
+	));
 
 	/*auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
