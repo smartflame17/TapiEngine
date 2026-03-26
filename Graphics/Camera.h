@@ -37,6 +37,6 @@ private:
 	DirectX::BoundingFrustum frustum;
 
 public:
-	float camSpeed = 1.0f;		// movement speed
+	float camSpeed = 0.1f;		// movement speed
 	float rotateSpeed = 0.004f;	// mouse look sensitivity
 };
