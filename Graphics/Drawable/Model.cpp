@@ -9,17 +9,9 @@
 
 namespace
 {
-	struct PSMaterialConstant
+	PhongMaterial LoadMaterialConstants(const aiMaterial* pMaterial)
 	{
-		DirectX::XMFLOAT3 color = { 0.8f,0.3f,0.8f };
-		float specularIntensity = 0.5f;
-		float specularPower = 32.0f;
-		DirectX::XMFLOAT3 specularColor = { 1.0f,1.0f,1.0f };
-	};
-
-	PSMaterialConstant LoadMaterialConstants(const aiMaterial* pMaterial)
-	{
-		PSMaterialConstant material;
+		PhongMaterial material;
 		if (pMaterial == nullptr)
 		{
 			return material;
@@ -88,6 +80,19 @@ namespace
 			return *path;
 		}
 		if (const auto path = ResolveTexturePath(pMaterial, aiTextureType_DIFFUSE, modelDirectory))
+		{
+			return *path;
+		}
+		return {};
+	}
+
+	std::filesystem::path ResolveNormalTexturePath(const aiMaterial* pMaterial, const std::filesystem::path& modelDirectory)
+	{
+		if (const auto path = ResolveTexturePath(pMaterial, aiTextureType_NORMALS, modelDirectory))
+		{
+			return *path;
+		}
+		if (const auto path = ResolveTexturePath(pMaterial, aiTextureType_HEIGHT, modelDirectory))
 		{
 			return *path;
 		}
@@ -179,12 +184,16 @@ const Transform& Node::GetRelativeTransform() const noexcept
 }
 
 Model::Model(Graphics& gfx, const std::string& fileName)
+	:
+	gfx(gfx)
 {
 	Assimp::Importer importer;
 	const auto pScene = importer.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices |
 		aiProcess_GenSmoothNormals |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_CalcTangentSpace |
 		aiProcess_GenBoundingBoxes
 	);
 
@@ -238,7 +247,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 		.Append(VertexLayout::Normal);
 	if (hasTextureCoords)
 	{
-		layout.Append(VertexLayout::Texture2D);
+		layout.Append(VertexLayout::Texture2D)
+			.Append(VertexLayout::Tangent);
 	}
 	Dvtx::VertexBuffer vertexBuffer(std::move(layout));
 	std::vector<dx::XMFLOAT3> positions;
@@ -251,6 +261,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 		const auto normal = mesh.HasNormals() ?
 			*reinterpret_cast<const dx::XMFLOAT3*>(&mesh.mNormals[i]) :
 			dx::XMFLOAT3{ 0.0f, 1.0f, 0.0f };
+		const auto tangent = mesh.HasTangentsAndBitangents() ?
+			*reinterpret_cast<const dx::XMFLOAT3*>(&mesh.mTangents[i]) :
+			dx::XMFLOAT3{ 1.0f, 0.0f, 0.0f };
 
 		if (hasTextureCoords)
 		{
@@ -258,7 +271,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 				mesh.mTextureCoords[0][i].x,
 				mesh.mTextureCoords[0][i].y
 			};
-			vertexBuffer.EmplaceBack(position, normal, texCoord);
+			vertexBuffer.EmplaceBack(position, normal, texCoord, tangent);
 		}
 		else
 		{
@@ -286,22 +299,54 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiScene& scene, cons
 	const aiMaterial* pMaterial = mesh.mMaterialIndex < scene.mNumMaterials ? scene.mMaterials[mesh.mMaterialIndex] : nullptr;
 	const auto material = LoadMaterialConstants(pMaterial);
 	const auto baseColorTexturePath = hasTextureCoords ? ResolveBaseColorTexturePath(pMaterial, modelDirectory) : std::filesystem::path{};
-	const bool useTexture = hasTextureCoords && !baseColorTexturePath.empty();
+	const auto normalTexturePath = hasTextureCoords ? ResolveNormalTexturePath(pMaterial, modelDirectory) : std::filesystem::path{};
+	const bool useTexture = hasTextureCoords;
 
 	auto pVertexShader = std::make_unique<VertexShader>(gfx, useTexture ? L"TexturedPhongVS.cso" : L"PhongVS.cso");
 	auto pVertexShaderBytecode = pVertexShader->GetBytecode();
 	bindablePtrs.push_back(std::move(pVertexShader));
 
 	bindablePtrs.push_back(std::make_unique<PixelShader>(gfx, useTexture ? L"TexturedPhongPS.cso" : L"PhongPS.cso"));
+	PixelConstantBuffer<PhongMaterial>* pMaterialCbuf = nullptr;
+	Texture* pBaseColorTexture = nullptr;
+	Texture* pNormalTexture = nullptr;
+	Sampler* pSampler = nullptr;
 	if (useTexture)
 	{
-		bindablePtrs.push_back(std::make_unique<Texture>(gfx, baseColorTexturePath.wstring()));
-		bindablePtrs.push_back(std::make_unique<Sampler>(gfx));
+		auto pBaseColorBindable = std::make_unique<Texture>(gfx, 0u);
+		pBaseColorTexture = pBaseColorBindable.get();
+		pBaseColorTexture->SetPath(gfx, baseColorTexturePath);
+		bindablePtrs.push_back(std::move(pBaseColorBindable));
+
+		auto pNormalBindable = std::make_unique<Texture>(gfx, 1u, Texture::FallbackKind::NeutralNormal);
+		pNormalTexture = pNormalBindable.get();
+		pNormalTexture->SetPath(gfx, normalTexturePath);
+		bindablePtrs.push_back(std::move(pNormalBindable));
+
+		auto pSamplerBindable = std::make_unique<Sampler>(gfx);
+		pSampler = pSamplerBindable.get();
+		bindablePtrs.push_back(std::move(pSamplerBindable));
 	}
 	bindablePtrs.push_back(std::make_unique<InputLayout>(gfx, vertexBuffer.GetLayout().GetD3DLayout(), pVertexShaderBytecode));
-	bindablePtrs.push_back(std::make_unique<PixelConstantBuffer<PSMaterialConstant>>(gfx, material, 0u));
+	auto pMaterialBindable = std::make_unique<PixelConstantBuffer<PhongMaterial>>(gfx, material, 0u);
+	pMaterialCbuf = pMaterialBindable.get();
+	bindablePtrs.push_back(std::move(pMaterialBindable));
 
-	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
+	PhongMaterial meshMaterial = material;
+	meshMaterial.useNormalMap = !normalTexturePath.empty() ? 1u : 0u;
+	return std::make_unique<Mesh>(
+		gfx,
+		std::move(bindablePtrs),
+		meshMaterial,
+		pMaterialCbuf,
+		pBaseColorTexture,
+		pNormalTexture,
+		pSampler,
+		baseColorTexturePath.string(),
+		normalTexturePath.string(),
+		useTexture,
+		!normalTexturePath.empty()
+	);
 }
 
 std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
@@ -404,4 +449,17 @@ void Model::DrawInspector() noexcept
 	}
 
 	pSelectedNode->SetRelativeTransform(relativeTransform);
+
+	if (!pSelectedNode->meshPtrs.empty())
+	{
+		ImGui::Separator();
+		ImGui::Text("Materials");
+		for (size_t meshIndex = 0; meshIndex < pSelectedNode->meshPtrs.size(); ++meshIndex)
+		{
+			ImGui::PushID(static_cast<int>(meshIndex));
+			std::string label = "Mesh " + std::to_string(meshIndex);
+			pSelectedNode->meshPtrs[meshIndex]->DrawInspector(gfx, label.c_str());
+			ImGui::PopID();
+		}
+	}
 }
