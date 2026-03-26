@@ -233,7 +233,7 @@ void Scene::DrawHierarchyWindow() noexcept
 	if (selectedObject != nullptr)
 	{
 		ImGui::Text("Selected: %s", selectedObject->GetName().c_str());
-		ImGui::Text("GameObject ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
+		//ImGui::Text("GameObject ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
 	}
 	else
 	{
@@ -369,6 +369,7 @@ void Scene::SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
 	}
 }
 
+// Recursively draws GameObject and its children in the hierarchy window
 void Scene::DrawHierarchyNode(GameObject& object) noexcept
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DrawLinesToNodes;
