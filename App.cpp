@@ -78,19 +78,35 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
+	auto& materialCube2 = scene.CreateGameObject("Material Cube 2");
+	materialCube2.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
+		wnd.Gfx(),
+		Primitive::Shape::Cube,
+		Primitive::SurfaceMode::Material
+	));
+	materialCube2.SetPosition(3.0f, 1.0f, 10.0f);
+
+	auto& materialCube3 = scene.CreateGameObject("Material Cube 3");
+	materialCube3.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
+		wnd.Gfx(),
+		Primitive::Shape::Cube,
+		Primitive::SurfaceMode::Material
+	));
+	materialCube3.SetPosition(-3.0f, 1.0f, 0.0f);
+
 	/*auto& bistro = scene.CreateGameObject("Bistro Scene");
 	bistro.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/Bistro_Godot.glb"
 	));*/
 
-	/*auto& two_b = scene.CreateGameObject("2B");
+	auto& two_b = scene.CreateGameObject("2B");
 	two_b.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	two_b.SetPosition(1.0f, 0.0f, 0.0f);
-	two_b.SetScale(10.0f, 10.0f, 10.0f);*/
+	two_b.SetScale(10.0f, 10.0f, 10.0f);
 
 	CacheSceneComponents();
 
