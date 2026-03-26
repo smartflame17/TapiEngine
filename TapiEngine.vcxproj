@@ -239,6 +239,8 @@
     <ClInclude Include="Components\Component.h" />
     <ClInclude Include="Components\CustomBehaviour.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
+    <ClInclude Include="Graphics\PhongMaterial.h" />
+    <ClInclude Include="Graphics\TangentSpace.h" />
     <ClInclude Include="imgui\GraphEditor.h" />
     <ClInclude Include="imgui\ImCurveEdit.h" />
     <ClInclude Include="imgui\imfilebrowser.h" />
