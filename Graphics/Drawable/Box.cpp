@@ -1,4 +1,5 @@
 #include "Box.h"
+#include "../PhongMaterial.h"
 
 Box::Box(Graphics& gfx,
 	std::mt19937& rng,
@@ -49,24 +50,17 @@ Box::Box(Graphics& gfx,
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));	// the transformation constant buffer is non-static (different per object)
 
-	struct MaterialCbuf
-	{
-		DirectX::XMFLOAT3 color;
-		float specularIntensity;
-		float specularPower;
-		DirectX::XMFLOAT3 specularColor;
-	};
 	std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
 	std::uniform_real_distribution<float> specularIntensityDist(0.2f, 1.0f);
 	std::uniform_real_distribution<float> specularPowerDist(8.0f, 64.0f);
-	const MaterialCbuf material =
+	const PhongMaterial material =
 	{
 		{ colorDist(rng), colorDist(rng), colorDist(rng) },
 		specularIntensityDist(rng),
 		specularPowerDist(rng),
 		{ 1.0f, 1.0f, 1.0f }
 	};
-	AddBind(std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u));
+	AddBind(std::make_unique<PixelConstantBuffer<PhongMaterial>>(gfx, material, 0u));
 
 	// give random deformation per instance
 	dx::XMStoreFloat3x3(&mt, dx::XMMatrixScaling(1.0f, 1.0f, bdist(rng)));

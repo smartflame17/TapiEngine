@@ -1,4 +1,5 @@
 #include "Ground.h"
+#include "../PhongMaterial.h"
 #include <vector>
 
 Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
@@ -44,22 +45,14 @@ Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 
 		AddStaticBind(std::make_unique<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
 
-		struct MaterialCbuf
-		{
-			dx::XMFLOAT3 color;
-			float specularIntensity;
-			float specularPower;
-			dx::XMFLOAT3 specularColor;
-		};
-
-		const MaterialCbuf material =
+		const PhongMaterial material =
 		{
 			{ 0.4f, 0.55f, 0.4f },
 			0.2f,
 			12.0f,
 			{ 1.0f, 1.0f, 1.0f }
 		};
-		AddStaticBind(std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u));
+		AddStaticBind(std::make_unique<PixelConstantBuffer<PhongMaterial>>(gfx, material, 0u));
 
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}

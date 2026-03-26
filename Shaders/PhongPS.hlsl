@@ -4,6 +4,9 @@ cbuffer MaterialCbuf : register(b0)
     float specularIntensity;
     float specularPower;
     float3 specularColor;
+    uint useNormalMap;
+    uint materialPadding0;
+    float2 materialPadding1;
 };
 
 cbuffer LightCbuf : register(b1)

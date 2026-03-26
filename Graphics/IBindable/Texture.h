@@ -5,8 +5,14 @@
 class Texture : public IBindable
 {
 public:
-	Texture(Graphics& gfx, const std::wstring& path, UINT slot = 0u);
-	Texture(Graphics& gfx, UINT slot = 0u);
+	enum class FallbackKind
+	{
+		Checkerboard,
+		NeutralNormal
+	};
+
+	Texture(Graphics& gfx, const std::wstring& path, UINT slot = 0u, FallbackKind fallbackKind = FallbackKind::Checkerboard);
+	Texture(Graphics& gfx, UINT slot = 0u, FallbackKind fallbackKind = FallbackKind::Checkerboard);
 	void Bind(Graphics& gfx) noexcept override;
 	bool SetPath(Graphics& gfx, const std::filesystem::path& path) noexcept;
 	const std::filesystem::path& GetRequestedPath() const noexcept;
@@ -17,6 +23,7 @@ protected:
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 	UINT slot = 0u;
+	FallbackKind fallbackKind = FallbackKind::Checkerboard;
 	std::filesystem::path requestedPath;
 	bool usingFallback = false;
 };

@@ -4,6 +4,7 @@
 #include "Plane.h"
 #include "Prism.h"
 #include "Sphere.h"
+#include "../TangentSpace.h"
 #include "../IBindable/IBindableBase.h"
 #include "../../imgui/imgui.h"
 #include "../../Tools/TapiMath.h"
@@ -250,12 +251,13 @@ namespace
 	}
 }
 
-Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::string texturePath)
+Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::string texturePath, std::string normalMapPath)
 	:
 	gfx(gfx),
 	shape(shape),
 	surfaceMode(surfaceMode),
-	texturePath(std::move(texturePath))
+	texturePath(std::move(texturePath)),
+	normalMapPath(std::move(normalMapPath))
 {
 	auto model = BuildMesh(shape, surfaceMode);
 	SetLocalBounds(ComputeBounds(model.vertices));
@@ -273,7 +275,7 @@ Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::s
 	AddBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
 
-	auto pMaterialBuffer = std::make_unique<PixelConstantBuffer<MaterialCbuf>>(gfx, material, 0u);
+	auto pMaterialBuffer = std::make_unique<PixelConstantBuffer<PhongMaterial>>(gfx, material, 0u);
 	pMaterialCbuf = pMaterialBuffer.get();
 	AddBind(std::move(pMaterialBuffer));
 
@@ -283,11 +285,17 @@ Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::s
 		pTexture = pTextureBindable.get();
 		AddBind(std::move(pTextureBindable));
 
+		auto pNormalTextureBindable = std::make_unique<Texture>(gfx, 1u, Texture::FallbackKind::NeutralNormal);
+		pNormalTexture = pNormalTextureBindable.get();
+		AddBind(std::move(pNormalTextureBindable));
+
 		auto pSamplerBindable = std::make_unique<Sampler>(gfx, Sampler::Type::LinearWrap);
 		pSampler = pSamplerBindable.get();
 		AddBind(std::move(pSamplerBindable));
 
 		ApplyTexturePath();
+		normalMapEnabled = !normalMapPath.empty();
+		ApplyNormalMapPath();
 	}
 }
 
@@ -312,13 +320,14 @@ void Primitive::DrawInspector() noexcept
 	ImGui::Text("Shape: %s", ShapeLabel(shape));
 	ImGui::Text("Surface: %s", surfaceMode == SurfaceMode::Textured ? "Textured" : "Material");
 
+	ImGui::Separator();
+	ImGui::ColorEdit3("Base Color", &material.color.x);
+	ImGui::ColorEdit3("Specular Color", &material.specularColor.x);
+	ImGui::SliderFloat("Specular Intensity", &material.specularIntensity, 0.0f, 2.0f, "%.2f");
+	ImGui::SliderFloat("Specular Power", &material.specularPower, 1.0f, 128.0f, "%.1f");
+
 	if (surfaceMode == SurfaceMode::Material)
 	{
-		ImGui::Separator();
-		ImGui::ColorEdit3("Base Color", &material.color.x);
-		ImGui::ColorEdit3("Specular Color", &material.specularColor.x);
-		ImGui::SliderFloat("Specular Intensity", &material.specularIntensity, 0.0f, 2.0f, "%.2f");
-		ImGui::SliderFloat("Specular Power", &material.specularPower, 1.0f, 128.0f, "%.1f");
 		return;
 	}
 
@@ -352,6 +361,27 @@ void Primitive::DrawInspector() noexcept
 	}
 
 	ImGui::TextWrapped("%s", textureStatus.c_str());
+
+	bool enableNormalMap = normalMapEnabled;
+	if (ImGui::Checkbox("Use Normal Map", &enableNormalMap))
+	{
+		normalMapEnabled = enableNormalMap;
+		RefreshMaterialState();
+		UpdateNormalMapStatus(pNormalTexture != nullptr && !pNormalTexture->IsUsingFallback() && !normalMapPath.empty());
+	}
+
+	char normalMapPathBuffer[260] = {};
+	normalMapPath.copy(normalMapPathBuffer, sizeof(normalMapPathBuffer) - 1u);
+	if (ImGui::InputText("Normal Map Path", normalMapPathBuffer, IM_ARRAYSIZE(normalMapPathBuffer)))
+	{
+		normalMapPath = normalMapPathBuffer;
+	}
+	if (ImGui::Button("Apply Normal Map"))
+	{
+		ApplyNormalMapPath();
+	}
+
+	ImGui::TextWrapped("%s", normalMapStatus.c_str());
 }
 
 IndexedTriangleList Primitive::BuildMesh(Shape shape, SurfaceMode surfaceMode)
@@ -361,32 +391,67 @@ IndexedTriangleList Primitive::BuildMesh(Shape shape, SurfaceMode surfaceMode)
 		.Append(Type::Normal);
 	if (surfaceMode == SurfaceMode::Textured)
 	{
-		layout.Append(Type::Texture2D);
+		layout.Append(Type::Texture2D)
+			.Append(Type::Tangent);
 	}
 
 	switch (shape)
 	{
 	case Shape::Cone:
-		return MakeConeMesh(std::move(layout));
+	{
+		auto model = MakeConeMesh(std::move(layout));
+		if (surfaceMode == SurfaceMode::Textured)
+		{
+			TangentSpace::ComputeTangents(model);
+		}
+		return model;
+	}
 	case Shape::Cube:
 	{
 		auto model = Cube::MakeIndependent(std::move(layout));
 		AssignCubeAttributes(model, surfaceMode == SurfaceMode::Textured);
+		if (surfaceMode == SurfaceMode::Textured)
+		{
+			TangentSpace::ComputeTangents(model);
+		}
 		return model;
 	}
 	case Shape::Plane:
 	{
 		auto model = Geometry::Plane::MakeTesselated(1, 1, std::move(layout));
 		model.Transform(DirectX::XMMatrixTranslation(0.0f, -1.0f, 0.0f));
+		if (surfaceMode == SurfaceMode::Textured)
+		{
+			TangentSpace::ComputeTangents(model);
+		}
 		return model;
 	}
 	case Shape::Prism:
-		return MakePrismMesh(std::move(layout));
+	{
+		auto model = MakePrismMesh(std::move(layout));
+		if (surfaceMode == SurfaceMode::Textured)
+		{
+			TangentSpace::ComputeTangents(model);
+		}
+		return model;
+	}
 	case Shape::Sphere:
-		return Sphere::MakeTesselated(12, 24, std::move(layout));
+	{
+		auto model = Sphere::MakeTesselated(12, 24, std::move(layout));
+		if (surfaceMode == SurfaceMode::Textured)
+		{
+			TangentSpace::ComputeTangents(model);
+		}
+		return model;
+	}
 	}
 
-	return Cube::MakeIndependent(std::move(layout));
+	auto model = Cube::MakeIndependent(std::move(layout));
+	if (surfaceMode == SurfaceMode::Textured)
+	{
+		TangentSpace::ComputeTangents(model);
+	}
+	return model;
 }
 
 void Primitive::ApplyTexturePath()
@@ -398,6 +463,23 @@ void Primitive::ApplyTexturePath()
 
 	const bool loadedFromFile = pTexture->SetPath(gfx, std::filesystem::path(texturePath));
 	UpdateTextureStatus(loadedFromFile);
+}
+
+void Primitive::ApplyNormalMapPath()
+{
+	if (pNormalTexture == nullptr)
+	{
+		return;
+	}
+
+	const bool loadedFromFile = pNormalTexture->SetPath(gfx, std::filesystem::path(normalMapPath));
+	UpdateNormalMapStatus(loadedFromFile);
+	RefreshMaterialState();
+}
+
+void Primitive::RefreshMaterialState() noexcept
+{
+	material.useNormalMap = normalMapEnabled && pNormalTexture != nullptr && !pNormalTexture->IsUsingFallback() && !normalMapPath.empty() ? 1u : 0u;
 }
 
 void Primitive::UpdateTextureStatus(bool loadedFromFile)
@@ -415,6 +497,25 @@ void Primitive::UpdateTextureStatus(bool loadedFromFile)
 	}
 
 	textureStatus = "Using fallback checkerboard texture. Failed to load: " + texturePath;
+}
+
+void Primitive::UpdateNormalMapStatus(bool loadedFromFile)
+{
+	if (loadedFromFile)
+	{
+		normalMapStatus = normalMapEnabled
+			? "Loaded normal map: " + normalMapPath
+			: "Normal map loaded but disabled: " + normalMapPath;
+		return;
+	}
+
+	if (normalMapPath.empty())
+	{
+		normalMapStatus = "Using interpolated normals (no normal map path).";
+		return;
+	}
+
+	normalMapStatus = "Using interpolated normals. Failed to load: " + normalMapPath;
 }
 
 const std::vector<std::unique_ptr<IBindable>>& Primitive::GetStaticBinds() const noexcept

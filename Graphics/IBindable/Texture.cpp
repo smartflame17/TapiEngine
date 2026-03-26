@@ -2,16 +2,18 @@
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include <WICTextureLoader.h>
 
-Texture::Texture(Graphics& gfx, const std::wstring& path, UINT slot)
+Texture::Texture(Graphics& gfx, const std::wstring& path, UINT slot, FallbackKind fallbackKind)
 	:
-	slot(slot)
+	slot(slot),
+	fallbackKind(fallbackKind)
 {
 	SetPath(gfx, std::filesystem::path(path));
 }
 
-Texture::Texture(Graphics& gfx, UINT slot)
+Texture::Texture(Graphics& gfx, UINT slot, FallbackKind fallbackKind)
 	:
-	slot(slot)
+	slot(slot),
+	fallbackKind(fallbackKind)
 {
 	LoadFallback(gfx);
 }
@@ -41,13 +43,24 @@ void Texture::LoadFallback(Graphics& gfx)
 
 	constexpr unsigned int texWidth = 2u;
 	constexpr unsigned int texHeight = 2u;
-	constexpr unsigned int pink = 0xFFFF00FFu;
-	constexpr unsigned int black = 0xFF000000u;
-	const unsigned int pixelData[texWidth * texHeight] =
+	unsigned int pixelData[texWidth * texHeight] = {};
+	if (fallbackKind == FallbackKind::NeutralNormal)
 	{
-		pink, black,
-		black, pink
-	};
+		constexpr unsigned int neutralNormal = 0xFFFF8080u;
+		for (auto& pixel : pixelData)
+		{
+			pixel = neutralNormal;
+		}
+	}
+	else
+	{
+		constexpr unsigned int pink = 0xFFFF00FFu;
+		constexpr unsigned int black = 0xFF000000u;
+		pixelData[0] = pink;
+		pixelData[1] = black;
+		pixelData[2] = black;
+		pixelData[3] = pink;
+	}
 
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = texWidth;

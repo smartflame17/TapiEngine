@@ -6,6 +6,7 @@
 #include "../IBindable/PixelShader.h"
 #include "../IBindable/VertexBuffer.h"
 #include "../IBindable/VertexShader.h"
+#include "../PhongMaterial.h"
 #include "../Vertex.h"
 #include "../../Scene/Transform.h"
 #include "../../imgui/imgui.h"
@@ -62,6 +63,7 @@ private:
 	void DrawInspectorNode(Node& node) noexcept;
 
 private:
+	Graphics& gfx;
 	std::unique_ptr<Node> pRoot;
 	Node* pSelectedNode = nullptr;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
