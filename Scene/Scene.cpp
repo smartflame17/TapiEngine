@@ -144,6 +144,14 @@ void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
 			std::cout << "[DEBUG] Rendered drawable from GameObject: " << drawable->GetGameObject().GetName() << std::endl;
 		}
 	}
+
+	if (gfx.GetWireframeDebugSettings().enabled)
+	{
+		std::vector<DirectX::BoundingBox> hierarchyBounds;
+		hierarchyBounds.reserve(drawables.size() * 2u);
+		bvhManager.CollectHierarchyBounds(hierarchyBounds);
+		gfx.DrawWireframeBoundingBoxes(hierarchyBounds);
+	}
 }
 
 void Scene::SetSkybox(std::unique_ptr<Drawable> drawable)

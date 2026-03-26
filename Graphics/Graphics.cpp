@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "DebugWireframeRenderer.h"
 #include "../ErrorHandling/dxerr.h"
 #include "../ErrorHandling/GraphicsExceptionMacros.h"
 #include <sstream>
@@ -147,6 +148,8 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
 	// init imgui for directx11
 	ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
+
+	pDebugWireframeRenderer = std::make_unique<DebugWireframeRenderer>(*this);
 }
 
 Graphics::~Graphics()
@@ -473,6 +476,23 @@ void Graphics::RestoreDefaultStates() noexcept
 	pContext->RSSetState(pRSState.Get());
 }
 
+void Graphics::DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG)
+{
+	if (pDebugWireframeRenderer != nullptr)
+	{
+		pDebugWireframeRenderer->DrawBoundingBox(*this, bounds, wireframeDebugSettings.color);
+		RestoreDefaultStates();
+	}
+}
+
+void Graphics::DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox>& bounds) noexcept(!IS_DEBUG)
+{
+	if (pDebugWireframeRenderer != nullptr && !bounds.empty())
+	{
+		pDebugWireframeRenderer->DrawBoundingBoxes(*this, bounds, wireframeDebugSettings.color);
+	}
+}
+
 //////////////// Exception handling ////////////////
 Graphics::HrException::HrException(int line, const char* file, HRESULT hr) noexcept :
 	SmflmException(line, file),
@@ -529,4 +549,14 @@ std::string Graphics::HrException::GetErrorDescription() const noexcept
 const char* Graphics::DeviceRemovedException::GetType() const noexcept
 {
 	return "Graphics Exception [Device Removed] (DXGI_ERROR_DEVICE_REMOVED)";
+}
+
+Graphics::WireframeDebugSettings& Graphics::GetWireframeDebugSettings() noexcept
+{
+	return wireframeDebugSettings;
+}
+
+const Graphics::WireframeDebugSettings& Graphics::GetWireframeDebugSettings() const noexcept
+{
+	return wireframeDebugSettings;
 }

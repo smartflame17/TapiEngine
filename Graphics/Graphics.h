@@ -12,11 +12,20 @@
 #include <memory>
 #include <random>
 
+class DebugWireframeRenderer;
+
 // Wrapper class for d3d 11 stuff
 class Graphics
 {
 	friend class IBindable;
+	friend class DebugWireframeRenderer;
 public:
+	struct WireframeDebugSettings
+	{
+		bool enabled = false;
+		DirectX::XMFLOAT3 color = { 0.0f, 1.0f, 0.0f };
+	};
+
 	class HrException : public SmflmException
 	{
 	public:
@@ -67,8 +76,12 @@ public:
 	void DisableImGui() noexcept;
 	bool IsImGuiEnabled() const noexcept;
 	void RestoreDefaultStates() noexcept;
+	void DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG);
+	void DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox>& bounds) noexcept(!IS_DEBUG);
 
 	ID3D11DepthStencilState* GetDepthStencilState();
+	WireframeDebugSettings& GetWireframeDebugSettings() noexcept;
+	const WireframeDebugSettings& GetWireframeDebugSettings() const noexcept;
 
 	// Overload new and delete for 16-byte alignment
 	void* operator new(size_t i)
@@ -100,6 +113,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRSState = nullptr;
+	std::unique_ptr<DebugWireframeRenderer> pDebugWireframeRenderer;
+	WireframeDebugSettings wireframeDebugSettings;
 
 public:
 	std::unique_ptr<DirectX::SpriteBatch> pSpriteBatch;

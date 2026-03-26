@@ -207,6 +207,13 @@ inline void ImguiManager::SettingsWindow()
 	}
 
 	ImGui::Begin("Settings", &settingsWindowOpen);
+	if (context.graphics != nullptr)
+	{
+		auto& wireframeSettings = context.graphics->GetWireframeDebugSettings();
+		ImGui::Checkbox("Draw BVH Wireframes", &wireframeSettings.enabled);
+		ImGui::ColorEdit3("Wireframe Color", &wireframeSettings.color.x);
+		ImGui::Separator();
+	}
 	if (context.mouse != nullptr)
 	{
 		bool rawEnabled = context.mouse->RawEnabled();
