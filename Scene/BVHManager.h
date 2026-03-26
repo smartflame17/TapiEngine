@@ -16,6 +16,7 @@ public:
 	void Sync();
 	void QueryVisibleDrawables(const DirectX::BoundingFrustum& frustum, std::vector<DrawableComponent*>& results) const;
 	DrawableComponent* RaycastClosestDrawable(const DirectX::SimpleMath::Ray& ray) const noexcept;
+	void CollectHierarchyBounds(std::vector<DirectX::BoundingBox>& results) const;
 
 private:
 	struct DrawableProxyEntry

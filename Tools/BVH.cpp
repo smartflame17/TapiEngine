@@ -141,6 +141,11 @@ void BVH::FrustumQuery(const DirectX::BoundingFrustum& frustum, std::vector<Spat
 	FrustumQueryRecursive(root, frustum, results, layerMask, typeFilter);
 }
 
+void BVH::CollectNodeBounds(std::vector<DirectX::BoundingBox>& results) const
+{
+	CollectNodeBoundsRecursive(root, results);
+}
+
 BVHNode* BVH::NodePool::Acquire()
 {
 	if (nextFree >= nodes.size())
@@ -320,6 +325,25 @@ void BVH::FrustumQueryRecursive(BVHNode* node, const DirectX::BoundingFrustum& f
 
 	FrustumQueryRecursive(node->left, frustum, results, layerMask, typeFilter);
 	FrustumQueryRecursive(node->right, frustum, results, layerMask, typeFilter);
+}
+
+void BVH::CollectNodeBoundsRecursive(BVHNode* node, std::vector<DirectX::BoundingBox>& results) const
+{
+	if (node == nullptr)
+	{
+		return;
+	}
+	// Collect the bounds of the current node and its objects
+	results.push_back(node->bounds);
+	for (auto* proxy : node->objects)
+	{
+		if (proxy != nullptr)
+		{
+			results.push_back(proxy->bounds);
+		}
+	}
+	CollectNodeBoundsRecursive(node->left, results);
+	CollectNodeBoundsRecursive(node->right, results);
 }
 
 void BVH::RefitRecursive(BVHNode* node)

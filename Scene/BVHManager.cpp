@@ -148,3 +148,9 @@ DrawableComponent* BVHManager::RaycastClosestDrawable(const DirectX::SimpleMath:
 
 	return closestDrawable;
 }
+
+void BVHManager::CollectHierarchyBounds(std::vector<DirectX::BoundingBox>& results) const
+{
+	staticBVH.CollectNodeBounds(results);
+	dynamicBVH.CollectNodeBounds(results);
+}

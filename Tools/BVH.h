@@ -50,6 +50,7 @@ public:
 	void QueryAABB(const DirectX::BoundingBox& region, std::vector<SpatialProxy*>& results, std::uint32_t layerMask = 0xFFFFFFFFu, ProxyType typeFilter = ProxyType::Unknown) const;
 	void Raycast(const DirectX::SimpleMath::Ray& ray, std::vector<SpatialProxy*>& results, std::uint32_t layerMask = 0xFFFFFFFFu, ProxyType typeFilter = ProxyType::Unknown) const;
 	void FrustumQuery(const DirectX::BoundingFrustum& frustum, std::vector<SpatialProxy*>& results, std::uint32_t layerMask = 0xFFFFFFFFu, ProxyType typeFilter = ProxyType::Unknown) const;
+	void CollectNodeBounds(std::vector<DirectX::BoundingBox>& results) const;
 
 private:
 	class NodePool
@@ -68,6 +69,7 @@ private:
 	void QueryAABBRecursive(BVHNode* node, const DirectX::BoundingBox& region, std::vector<SpatialProxy*>& results, std::uint32_t layerMask, ProxyType typeFilter) const;
 	void RaycastRecursive(BVHNode* node, const DirectX::SimpleMath::Ray& ray, std::vector<SpatialProxy*>& results, std::uint32_t layerMask, ProxyType typeFilter) const;
 	void FrustumQueryRecursive(BVHNode* node, const DirectX::BoundingFrustum& frustum, std::vector<SpatialProxy*>& results, std::uint32_t layerMask, ProxyType typeFilter) const;
+	void CollectNodeBoundsRecursive(BVHNode* node, std::vector<DirectX::BoundingBox>& results) const;
 	void RefitRecursive(BVHNode* node);
 	static bool PassesFilter(const SpatialProxy& proxy, std::uint32_t layerMask, ProxyType typeFilter) noexcept;
 
