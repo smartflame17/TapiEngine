@@ -180,6 +180,7 @@ BVHNode* BVH::BuildRecursive(std::vector<SpatialProxy*>& objects, BVHNode* paren
 	node->parent = parent;
 	node->bounds = ComputeMergedBounds(objects);
 
+	// No need for split if number of objects is less than threshold
 	if (objects.size() <= maxLeafObjects)
 	{
 		node->objects = objects;
@@ -214,7 +215,7 @@ BVHNode* BVH::BuildRecursive(std::vector<SpatialProxy*>& objects, BVHNode* paren
 		{
 			suffix[i - 1] = MergeBounds(suffix[i], sorted[i - 1]->bounds);
 		}
-
+		// SAH cost evaluation for each possible split
 		for (std::size_t splitIndex = 1; splitIndex < sorted.size(); ++splitIndex)
 		{
 			const float leftCost = SurfaceArea(prefix[splitIndex - 1]) * static_cast<float>(splitIndex);

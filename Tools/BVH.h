@@ -77,6 +77,6 @@ private:
 	NodePool nodePool;
 	BVHNode* root = nullptr;
 	std::vector<std::unique_ptr<SpatialProxy>> proxies;
-	std::size_t maxLeafObjects = 4u;
+	std::size_t maxLeafObjects = 4u;	// Maximum number of objects in a leaf node before requiring split
 	bool needsBuild = false;
 };
