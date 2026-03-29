@@ -3,7 +3,10 @@
 #include "../IBindable/ConstantBuffers.h"
 #include "../Drawable/SolidSphere.h"
 #include "../../Components/Component.h"
+#include "RenderLight.h"
 #include "../../imgui/imgui.h"
+
+class RenderQueueBuilder;
 
 class PointLight : public Component
 {
@@ -12,32 +15,16 @@ public:
 	void SpawnControlWindow() noexcept;	// ImGui window for editing light properties
 	void OnInspector() noexcept override;
 	void Reset() noexcept;
-	void Draw(Graphics& gfx) noexcept(!IS_DEBUG);
-	void Bind(Graphics& gfx) const noexcept;
+	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
+	RenderLight BuildRenderLight() const noexcept;
+	void SubmitGizmo(RenderQueueBuilder& builder) const;
 private:
-	struct PointLightCbuf
-	{
-		DirectX::XMFLOAT3 pos;
-		float diffuseIntensity = 1.0f;
-		DirectX::XMFLOAT3 ambient;
-		float attConst = 1.0f;
-		DirectX::XMFLOAT3 diffuseColor;
-		float attLinear = 0.045f;
-		float attQuad = 0.0075f;
-		DirectX::XMFLOAT3 padding;
-	};
 private:
-	DirectX::XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f };
-	PointLightCbuf lightData = {
-		{ 0.0f, 0.0f, 0.0f },
-		1.0f,
-		{ 0.6f, 0.6f, 0.6f },
-		1.0f,
-		{ 1.0f, 1.0f, 1.0f },
-		0.045f,
-		0.0075f,
-		{ 0.0f, 0.0f, 0.0f }
-	};
-	mutable PixelConstantBuffer<PointLightCbuf> cbuf;
+	DirectX::XMFLOAT3 ambient = { 0.6f, 0.6f, 0.6f };
+	DirectX::XMFLOAT3 diffuseColor = { 1.0f, 1.0f, 1.0f };
+	float diffuseIntensity = 1.0f;
+	float attConst = 1.0f;
+	float attLinear = 0.045f;
+	float attQuad = 0.0075f;
 	mutable SolidSphere mesh;
 };

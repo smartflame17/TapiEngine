@@ -1,9 +1,9 @@
 #include "PointLight.h"
+#include "../RenderQueue.h"
 #include "../../Scene/GameObject.h"
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
-	cbuf(gfx, 1u),
 	mesh(gfx, radius)
 {
 }
@@ -21,10 +21,21 @@ void PointLight::OnInspector() noexcept
 {
 	ImGui::Text("Point Light");
 	ImGui::Separator();
-	ImGui::Text("Position");
-	ImGui::SliderFloat("X", &pos.x, -60.0f, 60.0f, "%.1f");
-	ImGui::SliderFloat("Y", &pos.y, -60.0f, 60.0f, "%.1f");
-	ImGui::SliderFloat("Z", &pos.z, -60.0f, 60.0f, "%.1f");
+	if (auto* owner = TryGetGameObject())
+	{
+		auto position = owner->GetTransform().position;
+		ImGui::Text("Position");
+		bool changed = false;
+		changed |= ImGui::SliderFloat("X", &position.x, -60.0f, 60.0f, "%.1f");
+		changed |= ImGui::SliderFloat("Y", &position.y, -60.0f, 60.0f, "%.1f");
+		changed |= ImGui::SliderFloat("Z", &position.z, -60.0f, 60.0f, "%.1f");
+		if (changed)
+		{
+			owner->SetPosition(position.x, position.y, position.z);
+		}
+	}
+	ImGui::ColorEdit3("Color", &diffuseColor.x);
+	ImGui::SliderFloat("Intensity", &diffuseIntensity, 0.0f, 8.0f, "%.2f");
 	if (ImGui::Button("Reset"))
 	{
 		Reset();
@@ -33,20 +44,37 @@ void PointLight::OnInspector() noexcept
 
 void PointLight::Reset() noexcept
 {
-	pos = { 0.0f, 0.0f, 0.0f };
+	diffuseColor = { 1.0f, 1.0f, 1.0f };
+	diffuseIntensity = 1.0f;
+	if (auto* owner = TryGetGameObject())
+	{
+		owner->SetPosition(0.0f, 4.0f, -2.0f);
+	}
 }
 
-void PointLight::Draw(Graphics& gfx) noexcept(!IS_DEBUG)
+void PointLight::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
-	pos = GetGameObject().GetTransform().position;
-	mesh.SetPos(pos);
+	mesh.SetPos(GetGameObject().GetTransform().position);
 	mesh.Draw(gfx);
 }
 
-void PointLight::Bind(Graphics& gfx) const noexcept
+RenderLight PointLight::BuildRenderLight() const noexcept
 {
-	auto cbufData = lightData;
-	cbufData.pos = pos;
-	cbuf.Update(gfx, cbufData);
-	cbuf.Bind(gfx);
+	RenderLight light;
+	light.type = LightType::Point;
+	light.color = diffuseColor;
+	light.intensity = diffuseIntensity;
+	light.position = GetGameObject().GetTransform().position;
+	light.attConst = attConst;
+	light.attLinear = attLinear;
+	light.attQuad = attQuad;
+	return light;
+}
+
+void PointLight::SubmitGizmo(RenderQueueBuilder& builder) const
+{
+	builder.SubmitCallback(RenderPassId::EditorGizmos, [this](Graphics& gfx)
+		{
+			Draw(gfx);
+		});
 }
