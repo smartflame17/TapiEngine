@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <DirectXMath.h>
 #include "../imgui/imgui.h"
+#include "../Graphics/Lighting/RenderLight.h"
 #include "BVHManager.h"
 #include "ScriptManager.h"
 
@@ -15,6 +16,8 @@ class DrawableComponent;
 class Drawable;
 class Camera;
 class CustomBehaviour;
+class RenderQueueBuilder;
+struct RenderView;
 
 class Scene
 {
@@ -30,7 +33,7 @@ public:
 	void ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept;
 	void FixedUpdate(bool isSimulationRunning) noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
-	void Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG);
+	void Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG);
 	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
 	void CleanupDestroyedObjects() noexcept;
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
@@ -42,6 +45,7 @@ public:
 	void DrawHierarchyWindow() noexcept;
 	void DrawInspectorWindow() noexcept;
 	void SelectGameObjectByRay(const DirectX::SimpleMath::Ray& ray) noexcept;
+	void CollectRenderLights(std::vector<RenderLight>& lights) const noexcept;
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 	GameObject* GetSelectedObject() const noexcept;

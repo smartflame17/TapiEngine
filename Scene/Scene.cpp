@@ -5,6 +5,10 @@
 #include "../Components/DrawableComponent.h"
 #include "../Graphics/Camera.h"
 #include "../Graphics/Drawable/Drawable.h"
+#include "../Graphics/Graphics.h"
+#include "../Graphics/RenderQueue.h"
+#include "../Graphics/Lighting/DirectionalLight.h"
+#include "../Graphics/Lighting/PointLight.h"
 #include <algorithm>
 #include <iostream>
 
@@ -115,21 +119,27 @@ void Scene::CleanupDestroyedObjects() noexcept
 	sweep(sweep, rootObjects);
 }
 
-void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
+void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG)
 {
 	if (skybox)
 	{
-		skybox->Draw(gfx);
-		gfx.RestoreDefaultStates();
+		queueBuilder.SubmitCallback(RenderPassId::Skybox, [this](Graphics& gfx)
+			{
+				if (skybox)
+				{
+					skybox->Draw(gfx);
+					gfx.RestoreDefaultStates();
+				}
+			});
 	}
 
 	bvhManager.Sync();
 
 	std::vector<DrawableComponent*> visibleDrawables;
-	if (activeCamera != nullptr)
+	if (view.camera != nullptr)
 	{
-		activeCamera->UpdateFrustum(gfx.GetProjection());
-		bvhManager.QueryVisibleDrawables(activeCamera->GetFrustum(), visibleDrawables);
+		const_cast<Camera*>(view.camera)->UpdateFrustum(view.projection);
+		bvhManager.QueryVisibleDrawables(view.camera->GetFrustum(), visibleDrawables);
 	}
 	else
 	{
@@ -140,17 +150,73 @@ void Scene::Render(Graphics& gfx, Camera* activeCamera) noexcept(!IS_DEBUG)
 	{
 		if (drawable != nullptr && !drawable->GetGameObject().IsPendingKill())
 		{
-			drawable->OnRender(gfx);
-			std::cout << "[DEBUG] Rendered drawable from GameObject: " << drawable->GetGameObject().GetName() << std::endl;
+			drawable->Submit(queueBuilder, view);
 		}
 	}
 
-	if (gfx.GetWireframeDebugSettings().enabled)
+	auto submitGizmos = [&](auto& self, const GameObject& gameObject) -> void
 	{
-		std::vector<DirectX::BoundingBox> hierarchyBounds;
-		hierarchyBounds.reserve(drawables.size() * 2u);
-		bvhManager.CollectHierarchyBounds(hierarchyBounds);
-		gfx.DrawWireframeBoundingBoxes(hierarchyBounds);
+		if (gameObject.IsPendingKill())
+		{
+			return;
+		}
+
+		for (const auto& component : gameObject.GetComponents())
+		{
+			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			{
+				pointLight->SubmitGizmo(queueBuilder);
+			}
+			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
+			{
+				directionalLight->SubmitGizmo(queueBuilder);
+			}
+		}
+
+		for (const auto& child : gameObject.GetChildren())
+		{
+			self(self, *child);
+		}
+	};
+
+	for (const auto& rootObject : rootObjects)
+	{
+		submitGizmos(submitGizmos, *rootObject);
+	}
+}
+
+void Scene::CollectRenderLights(std::vector<RenderLight>& lights) const noexcept
+{
+	lights.clear();
+
+	auto collect = [&](auto& self, const GameObject& gameObject) -> void
+	{
+		if (gameObject.IsPendingKill())
+		{
+			return;
+		}
+
+		for (const auto& component : gameObject.GetComponents())
+		{
+			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			{
+				lights.push_back(pointLight->BuildRenderLight());
+			}
+			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
+			{
+				lights.push_back(directionalLight->BuildRenderLight());
+			}
+		}
+
+		for (const auto& child : gameObject.GetChildren())
+		{
+			self(self, *child);
+		}
+	};
+
+	for (const auto& rootObject : rootObjects)
+	{
+		collect(collect, *rootObject);
 	}
 }
 

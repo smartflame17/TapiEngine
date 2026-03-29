@@ -1,5 +1,6 @@
 #include "DrawableComponent.h"
 #include "../../Scene/GameObject.h"
+#include "../Graphics/RenderQueue.h"
 
 DrawableComponent::DrawableComponent(std::unique_ptr<Drawable> drawablePtr) :
 	drawable(std::move(drawablePtr))
@@ -13,12 +14,12 @@ void DrawableComponent::OnUpdate(float dt, bool isSimulationRunning) noexcept
 	}
 }
 
-void DrawableComponent::OnRender(Graphics& gfx) const noexcept(!IS_DEBUG)
+void DrawableComponent::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) const noexcept
 {
 	if (drawable != nullptr)
 	{
 		drawable->SetExternalTransformMatrix(GetGameObject().GetWorldTransformMatrix());
-		drawable->Draw(gfx);
+		queueBuilder.SubmitOpaque(*drawable, GetGameObject().GetWorldTransformMatrix());
 	}
 }
 

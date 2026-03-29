@@ -10,6 +10,7 @@
 #include "../Scene/Scene.h"
 #include "../Graphics/Camera.h"
 #include "../Graphics/Graphics.h"
+#include "../Graphics/Lighting/DirectionalLight.h"
 #include "../Graphics/Lighting/PointLight.h"
 #include "../Input/Mouse.h"
 
@@ -22,6 +23,7 @@ public:
 		Camera* activeCamera = nullptr;
 		Graphics* graphics = nullptr;
 		std::vector<PointLight*>* pointLights = nullptr;
+		std::vector<DirectionalLight*>* directionalLights = nullptr;
 		Mouse* mouse = nullptr;
 		bool* isPlayMode = nullptr;
 		bool* isPaused = nullptr;

@@ -31,7 +31,7 @@ const Transform& Drawable::GetTransform() const noexcept
 	return transform;
 }
 
-void Drawable::SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
+void Drawable::SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) const noexcept
 {
 	DirectX::XMStoreFloat4x4(&externalTransform, matrix);
 }

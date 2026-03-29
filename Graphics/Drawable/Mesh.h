@@ -30,7 +30,6 @@ public:
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void DrawInspector(Graphics& gfx, const char* label = nullptr) noexcept;
 	void SetTransform(const Transform& transform) noexcept = delete;
-	void SetExternalTransformMatrix(DirectX::FXMMATRIX matrix) noexcept = delete;
 
 private:
 	void ApplyBaseColorTexturePath(Graphics& gfx) noexcept;

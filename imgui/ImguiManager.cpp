@@ -195,6 +195,16 @@ void ImguiManager::EditorWindow(bool* p_open)
 			}
 		}
 	}
+	/*if (context.directionalLights != nullptr)
+	{
+		for (auto* light : *context.directionalLights)
+		{
+			if (light != nullptr)
+			{
+				light->SpawnControlWindow();
+			}
+		}
+	}*/
 	MainMenuBar();
 }
 
