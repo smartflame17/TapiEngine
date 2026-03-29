@@ -309,6 +309,19 @@ void Primitive::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 	if (pMaterialCbuf != nullptr)
 	{
 		pMaterialCbuf->Update(gfx, material);
+		pMaterialCbuf->Bind(gfx);
+	}
+	if (pTexture != nullptr)
+	{
+		pTexture->Bind(gfx);
+	}
+	if (pNormalTexture != nullptr)
+	{
+		pNormalTexture->Bind(gfx);
+	}
+	if (pSampler != nullptr)
+	{
+		pSampler->Bind(gfx);
 	}
 	Drawable::Draw(gfx);
 }

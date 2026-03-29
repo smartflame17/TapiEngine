@@ -54,6 +54,19 @@ void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	if (pMaterialCbuf != nullptr)
 	{
 		pMaterialCbuf->Update(gfx, material);
+		pMaterialCbuf->Bind(gfx);
+	}
+	if (pBaseColorTexture != nullptr)
+	{
+		pBaseColorTexture->Bind(gfx);
+	}
+	if (pNormalTexture != nullptr)
+	{
+		pNormalTexture->Bind(gfx);
+	}
+	if (pSampler != nullptr)
+	{
+		pSampler->Bind(gfx);
 	}
 	Drawable::Draw(gfx);
 }
