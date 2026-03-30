@@ -62,6 +62,14 @@ void Renderer::Render(Scene& scene, Camera* activeCamera) noexcept(!IS_DEBUG)
 	ExecuteOpaqueBase(view);
 	ExecuteOpaqueAccum(view);
 	ExecuteCallbacks(RenderPassId::EditorGizmos);
+
+	const auto& wireframeSettings = gfx.GetWireframeDebugSettings();
+	if (wireframeSettings.enabled)
+	{
+		std::vector<DirectX::BoundingBox> hierarchyBounds;
+		scene.CollectBVHBounds(hierarchyBounds);
+		gfx.DrawWireframeBoundingBoxes(hierarchyBounds);
+	}
 }
 
 RenderView Renderer::BuildView(Camera* activeCamera) const noexcept

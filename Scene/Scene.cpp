@@ -221,6 +221,13 @@ void Scene::CollectRenderLights(std::vector<RenderLight>& lights) const noexcept
 	}
 }
 
+void Scene::CollectBVHBounds(std::vector<DirectX::BoundingBox>& bounds) noexcept
+{
+	bvhManager.Sync();
+	bounds.clear();
+	bvhManager.CollectHierarchyBounds(bounds);
+}
+
 void Scene::SetSkybox(std::unique_ptr<Drawable> drawable)
 {
 	skybox = std::move(drawable);

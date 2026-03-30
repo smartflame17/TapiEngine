@@ -46,6 +46,7 @@ public:
 	void DrawInspectorWindow() noexcept;
 	void SelectGameObjectByRay(const DirectX::SimpleMath::Ray& ray) noexcept;
 	void CollectRenderLights(std::vector<RenderLight>& lights) const noexcept;
+	void CollectBVHBounds(std::vector<DirectX::BoundingBox>& bounds) noexcept;
 
 	const std::vector<std::unique_ptr<GameObject>>& GetRootObjects() const noexcept;
 	GameObject* GetSelectedObject() const noexcept;
