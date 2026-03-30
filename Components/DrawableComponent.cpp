@@ -19,6 +19,7 @@ void DrawableComponent::Submit(RenderQueueBuilder& queueBuilder, const RenderVie
 	if (drawable != nullptr)
 	{
 		drawable->SetExternalTransformMatrix(GetGameObject().GetWorldTransformMatrix());
+		// all drawables submitted through this component are considered opaque for sorting purposes, as they are expected to be static meshes..
 		queueBuilder.SubmitOpaque(*drawable, GetGameObject().GetWorldTransformMatrix());
 	}
 }

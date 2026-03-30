@@ -123,6 +123,7 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 {
 	if (skybox)
 	{
+		// lambda submission for skybox rendering, ensures it gets drawn in the correct pass and can set its own states without affecting other drawables
 		queueBuilder.SubmitCallback(RenderPassId::Skybox, [this](Graphics& gfx)
 			{
 				if (skybox)
