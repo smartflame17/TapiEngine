@@ -93,10 +93,10 @@ void App::ResetSimulation()
 	auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/zhu_yuan_zzz/scene.gltf"
+		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	zhu.SetPosition(1.0f, 0.0f, 0.0f);
-	zhu.SetScale(100.0f, 100.0f, 100.0f);
+	zhu.SetScale(10.0f, 10.0f, 10.0f);
 
 	CacheSceneComponents();
 
