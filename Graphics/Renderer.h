@@ -47,8 +47,10 @@ private:
 		DirectX::XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
 		float attLinear = 0.0f;
 		float attQuad = 0.0f;
+		float innerConeCos = 1.0f;
+		float outerConeCos = 1.0f;
 		std::uint32_t enabled = 0u;
-		DirectX::XMFLOAT2 padding = { 0.0f, 0.0f };
+		//DirectX::XMFLOAT3 padding = { 0.0f, 0.0f, 0.0f };
 	};
 
 	static_assert(sizeof(LightPassCbuf) == 64u, "LightPassCbuf must match shader layout.");

@@ -195,7 +195,17 @@ void ImguiManager::EditorWindow(bool* p_open)
 			}
 		}
 	}
-	/*if (context.directionalLights != nullptr)
+	if (context.spotLights != nullptr)
+	{
+		for (auto* light : *context.spotLights)
+		{
+			if (light != nullptr)
+			{
+				light->SpawnControlWindow();
+			}
+		}
+	}
+	if (context.directionalLights != nullptr)
 	{
 		for (auto* light : *context.directionalLights)
 		{
@@ -204,7 +214,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 				light->SpawnControlWindow();
 			}
 		}
-	}*/
+	}
 	MainMenuBar();
 }
 

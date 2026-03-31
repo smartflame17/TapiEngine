@@ -204,6 +204,8 @@ void Renderer::BindLighting(const RenderLight* light, bool applyAmbient) noexcep
 		passData.position = light->position;
 		passData.attLinear = light->attLinear;
 		passData.attQuad = light->attQuad;
+		passData.innerConeCos = light->innerConeCos;
+		passData.outerConeCos = light->outerConeCos;
 		passData.enabled = light->enabled;
 	}
 	lightPassCbuf.Update(gfx, passData);
