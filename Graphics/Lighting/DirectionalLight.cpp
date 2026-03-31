@@ -101,3 +101,18 @@ void DirectionalLight::SubmitGizmo(RenderQueueBuilder& builder) const
 			}
 		});
 }
+
+void DirectionalLight::SetColor(DirectX::XMFLOAT3 newColor) noexcept
+{
+	color = newColor;
+}
+
+void DirectionalLight::SetColor(float r, float g, float b) noexcept
+{
+	color = { r, g, b };
+}
+
+void DirectionalLight::SetIntensity(float newIntensity) noexcept
+{
+	intensity = newIntensity;
+}

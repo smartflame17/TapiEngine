@@ -29,11 +29,11 @@ float3 EvaluatePhongLight(
     float3 L = 0.0f.xxx;
     float attenuation = 1.0f;
 
-    if (lightType == 1u)
+    if (lightType == 1u) // directional light
     {
         L = normalize(-light.direction);
     }
-    else if (lightType == 2u)
+    else if (lightType == 2u) // point light
     {
         const float3 toLight = light.position - worldPos;
         const float distance = length(toLight);

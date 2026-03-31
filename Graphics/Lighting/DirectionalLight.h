@@ -17,6 +17,9 @@ public:
 	void Reset() noexcept;
 	RenderLight BuildRenderLight() const noexcept;
 	void SubmitGizmo(RenderQueueBuilder& builder) const;
+	void SetColor(DirectX::XMFLOAT3 newColor) noexcept;
+	void SetColor(float r, float g, float b) noexcept;
+	void SetIntensity(float newIntensity) noexcept;
 
 private:
 	mutable SolidSphere gizmo;

@@ -56,13 +56,14 @@ void App::ResetSimulation()
 	auto& gameCam = cameraObject.AddComponent<Camera>();
 	cameraObject.SetPosition(0.0f, 2.0f, -5.0f);
 
-	auto& pointLightObject = scene.CreateGameObject("PointLight");
+	/*auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
-	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
+	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);*/
 
-	/*auto& directionalLightObject = scene.CreateGameObject("DirectionalLight");
+	auto& directionalLightObject = scene.CreateGameObject("DirectionalLight");
 	directionalLightObject.AddComponent<DirectionalLight>(wnd.Gfx());
-	directionalLightObject.SetRotation(0.4f, -0.7f, 0.0f);*/
+	directionalLightObject.SetRotation(0.4f, -0.7f, 0.0f);
+	directionalLightObject.GetComponent<DirectionalLight>()->SetIntensity(0.4f);
 
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
