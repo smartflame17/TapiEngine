@@ -219,6 +219,7 @@
     <ClCompile Include="Graphics\IBindable\VertexShader.cpp" />
     <ClCompile Include="Graphics\Lighting\DirectionalLight.cpp" />
     <ClCompile Include="Graphics\Lighting\PointLight.cpp" />
+    <ClCompile Include="Graphics\Lighting\SpotLight.cpp" />
     <ClCompile Include="Graphics\Vertex.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\ImguiManager.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="Graphics\IBindable\VertexShader.h" />
     <ClInclude Include="Graphics\Lighting\DirectionalLight.h" />
     <ClInclude Include="Graphics\Lighting\PointLight.h" />
+    <ClInclude Include="Graphics\Lighting\SpotLight.h" />
     <ClInclude Include="Graphics\Lighting\RenderLight.h" />
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="imgui\imconfig.h" />

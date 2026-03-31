@@ -19,6 +19,7 @@ App::App():
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&spotLights,
 		&directionalLights,
 		&wnd.mouse,
 		&isPlayMode,
@@ -43,6 +44,7 @@ void App::ResetSimulation()
 	scene.Clear();
 	gameCams.clear();
 	pointLights.clear();
+	spotLights.clear();
 
 	std::mt19937 rng(std::random_device{}());
 
@@ -56,9 +58,14 @@ void App::ResetSimulation()
 	auto& gameCam = cameraObject.AddComponent<Camera>();
 	cameraObject.SetPosition(0.0f, 2.0f, -5.0f);
 
-	/*auto& pointLightObject = scene.CreateGameObject("PointLight");
+	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
-	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);*/
+	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
+
+	auto& spotLightObject = scene.CreateGameObject("SpotLight");
+	spotLightObject.AddComponent<SpotLight>(wnd.Gfx());
+	spotLightObject.SetPosition(-3.0f, 5.0f, -3.0f);
+	spotLightObject.SetRotation(0.9f, 0.75f, 0.0f);
 
 	auto& directionalLightObject = scene.CreateGameObject("DirectionalLight");
 	directionalLightObject.AddComponent<DirectionalLight>(wnd.Gfx());
@@ -116,6 +123,7 @@ void App::CacheSceneComponents() noexcept
 {
 	gameCams.clear();
 	pointLights.clear();
+	spotLights.clear();
 	directionalLights.clear();
 
 	auto collect = [&](auto& self, const GameObject& gameObject) -> void
@@ -134,6 +142,10 @@ void App::CacheSceneComponents() noexcept
 			if (auto pointLight = dynamic_cast<PointLight*>(component.get()))
 			{
 				pointLights.push_back(pointLight);
+			}
+			if (auto spotLight = dynamic_cast<SpotLight*>(component.get()))
+			{
+				spotLights.push_back(spotLight);
 			}
 			if (auto directionalLight = dynamic_cast<DirectionalLight*>(component.get()))
 			{
@@ -225,6 +237,7 @@ void App::RenderFrame(float alpha)
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&spotLights,
 		&directionalLights,
 		&wnd.mouse,
 		&isPlayMode,

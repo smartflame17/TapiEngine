@@ -33,8 +33,10 @@ cbuffer LightPassCbuf : register(b3)
     float3 lightPosition;
     float lightAttLinear;
     float lightAttQuad;
+    float lightInnerConeCos;
+    float lightOuterConeCos;
     uint lightEnabled;
-    float2 lightPadding;
+    //float3 lightPadding;
 };
 
 Texture2D baseColorTex : register(t0);
@@ -65,6 +67,8 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL, float3 tangent : TANG
     light.position = lightPosition;
     light.attLinear = lightAttLinear;
     light.attQuad = lightAttQuad;
+    light.innerConeCos = lightInnerConeCos;
+    light.outerConeCos = lightOuterConeCos;
     light.enabled = lightEnabled;
 
     const float3 ambient = applyAmbient != 0u ? sampledColor * ambientColor : 0.0f.xxx;

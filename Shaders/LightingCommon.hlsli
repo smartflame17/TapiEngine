@@ -7,8 +7,10 @@ struct RenderLightData
     float3 position;
     float attLinear;
     float attQuad;
+    float innerConeCos;
+    float outerConeCos;
     uint enabled;
-    float3 padding;
+    //float3 padding;
 };
 
 float3 EvaluatePhongLight(
@@ -33,7 +35,7 @@ float3 EvaluatePhongLight(
     {
         L = normalize(-light.direction);
     }
-    else if (lightType == 2u) // point light
+    else if (lightType == 2u || lightType == 3u) // point/spot light
     {
         const float3 toLight = light.position - worldPos;
         const float distance = length(toLight);
@@ -44,6 +46,14 @@ float3 EvaluatePhongLight(
 
         L = toLight / distance;
         attenuation = light.attConst + light.attLinear * distance + light.attQuad * distance * distance;
+
+        if (lightType == 3u) // spot light
+        {
+            const float spotCos = dot(normalize(-light.direction), L);
+            const float coneRange = max(light.innerConeCos - light.outerConeCos, 0.0001f);
+            const float spotFactor = saturate((spotCos - light.outerConeCos) / coneRange);
+            attenuation /= max(spotFactor, 0.0001f);
+        }
     }
 
     const float NdotL = max(dot(normal, L), 0.0f);
