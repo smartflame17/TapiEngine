@@ -9,6 +9,7 @@
 #include "../Graphics/RenderQueue.h"
 #include "../Graphics/Lighting/DirectionalLight.h"
 #include "../Graphics/Lighting/PointLight.h"
+#include "../Graphics/Lighting/SpotLight.h"
 #include <algorithm>
 #include <iostream>
 
@@ -168,6 +169,10 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 			{
 				pointLight->SubmitGizmo(queueBuilder);
 			}
+			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			{
+				spotLight->SubmitGizmo(queueBuilder);
+			}
 			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
 			{
 				directionalLight->SubmitGizmo(queueBuilder);
@@ -202,6 +207,10 @@ void Scene::CollectRenderLights(std::vector<RenderLight>& lights) const noexcept
 			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
 			{
 				lights.push_back(pointLight->BuildRenderLight());
+			}
+			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			{
+				lights.push_back(spotLight->BuildRenderLight());
 			}
 			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
 			{
