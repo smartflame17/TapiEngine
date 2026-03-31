@@ -64,7 +64,10 @@ RenderLight PointLight::BuildRenderLight() const noexcept
 	light.type = LightType::Point;
 	light.color = diffuseColor;
 	light.intensity = diffuseIntensity;
-	light.position = GetGameObject().GetTransform().position;
+	if (const auto* owner = TryGetGameObject())
+	{
+		light.position = owner->GetTransform().position;
+	}
 	light.attConst = attConst;
 	light.attLinear = attLinear;
 	light.attQuad = attQuad;
@@ -77,4 +80,26 @@ void PointLight::SubmitGizmo(RenderQueueBuilder& builder) const
 		{
 			Draw(gfx);
 		});
+}
+
+void PointLight::SetColor(DirectX::XMFLOAT3 newColor) noexcept
+{
+	diffuseColor = newColor;
+}
+
+void PointLight::SetColor(float r, float g, float b) noexcept
+{
+	diffuseColor = { r, g, b };
+}
+
+void PointLight::SetIntensity(float newIntensity) noexcept
+{
+	diffuseIntensity = newIntensity;
+}
+
+void PointLight::SetAttenuation(float constant, float linear, float quadratic) noexcept
+{
+	attConst = constant;
+	attLinear = linear;
+	attQuad = quadratic;
 }

@@ -18,9 +18,12 @@ public:
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
 	RenderLight BuildRenderLight() const noexcept;
 	void SubmitGizmo(RenderQueueBuilder& builder) const;
+	void SetColor(DirectX::XMFLOAT3 newColor) noexcept;
+	void SetColor(float r, float g, float b) noexcept;
+	void SetIntensity(float newIntensity) noexcept;
+	void SetAttenuation(float constant, float linear, float quadratic) noexcept;
+
 private:
-private:
-	DirectX::XMFLOAT3 ambient = { 0.6f, 0.6f, 0.6f };
 	DirectX::XMFLOAT3 diffuseColor = { 1.0f, 1.0f, 1.0f };
 	float diffuseIntensity = 1.0f;
 	float attConst = 1.0f;
