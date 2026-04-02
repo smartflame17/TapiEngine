@@ -36,7 +36,7 @@ cbuffer LightPassCbuf : register(b3)
     float lightInnerConeCos;
     float lightOuterConeCos;
     uint lightEnabled;
-    //float3 lightPadding;
+    float3 lightPadding;
 };
 
 Texture2D baseColorTex : register(t0);
