@@ -12,11 +12,12 @@ namespace
 	}
 }
 
-DirectionalLight::DirectionalLight(Graphics& gfx, float radius)
-	:
-	gizmo(gfx, radius)
+DirectionalLight::DirectionalLight(Graphics& gfx)
+	/*:
+	gizmo(gfx, radius)*/
 {
 }
+
 
 void DirectionalLight::SpawnControlWindow() noexcept
 {
@@ -83,24 +84,24 @@ RenderLight DirectionalLight::BuildRenderLight() const noexcept
 	return light;
 }
 
-void DirectionalLight::SubmitGizmo(RenderQueueBuilder& builder) const
-{
-	builder.SubmitCallback(RenderPassId::EditorGizmos, [this](Graphics& gfx)
-		{
-			if (const auto* owner = TryGetGameObject())
-			{
-				const auto origin = owner->GetTransform().position;
-				const auto light = BuildRenderLight();
-				const DirectX::XMFLOAT3 offset = {
-					origin.x - light.direction.x,
-					origin.y - light.direction.y,
-					origin.z - light.direction.z
-				};
-				gizmo.SetPos(offset);
-				gizmo.Draw(gfx);
-			}
-		});
-}
+//void DirectionalLight::SubmitGizmo(RenderQueueBuilder& builder) const
+//{
+//	builder.SubmitCallback(RenderPassId::EditorGizmos, [this](Graphics& gfx)
+//		{
+//			if (const auto* owner = TryGetGameObject())
+//			{
+//				const auto origin = owner->GetTransform().position;
+//				const auto light = BuildRenderLight();
+//				const DirectX::XMFLOAT3 offset = {
+//					origin.x - light.direction.x,
+//					origin.y - light.direction.y,
+//					origin.z - light.direction.z
+//				};
+//				gizmo.SetPos(offset);
+//				gizmo.Draw(gfx);
+//			}
+//		});
+//}
 
 void DirectionalLight::SetColor(DirectX::XMFLOAT3 newColor) noexcept
 {

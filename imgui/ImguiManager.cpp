@@ -195,26 +195,26 @@ void ImguiManager::EditorWindow(bool* p_open)
 			}
 		}
 	}
-	if (context.spotLights != nullptr)
-	{
-		for (auto* light : *context.spotLights)
-		{
-			if (light != nullptr)
-			{
-				light->SpawnControlWindow();
-			}
-		}
-	}
-	if (context.directionalLights != nullptr)
-	{
-		for (auto* light : *context.directionalLights)
-		{
-			if (light != nullptr)
-			{
-				light->SpawnControlWindow();
-			}
-		}
-	}
+	//if (context.spotLights != nullptr)
+	//{
+	//	for (auto* light : *context.spotLights)
+	//	{
+	//		if (light != nullptr)
+	//		{
+	//			light->SpawnControlWindow();
+	//		}
+	//	}
+	//}
+	//if (context.directionalLights != nullptr)
+	//{
+	//	for (auto* light : *context.directionalLights)
+	//	{
+	//		if (light != nullptr)
+	//		{
+	//			light->SpawnControlWindow();
+	//		}
+	//	}
+	//}
 	MainMenuBar();
 }
 

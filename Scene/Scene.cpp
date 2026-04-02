@@ -137,6 +137,7 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 
 	bvhManager.Sync();
 
+	// opaque drawables
 	std::vector<DrawableComponent*> visibleDrawables;
 	if (view.camera != nullptr)
 	{
@@ -156,6 +157,7 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 		}
 	}
 
+	// light gizmos
 	auto submitGizmos = [&](auto& self, const GameObject& gameObject) -> void
 	{
 		if (gameObject.IsPendingKill())
@@ -173,10 +175,10 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 			{
 				spotLight->SubmitGizmo(queueBuilder);
 			}
-			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
+			/*else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
 			{
 				directionalLight->SubmitGizmo(queueBuilder);
-			}
+			}*/
 		}
 
 		for (const auto& child : gameObject.GetChildren())
