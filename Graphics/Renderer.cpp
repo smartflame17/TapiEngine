@@ -1,7 +1,10 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Drawable/Drawable.h"
+#include "IBindable/ShadowTransformCbuf.h"
 #include "../Scene/Scene.h"
+#include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -32,6 +35,19 @@ namespace
 		rt.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 		return desc;
 	}
+
+	D3D11_RASTERIZER_DESC MakeShadowRasterizerDesc() noexcept
+	{
+		D3D11_RASTERIZER_DESC desc = {};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_BACK;
+		desc.FrontCounterClockwise = FALSE;
+		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = 1000;
+		desc.SlopeScaledDepthBias = 2.0f;
+		desc.DepthBiasClamp = 0.0f;
+		return desc;
+	}
 }
 
 Renderer::Renderer(Graphics& gfx)
@@ -42,8 +58,14 @@ Renderer::Renderer(Graphics& gfx)
 	baseDepthState(gfx, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL),
 	additiveDepthState(gfx, true, D3D11_DEPTH_WRITE_MASK_ZERO, D3D11_COMPARISON_EQUAL),
 	solidRasterizerState(gfx, D3D11_CULL_BACK),
+	shadowDepthState(gfx, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL),
+	shadowRasterizerState(gfx, MakeShadowRasterizerDesc()),
 	frameLightCbuf(gfx, 1u),
-	lightPassCbuf(gfx, 3u)
+	lightPassCbuf(gfx, 3u),
+	lightShadowCbuf(gfx, 4u),
+	shadowVertexShader(gfx, L"ShadowMapVS.cso"),
+	shadowMap(gfx, 2048u, 2u),
+	shadowSampler(gfx, Sampler::Type::LinearClamp, 1u)
 {
 }
 
@@ -59,9 +81,12 @@ void Renderer::Render(Scene& scene, Camera* activeCamera) noexcept(!IS_DEBUG)
 	queue.Sort();
 
 	ExecuteCallbacks(RenderPassId::Skybox);
+	ExecuteShadowPass(view);
 	ExecuteOpaqueBase(view);
 	ExecuteOpaqueAccum(view);
 	ExecuteCallbacks(RenderPassId::EditorGizmos);
+	shadowMap.Unbind(gfx);
+	gfx.RestoreDefaultStates();
 
 	const auto& wireframeSettings = gfx.GetWireframeDebugSettings();
 	if (wireframeSettings.enabled)
@@ -99,6 +124,7 @@ RenderView Renderer::BuildView(Camera* activeCamera) const noexcept
 void Renderer::ConfigurePassStates()
 {
 	queue.GetPassState(RenderPassId::Skybox) = { &opaqueBlendState, nullptr, nullptr, false, false, false };
+	queue.GetPassState(RenderPassId::ShadowMap) = { &opaqueBlendState, &shadowDepthState, &shadowRasterizerState, false, true, false };
 	queue.GetPassState(RenderPassId::OpaqueBase) = { &opaqueBlendState, &baseDepthState, &solidRasterizerState, false, false, false };
 	queue.GetPassState(RenderPassId::OpaqueLightAccum) = { &additiveBlendState, &additiveDepthState, &solidRasterizerState, false, false, false };
 	queue.GetPassState(RenderPassId::EditorGizmos) = { &opaqueBlendState, &baseDepthState, &solidRasterizerState, false, false, false };
@@ -131,6 +157,40 @@ void Renderer::ExecuteCallbacks(RenderPassId passId) noexcept(!IS_DEBUG)
 			item.callback(gfx);
 		}
 	}
+	gfx.RestoreDefaultStates();
+}
+
+void Renderer::ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG)
+{
+	pShadowCastingSpot = FindPrimarySpot(view.lights);
+	hasActiveSpotLightShadow = false;
+
+	if (pShadowCastingSpot == nullptr)
+	{
+		return;
+	}
+
+	DirectX::XMStoreFloat4x4(&activeSpotLightViewProjection, BuildSpotLightViewProjection(*pShadowCastingSpot));
+	ShadowTransformCbuf::SetLightViewProjection(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection));
+	hasActiveSpotLightShadow = true;
+	shadowMap.BeginWrite(gfx);
+	shadowDepthState.Bind(gfx);
+	shadowRasterizerState.Bind(gfx);
+	shadowVertexShader.Bind(gfx);
+	gfx.UnbindPixelShader();
+
+	for (const auto& item : queue.GetOpaqueItems())
+	{
+		if (item.drawable == nullptr)
+		{
+			continue;
+		}
+
+		item.drawable->SetExternalTransformMatrix(DirectX::XMLoadFloat4x4(&item.transform));
+		item.drawable->DrawShadow(gfx, shadowVertexShader.GetBytecode());
+	}
+
+	gfx.BindMainRenderTarget();
 	gfx.RestoreDefaultStates();
 }
 
@@ -210,6 +270,25 @@ void Renderer::BindLighting(const RenderLight* light, bool applyAmbient) noexcep
 	}
 	lightPassCbuf.Update(gfx, passData);
 	lightPassCbuf.Bind(gfx);
+
+	LightShadowCbuf shadowData;
+	const bool enableShadow = light != nullptr &&
+		light->enabled != 0u &&
+		light->type == LightType::Spot &&
+		pShadowCastingSpot != nullptr &&
+		light == pShadowCastingSpot &&
+		hasActiveSpotLightShadow;
+	if (enableShadow)
+	{
+		DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection)));
+		shadowData.shadowMapTexelSize = { 1.0f / 2048.0f, 1.0f / 2048.0f };
+		shadowData.shadowEnabled = 1u;
+		shadowData.shadowStrength = 0.65f;
+		shadowMap.Bind(gfx);
+		shadowSampler.Bind(gfx);
+	}
+	lightShadowCbuf.Update(gfx, shadowData);
+	lightShadowCbuf.Bind(gfx);
 }
 
 const RenderLight* Renderer::FindPrimaryDirectional(const std::vector<RenderLight>& lights) const noexcept
@@ -222,4 +301,33 @@ const RenderLight* Renderer::FindPrimaryDirectional(const std::vector<RenderLigh
 		}
 	}
 	return nullptr;
+}
+
+const RenderLight* Renderer::FindPrimarySpot(const std::vector<RenderLight>& lights) const noexcept
+{
+	for (const auto& light : lights)
+	{
+		if (light.enabled && light.type == LightType::Spot)
+		{
+			return &light;
+		}
+	}
+	return nullptr;
+}
+
+DirectX::XMMATRIX Renderer::BuildSpotLightViewProjection(const RenderLight& light) const noexcept
+{
+	const auto position = DirectX::XMLoadFloat3(&light.position);
+	const auto direction = DirectX::XMLoadFloat3(&light.direction);
+	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	const float alignment = std::abs(DirectX::XMVectorGetX(DirectX::XMVector3Dot(direction, up)));
+	if (alignment > 0.99f)
+	{
+		up = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	}
+
+	const auto view = DirectX::XMMatrixLookToLH(position, direction, up);
+	const float fov = std::clamp(2.0f * std::acos(std::clamp(light.outerConeCos, -1.0f, 1.0f)), 0.1f, DirectX::XM_PI - 0.1f);
+	const auto projection = DirectX::XMMatrixPerspectiveFovLH(fov, 1.0f, 0.1f, 100.0f);
+	return view * projection;
 }

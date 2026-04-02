@@ -17,6 +17,7 @@ class RasterizerState;
 enum class RenderPassId : std::uint32_t
 {
 	Skybox = 0u,
+	ShadowMap,
 	OpaqueBase,
 	OpaqueLightAccum,
 	EditorGizmos,

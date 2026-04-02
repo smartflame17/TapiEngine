@@ -6,6 +6,9 @@
 #include "IBindable/ConstantBuffers.h"
 #include "IBindable/DepthStencilState.h"
 #include "IBindable/RasterizerState.h"
+#include "IBindable/Sampler.h"
+#include "IBindable/ShadowMap.h"
+#include "IBindable/VertexShader.h"
 
 class Scene;
 
@@ -31,11 +34,14 @@ private:
 	void ConfigurePassStates();
 	void ExecutePassState(const PassState& state) noexcept;
 	void ExecuteCallbacks(RenderPassId passId) noexcept(!IS_DEBUG);
+	void ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG);
 	void ExecuteOpaqueBase(const RenderView& view) noexcept(!IS_DEBUG);
 	void ExecuteOpaqueAccum(const RenderView& view) noexcept(!IS_DEBUG);
 	void DrawOpaqueItem(const RenderItem& item) noexcept(!IS_DEBUG);
 	void BindLighting(const RenderLight* light, bool applyAmbient) noexcept;
 	const RenderLight* FindPrimaryDirectional(const std::vector<RenderLight>& lights) const noexcept;
+	const RenderLight* FindPrimarySpot(const std::vector<RenderLight>& lights) const noexcept;
+	DirectX::XMMATRIX BuildSpotLightViewProjection(const RenderLight& light) const noexcept;
 
 private:
 	struct LightPassCbuf
@@ -55,6 +61,19 @@ private:
 
 	static_assert(sizeof(LightPassCbuf) == 64u, "LightPassCbuf must match shader layout.");
 
+	struct LightShadowCbuf
+	{
+		DirectX::XMFLOAT4X4 lightViewProjection = {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+		DirectX::XMFLOAT2 shadowMapTexelSize = { 0.0f, 0.0f };
+		std::uint32_t shadowEnabled = 0u;
+		float shadowStrength = 0.0f;
+	};
+
 	Graphics& gfx;
 	RenderQueue queue;
 	BlendState opaqueBlendState;
@@ -62,6 +81,23 @@ private:
 	DepthStencilState baseDepthState;
 	DepthStencilState additiveDepthState;
 	RasterizerState solidRasterizerState;
+	DepthStencilState shadowDepthState;
+	RasterizerState shadowRasterizerState;
 	PixelConstantBuffer<FrameLightCbuf> frameLightCbuf;
 	PixelConstantBuffer<LightPassCbuf> lightPassCbuf;
+	PixelConstantBuffer<LightShadowCbuf> lightShadowCbuf; // for shadow pass (contains light view-projection matrix and shadow map parameters), do NOT use on main pass
+	VertexShader shadowVertexShader;
+	ShadowMap shadowMap;
+	Sampler shadowSampler;
+	DirectX::XMFLOAT4X4 activeSpotLightViewProjection = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+	bool hasActiveSpotLightShadow = false;
+	const RenderLight* pShadowCastingSpot = nullptr;
 };
+
+// TODO: consider using a structured buffer for lights instead of cBuffers, to allow more than 1 light and more flexible light count (currently we are limited by cBuffer size and we have to set an upper limit on light count)
+// TODO: refactor shadow pass to be more flexible and support multiple shadow-casting lights (currently we only support 1 shadow-casting directional light and 1 shadow-casting spot light, and we have to choose which one is the "primary" light that casts shadows if both are present)
