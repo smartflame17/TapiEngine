@@ -62,6 +62,7 @@ Ground::Ground(Graphics& gfx, int divisionsX, int divisionsY, float scale)
 	}
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+	AddBind(std::make_unique<ShadowTransformCbuf>(gfx, *this));
 }
 
 DirectX::XMMATRIX Ground::GetTransformXM() const noexcept

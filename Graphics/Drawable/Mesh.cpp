@@ -43,6 +43,7 @@ Mesh::Mesh(Graphics& gfx,
 	}
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+	AddBind(std::make_unique<ShadowTransformCbuf>(gfx, *this));
 	RefreshMaterialState();
 	UpdateBaseColorStatus(pBaseColorTexture != nullptr && !pBaseColorTexture->IsUsingFallback() && !baseColorTexturePath.empty());
 	UpdateNormalMapStatus(pNormalTexture != nullptr && !pNormalTexture->IsUsingFallback() && !normalMapPath.empty());
@@ -69,6 +70,12 @@ void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 		pSampler->Bind(gfx);
 	}
 	Drawable::Draw(gfx);
+}
+
+void Mesh::DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+{
+	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
+	Drawable::DrawShadow(gfx, pShadowVertexShaderBytecode);
 }
 
 DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept

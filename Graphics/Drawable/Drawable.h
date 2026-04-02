@@ -18,6 +18,7 @@ public:
 	Drawable(const Drawable&) = delete;
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	virtual void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
+	virtual void DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG);
 	virtual void Update(float dt) noexcept {}
 	virtual void DrawInspector() noexcept {}
 	virtual ~Drawable() = default;

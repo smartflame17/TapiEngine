@@ -27,6 +27,7 @@ public:
 		bool supportsTextureMapping = false,
 		bool normalMapEnabled = false);
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
+	void DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG);
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void DrawInspector(Graphics& gfx, const char* label = nullptr) noexcept;
 	void SetTransform(const Transform& transform) noexcept = delete;

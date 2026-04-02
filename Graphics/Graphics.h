@@ -78,6 +78,8 @@ public:
 	void BindMainRenderTarget() noexcept;
 	void ClearMainRenderTarget(float r, float g, float b, bool clearDepth = true, bool clearStencil = true) noexcept;
 	void RestoreDefaultStates() noexcept;
+	void SetViewport(float width, float height, float topLeftX = 0.0f, float topLeftY = 0.0f, float minDepth = 0.0f, float maxDepth = 1.0f) noexcept;
+	void UnbindPixelShader() noexcept;
 	void DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG);
 	void DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox>& bounds) noexcept(!IS_DEBUG);
 

@@ -1,4 +1,9 @@
 #include "Drawable.h"
+#include "../IBindable/InputLayout.h"
+#include "../IBindable/PixelShader.h"
+#include "../IBindable/ShadowTransformCbuf.h"
+#include "../IBindable/TransformCBuf.h"
+#include "../IBindable/VertexShader.h"
 
 Drawable::Drawable() noexcept
 {
@@ -12,12 +17,48 @@ void Drawable::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	for (auto& b : binds)
 	{
+		if (dynamic_cast<const ShadowTransformCbuf*>(b.get()) != nullptr) // Shadow transform cbuf should not be bound in regular draw call
+		{
+			continue;
+		}
 		b->Bind(gfx);
 	}
 	for (auto& b : GetStaticBinds())
 	{
+		if (dynamic_cast<const ShadowTransformCbuf*>(b.get()) != nullptr)
+		{
+			continue;
+		}
 		b->Bind(gfx);
 	}
+	gfx.DrawIndexed(pIndexBuffer->GetCount());
+}
+
+void Drawable::DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+{
+	const auto bindShadowResources = [&](const auto& bindCollection)
+		{
+			for (const auto& bind : bindCollection)
+			{
+				if (dynamic_cast<const VertexShader*>(bind.get()) != nullptr ||
+					dynamic_cast<const PixelShader*>(bind.get()) != nullptr ||
+					dynamic_cast<const TransformCbuf*>(bind.get()) != nullptr)
+				{
+					continue;
+				}
+
+				if (const auto* pInputLayout = dynamic_cast<const InputLayout*>(bind.get()))
+				{
+					const_cast<InputLayout*>(pInputLayout)->BindForShader(gfx, pShadowVertexShaderBytecode);
+					continue;
+				}
+
+				bind->Bind(gfx);
+			}
+		};
+
+	bindShadowResources(binds);
+	bindShadowResources(GetStaticBinds());
 	gfx.DrawIndexed(pIndexBuffer->GetCount());
 }
 

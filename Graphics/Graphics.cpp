@@ -478,6 +478,7 @@ bool Graphics::IsImGuiEnabled() const noexcept
 void Graphics::BindMainRenderTarget() noexcept
 {
 	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
+	SetViewport(viewportWidth, viewportHeight, viewportTopLeftX, viewportTopLeftY);
 }
 
 void Graphics::ClearMainRenderTarget(float r, float g, float b, bool clearDepth, bool clearStencil) noexcept
@@ -507,6 +508,24 @@ void Graphics::RestoreDefaultStates() noexcept
 	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
 	pContext->RSSetState(pRSState.Get());
 	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
+	SetViewport(viewportWidth, viewportHeight, viewportTopLeftX, viewportTopLeftY);
+}
+
+void Graphics::SetViewport(float width, float height, float topLeftX, float topLeftY, float minDepth, float maxDepth) noexcept
+{
+	D3D11_VIEWPORT vp = {};
+	vp.Width = width;
+	vp.Height = height;
+	vp.TopLeftX = topLeftX;
+	vp.TopLeftY = topLeftY;
+	vp.MinDepth = minDepth;
+	vp.MaxDepth = maxDepth;
+	pContext->RSSetViewports(1u, &vp);
+}
+
+void Graphics::UnbindPixelShader() noexcept
+{
+	pContext->PSSetShader(nullptr, nullptr, 0u);
 }
 
 void Graphics::DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG)
