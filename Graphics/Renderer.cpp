@@ -8,6 +8,21 @@
 
 namespace
 {
+	constexpr UINT kShadowMapSize = 2048u;
+	constexpr UINT kSpotShadowMapSlot = 2u;
+	constexpr UINT kPointShadowMapSlot = 3u;
+	constexpr UINT kPointShadowFaceCount = 6u;
+	constexpr float kShadowStrength = 0.65f;
+	constexpr float kShadowNearPlane = 0.1f;
+	constexpr float kShadowFarPlane = 100.0f;
+
+	enum class ShadowType : std::uint32_t
+	{
+		None = 0u,
+		Spot = 1u,
+		Point = 2u
+	};
+
 	D3D11_BLEND_DESC MakeOpaqueBlendDesc() noexcept
 	{
 		D3D11_BLEND_DESC desc = {};
@@ -64,7 +79,8 @@ Renderer::Renderer(Graphics& gfx)
 	lightPassCbuf(gfx, 3u),
 	lightShadowCbuf(gfx, 4u),
 	shadowVertexShader(gfx, L"ShadowMapVS.cso"),
-	shadowMap(gfx, 2048u, 2u),
+	spotShadowMap(gfx, kShadowMapSize, kSpotShadowMapSlot, ShadowMap::Type::Texture2D),
+	pointShadowMap(gfx, kShadowMapSize, kPointShadowMapSlot, ShadowMap::Type::TextureCube),
 	shadowSampler(gfx, Sampler::Type::LinearClamp, 1u)
 {
 }
@@ -85,7 +101,8 @@ void Renderer::Render(Scene& scene, Camera* activeCamera) noexcept(!IS_DEBUG)
 	ExecuteOpaqueBase(view);
 	ExecuteOpaqueAccum(view);
 	ExecuteCallbacks(RenderPassId::EditorGizmos);
-	shadowMap.Unbind(gfx);
+	spotShadowMap.Unbind(gfx);
+	pointShadowMap.Unbind(gfx);
 	gfx.RestoreDefaultStates();
 
 	const auto& wireframeSettings = gfx.GetWireframeDebugSettings();
@@ -163,31 +180,56 @@ void Renderer::ExecuteCallbacks(RenderPassId passId) noexcept(!IS_DEBUG)
 void Renderer::ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG)
 {
 	pShadowCastingSpot = FindPrimarySpot(view.lights);
+	pShadowCastingPoint = FindPrimaryPoint(view.lights);
 	hasActiveSpotLightShadow = false;
+	hasActivePointLightShadow = false;
 
-	if (pShadowCastingSpot == nullptr)
+	if (pShadowCastingSpot == nullptr && pShadowCastingPoint == nullptr)
 	{
 		return;
 	}
 
-	DirectX::XMStoreFloat4x4(&activeSpotLightViewProjection, BuildSpotLightViewProjection(*pShadowCastingSpot));
-	ShadowTransformCbuf::SetLightViewProjection(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection));
-	hasActiveSpotLightShadow = true;
-	shadowMap.BeginWrite(gfx);
 	shadowDepthState.Bind(gfx);
 	shadowRasterizerState.Bind(gfx);
 	shadowVertexShader.Bind(gfx);
 	gfx.UnbindPixelShader();
 
-	for (const auto& item : queue.GetOpaqueItems())
+	const auto drawShadowCasters = [this]()
 	{
-		if (item.drawable == nullptr)
+		for (const auto& item : queue.GetOpaqueItems())
 		{
-			continue;
-		}
+			if (item.drawable == nullptr)
+			{
+				continue;
+			}
 
-		item.drawable->SetExternalTransformMatrix(DirectX::XMLoadFloat4x4(&item.transform));
-		item.drawable->DrawShadow(gfx, shadowVertexShader.GetBytecode());
+			item.drawable->SetExternalTransformMatrix(DirectX::XMLoadFloat4x4(&item.transform));
+			item.drawable->DrawShadow(gfx, shadowVertexShader.GetBytecode());
+		}
+	};
+
+	if (pShadowCastingSpot != nullptr)
+	{
+		const auto spotViewProjection = BuildSpotLightViewProjection(*pShadowCastingSpot);
+		DirectX::XMStoreFloat4x4(&activeSpotLightViewProjection[0], spotViewProjection);
+		ShadowTransformCbuf::SetLightViewProjection(spotViewProjection);
+		hasActiveSpotLightShadow = true;
+		spotShadowMap.BeginWrite(gfx);
+		drawShadowCasters();
+	}
+
+	if (pShadowCastingPoint != nullptr)
+	{
+		const auto pointViewProjections = BuildPointLightViewProjections(*pShadowCastingPoint);
+		hasActivePointLightShadow = true;
+
+		for (UINT face = 0u; face < kPointShadowFaceCount; face++)
+		{
+			DirectX::XMStoreFloat4x4(&activePointLightViewProjection[face], pointViewProjections[face]);
+			ShadowTransformCbuf::SetLightViewProjection(pointViewProjections[face]);
+			pointShadowMap.BeginWriteFace(gfx, face);
+			drawShadowCasters();
+		}
 	}
 
 	gfx.BindMainRenderTarget();
@@ -272,19 +314,40 @@ void Renderer::BindLighting(const RenderLight* light, bool applyAmbient) noexcep
 	lightPassCbuf.Bind(gfx);
 
 	LightShadowCbuf shadowData;
-	const bool enableShadow = light != nullptr &&
+	const bool enableSpotShadow = light != nullptr &&
 		light->enabled != 0u &&
 		light->type == LightType::Spot &&
 		pShadowCastingSpot != nullptr &&
 		light == pShadowCastingSpot &&
 		hasActiveSpotLightShadow;
-	if (enableShadow)
+	const bool enablePointShadow = light != nullptr &&
+		light->enabled != 0u &&
+		light->type == LightType::Point &&
+		pShadowCastingPoint != nullptr &&
+		light == pShadowCastingPoint &&
+		hasActivePointLightShadow;
+	if (enableSpotShadow)
 	{
-		DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection)));
-		shadowData.shadowMapTexelSize = { 1.0f / 2048.0f, 1.0f / 2048.0f };
+		DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection[0], DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection[0])));
+		shadowData.shadowLightPosition = light->position;
+		shadowData.shadowMapTexelSize = { 1.0f / static_cast<float>(kShadowMapSize), 1.0f / static_cast<float>(kShadowMapSize) };
 		shadowData.shadowEnabled = 1u;
-		shadowData.shadowStrength = 0.65f;
-		shadowMap.Bind(gfx);
+		shadowData.shadowType = static_cast<std::uint32_t>(ShadowType::Spot);
+		shadowData.shadowStrength = kShadowStrength;
+		spotShadowMap.Bind(gfx);
+		shadowSampler.Bind(gfx);
+	}
+	else if (enablePointShadow)
+	{
+		for (UINT face = 0u; face < kPointShadowFaceCount; face++)
+		{
+			DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection[face], DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activePointLightViewProjection[face])));
+		}
+		shadowData.shadowLightPosition = light->position;
+		shadowData.shadowEnabled = 1u;
+		shadowData.shadowType = static_cast<std::uint32_t>(ShadowType::Point);
+		shadowData.shadowStrength = kShadowStrength;
+		pointShadowMap.Bind(gfx);
 		shadowSampler.Bind(gfx);
 	}
 	lightShadowCbuf.Update(gfx, shadowData);
@@ -315,6 +378,18 @@ const RenderLight* Renderer::FindPrimarySpot(const std::vector<RenderLight>& lig
 	return nullptr;
 }
 
+const RenderLight* Renderer::FindPrimaryPoint(const std::vector<RenderLight>& lights) const noexcept
+{
+	for (const auto& light : lights)
+	{
+		if (light.enabled && light.type == LightType::Point)
+		{
+			return &light;
+		}
+	}
+	return nullptr;
+}
+
 DirectX::XMMATRIX Renderer::BuildSpotLightViewProjection(const RenderLight& light) const noexcept
 {
 	const auto position = DirectX::XMLoadFloat3(&light.position);
@@ -328,6 +403,37 @@ DirectX::XMMATRIX Renderer::BuildSpotLightViewProjection(const RenderLight& ligh
 
 	const auto view = DirectX::XMMatrixLookToLH(position, direction, up);
 	const float fov = std::clamp(2.0f * std::acos(std::clamp(light.outerConeCos, -1.0f, 1.0f)), 0.1f, DirectX::XM_PI - 0.1f);
-	const auto projection = DirectX::XMMatrixPerspectiveFovLH(fov, 1.0f, 0.1f, 100.0f);
+	const auto projection = DirectX::XMMatrixPerspectiveFovLH(fov, 1.0f, kShadowNearPlane, kShadowFarPlane);
 	return view * projection;
+}
+
+std::array<DirectX::XMMATRIX, 6u> Renderer::BuildPointLightViewProjections(const RenderLight& light) const noexcept
+{
+	const auto position = DirectX::XMLoadFloat3(&light.position);
+	const std::array<DirectX::XMVECTOR, kPointShadowFaceCount> directions = {
+		DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f)
+	};
+	const std::array<DirectX::XMVECTOR, kPointShadowFaceCount> upVectors = {
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
+	};
+
+	std::array<DirectX::XMMATRIX, 6u> viewProjections = {};
+	const auto projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, 1.0f, kShadowNearPlane, kShadowFarPlane);
+
+	for (UINT face = 0u; face < kPointShadowFaceCount; face++)
+	{
+		viewProjections[face] = DirectX::XMMatrixLookToLH(position, directions[face], upVectors[face]) * projection;
+	}
+
+	return viewProjections;
 }

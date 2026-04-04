@@ -9,6 +9,7 @@
 #include "IBindable/Sampler.h"
 #include "IBindable/ShadowMap.h"
 #include "IBindable/VertexShader.h"
+#include <array>
 
 class Scene;
 
@@ -40,8 +41,10 @@ private:
 	void DrawOpaqueItem(const RenderItem& item) noexcept(!IS_DEBUG);
 	void BindLighting(const RenderLight* light, bool applyAmbient) noexcept;
 	const RenderLight* FindPrimaryDirectional(const std::vector<RenderLight>& lights) const noexcept;
+	const RenderLight* FindPrimaryPoint(const std::vector<RenderLight>& lights) const noexcept;
 	const RenderLight* FindPrimarySpot(const std::vector<RenderLight>& lights) const noexcept;
 	DirectX::XMMATRIX BuildSpotLightViewProjection(const RenderLight& light) const noexcept;
+	std::array<DirectX::XMMATRIX, 6u> BuildPointLightViewProjections(const RenderLight& light) const noexcept;
 
 private:
 	struct LightPassCbuf
@@ -63,16 +66,15 @@ private:
 
 	struct LightShadowCbuf
 	{
-		DirectX::XMFLOAT4X4 lightViewProjection = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
+		DirectX::XMFLOAT4X4 lightViewProjection[6] = {};
+		DirectX::XMFLOAT3 shadowLightPosition = { 0.0f, 0.0f, 0.0f };
+		float shadowStrength = 0.0f;
 		DirectX::XMFLOAT2 shadowMapTexelSize = { 0.0f, 0.0f };
 		std::uint32_t shadowEnabled = 0u;
-		float shadowStrength = 0.0f;
+		std::uint32_t shadowType = 0u;
 	};
+
+	static_assert(sizeof(LightShadowCbuf) == 416u, "LightShadowCbuf must match shader layout.");
 
 	Graphics& gfx;
 	RenderQueue queue;
@@ -87,15 +89,14 @@ private:
 	PixelConstantBuffer<LightPassCbuf> lightPassCbuf;
 	PixelConstantBuffer<LightShadowCbuf> lightShadowCbuf; // for shadow pass (contains light view-projection matrix and shadow map parameters), do NOT use on main pass
 	VertexShader shadowVertexShader;
-	ShadowMap shadowMap;
+	ShadowMap spotShadowMap;
+	ShadowMap pointShadowMap;
 	Sampler shadowSampler;
-	DirectX::XMFLOAT4X4 activeSpotLightViewProjection = {
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
+	std::array<DirectX::XMFLOAT4X4, 6u> activeSpotLightViewProjection = {};
+	std::array<DirectX::XMFLOAT4X4, 6u> activePointLightViewProjection = {};
 	bool hasActiveSpotLightShadow = false;
+	bool hasActivePointLightShadow = false;
+	const RenderLight* pShadowCastingPoint = nullptr;
 	const RenderLight* pShadowCastingSpot = nullptr;
 };
 
