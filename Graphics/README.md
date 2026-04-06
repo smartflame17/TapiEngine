@@ -168,31 +168,6 @@ Node
 When rendering a Model, the engine will traverse the hierarchy of the model and apply the transforms accordingly.  
 It also applies the transform of its owning GameObject beforehand. (check out README in Scene directory).
 
-## Others
----
-I have used Microsoft's DirectXTK (DirectX Toolkit) for implementing sprite / text rendering.  
-
-All font files must be of ```.spritefont``` extension and be included in ```Graphics/Fonts``` directory.  
-
-To convert installed ```.ttf``` to ```.spritefont```, use the provided binary by Microsoft's DirectXTK library with the following command:  
-```
-MakeSpriteFont "My Font" myfont.spritefont /FontSize:16
-```
-
-Good old imgui is used for the debug / editor UI, which is rendered on top of everything else.  
-
-### Skybox
-The skybox is a cubemap rendered with a special shader that ignores depth.
-For textures 0 to 5, they correspond to the following faces of the cubemap respectively:
-- Positive X (right) : 0
-- Negative X (left) : 1
-- Positive Y (top) : 2
-- Negative Y (bottom) : 3
-- Positive Z (front) : 4
-- Negative Z (back) : 5
-
-Name the textures accordingly when loading the skybox, or else the textures will be mapped incorrectly.
-
 ## Render Queue And Multi-Pass Lighting
 ---
 The renderer now has an explicit submission phase and an explicit execution phase.  
@@ -434,11 +409,30 @@ The current queue system is intentionally small in scope.
 
 Not implemented yet:
 - transparent-object queueing
-- pass-specific render targets beyond the main back buffer
 - stencil-mask and outline execution
-- shadow mapping
-- deferred shading
-- true multithreaded submission / execution
 
-So this is not a finished generalized render graph.  
-It is a focused first queue-based renderer that supports the engine's current needs while opening a clean path for the next rendering features.
+
+## Others
+---
+I have used Microsoft's DirectXTK (DirectX Toolkit) for implementing sprite / text rendering.  
+
+All font files must be of ```.spritefont``` extension and be included in ```Graphics/Fonts``` directory.  
+
+To convert installed ```.ttf``` to ```.spritefont```, use the provided binary by Microsoft's DirectXTK library with the following command:  
+```
+MakeSpriteFont "My Font" myfont.spritefont /FontSize:16
+```
+
+Good old imgui is used for the debug / editor UI, which is rendered on top of everything else.  
+
+### Skybox
+The skybox is a cubemap rendered with a special shader that ignores depth.
+For textures 0 to 5, they correspond to the following faces of the cubemap respectively:
+- Positive X (right) : 0
+- Negative X (left) : 1
+- Positive Y (top) : 2
+- Negative Y (bottom) : 3
+- Positive Z (front) : 4
+- Negative Z (back) : 5
+
+Name the textures accordingly when loading the skybox, or else the textures will be mapped incorrectly.
