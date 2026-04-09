@@ -113,7 +113,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
-	if (ImGui::Begin("TapiEngine v0.4", nullptr,
+	if (ImGui::Begin("TapiEngine v0.5", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
@@ -195,6 +195,26 @@ void ImguiManager::EditorWindow(bool* p_open)
 			}
 		}
 	}
+	//if (context.spotLights != nullptr)
+	//{
+	//	for (auto* light : *context.spotLights)
+	//	{
+	//		if (light != nullptr)
+	//		{
+	//			light->SpawnControlWindow();
+	//		}
+	//	}
+	//}
+	//if (context.directionalLights != nullptr)
+	//{
+	//	for (auto* light : *context.directionalLights)
+	//	{
+	//		if (light != nullptr)
+	//		{
+	//			light->SpawnControlWindow();
+	//		}
+	//	}
+	//}
 	MainMenuBar();
 }
 

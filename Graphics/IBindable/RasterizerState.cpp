@@ -12,6 +12,12 @@ RasterizerState::RasterizerState(Graphics& gfx, D3D11_CULL_MODE cullMode, bool f
 	GFX_THROW_FAILED(GetDevice(gfx)->CreateRasterizerState(&rasterDesc, &pState));
 }
 
+RasterizerState::RasterizerState(Graphics& gfx, const D3D11_RASTERIZER_DESC& desc)
+{
+	HRESULT hr;
+	GFX_THROW_FAILED(GetDevice(gfx)->CreateRasterizerState(&desc, &pState));
+}
+
 void RasterizerState::Bind(Graphics& gfx) noexcept
 {
 	GetContext(gfx)->RSSetState(pState.Get());

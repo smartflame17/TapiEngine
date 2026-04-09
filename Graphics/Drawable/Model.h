@@ -31,6 +31,7 @@ class Node
 public:
 	Node(std::vector<Mesh*> meshPtrs, const std::string& name, const DirectX::XMMATRIX& transform) noexcept(!IS_DEBUG);
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
+	void DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG);
 	void SetRelativeTransform(const Transform& transform) noexcept;
 	const std::string& GetName() const noexcept;
 	const std::vector<std::unique_ptr<Node>>& GetChildren() const noexcept;
@@ -52,6 +53,7 @@ class Model : public DrawableBase<Model>
 public:
 	Model(Graphics& gfx, const std::string& fileName);
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;
+	void DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG) override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 
 	void DrawInspector() noexcept override;

@@ -49,6 +49,7 @@ Box::Box(Graphics& gfx,
 	}
 
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));	// the transformation constant buffer is non-static (different per object)
+	AddBind(std::make_unique<ShadowTransformCbuf>(gfx, *this));
 
 	std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
 	std::uniform_real_distribution<float> specularIntensityDist(0.2f, 1.0f);

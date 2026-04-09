@@ -1,7 +1,8 @@
 #include "App.h"
 
 App::App():
-	wnd (1920, 1080, "TapiEngine v0.5")
+	wnd (1920, 1080, "TapiEngine v0.5"),
+	renderer(wnd.Gfx())
 {
 	// Initialize scene objects
 	ResetSimulation();
@@ -18,6 +19,8 @@ App::App():
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&spotLights,
+		&directionalLights,
 		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
@@ -41,6 +44,7 @@ void App::ResetSimulation()
 	scene.Clear();
 	gameCams.clear();
 	pointLights.clear();
+	spotLights.clear();
 
 	std::mt19937 rng(std::random_device{}());
 
@@ -57,6 +61,16 @@ void App::ResetSimulation()
 	auto& pointLightObject = scene.CreateGameObject("PointLight");
 	pointLightObject.AddComponent<PointLight>(wnd.Gfx());
 	pointLightObject.SetPosition(0.0f, 4.0f, -2.0f);
+
+	auto& spotLightObject = scene.CreateGameObject("SpotLight");
+	spotLightObject.AddComponent<SpotLight>(wnd.Gfx());
+	spotLightObject.SetPosition(-3.0f, 5.0f, -3.0f);
+	spotLightObject.SetRotation(0.9f, 0.75f, 0.0f);
+
+	auto& directionalLightObject = scene.CreateGameObject("DirectionalLight");
+	directionalLightObject.AddComponent<DirectionalLight>(wnd.Gfx());
+	directionalLightObject.SetRotation(0.4f, -0.7f, 0.0f);
+	directionalLightObject.GetComponent<DirectionalLight>()->SetIntensity(0.4f);
 
 	auto& groundObject = scene.CreateGameObject("Ground");
 	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
@@ -87,10 +101,10 @@ void App::ResetSimulation()
 	auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/zhu_yuan_zzz/scene.gltf"
+		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	zhu.SetPosition(1.0f, 0.0f, 0.0f);
-	zhu.SetScale(100.0f, 100.0f, 100.0f);
+	zhu.SetScale(10.0f, 10.0f, 10.0f);
 
 	CacheSceneComponents();
 
@@ -109,6 +123,8 @@ void App::CacheSceneComponents() noexcept
 {
 	gameCams.clear();
 	pointLights.clear();
+	spotLights.clear();
+	directionalLights.clear();
 
 	auto collect = [&](auto& self, const GameObject& gameObject) -> void
 	{
@@ -126,6 +142,14 @@ void App::CacheSceneComponents() noexcept
 			if (auto pointLight = dynamic_cast<PointLight*>(component.get()))
 			{
 				pointLights.push_back(pointLight);
+			}
+			if (auto spotLight = dynamic_cast<SpotLight*>(component.get()))
+			{
+				spotLights.push_back(spotLight);
+			}
+			if (auto directionalLight = dynamic_cast<DirectionalLight*>(component.get()))
+			{
+				directionalLights.push_back(directionalLight);
 			}
 		}
 
@@ -204,23 +228,8 @@ void App::RenderFrame(float alpha)
 		wnd.Gfx().SetCamera(activeCam->GetViewMatrix());
 	}
 
-	for (const auto* light : pointLights)
-	{
-		if (light != nullptr && !light->GetGameObject().IsPendingKill())
-		{
-			light->Bind(wnd.Gfx());
-		}
-	}
-
 	// --- Simulation Draw ---
-	scene.Render(wnd.Gfx(), activeCam);
-	for (auto* light : pointLights)
-	{
-		if (light != nullptr && !light->GetGameObject().IsPendingKill())
-		{
-			light->Draw(wnd.Gfx());
-		}
-	}
+	renderer.Render(scene, activeCam);
 
 	// --- UI Logic ---
 	imgui.SetContext({
@@ -228,6 +237,8 @@ void App::RenderFrame(float alpha)
 		activeCam,
 		&wnd.Gfx(),
 		&pointLights,
+		&spotLights,
+		&directionalLights,
 		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,

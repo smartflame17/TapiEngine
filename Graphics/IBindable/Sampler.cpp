@@ -1,9 +1,10 @@
 #include "Sampler.h"
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 
-Sampler::Sampler(Graphics& gfx, Type type)
+Sampler::Sampler(Graphics& gfx, Type type, UINT slot)
 	:
-	type(type)
+	type(type),
+	slot(slot)
 {
 	CreateSampler(gfx, type);
 }
@@ -53,9 +54,19 @@ void Sampler::CreateSampler(Graphics& gfx, Type type)
 		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerDesc.MaxAnisotropy = 16u;
 		break;
+	case Type::ComparisonLinearClamp:
+		samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		break;
 	}
 
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	if (type != Type::ComparisonLinearClamp)
+	{
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	}
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
@@ -64,7 +75,7 @@ void Sampler::CreateSampler(Graphics& gfx, Type type)
 
 void Sampler::Bind(Graphics& gfx) noexcept
 {
-	GetContext(gfx)->PSSetSamplers(0u, 1u, pSampler.GetAddressOf());
+	GetContext(gfx)->PSSetSamplers(slot, 1u, pSampler.GetAddressOf());
 }
 
 void Sampler::SetType(Graphics& gfx, Type newType)

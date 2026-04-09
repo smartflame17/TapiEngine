@@ -274,6 +274,7 @@ Primitive::Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::s
 	AddBind(std::make_unique<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pVertexShaderBytecode));
 	AddBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+	AddBind(std::make_unique<ShadowTransformCbuf>(gfx, *this));
 
 	auto pMaterialBuffer = std::make_unique<PixelConstantBuffer<PhongMaterial>>(gfx, material, 0u);
 	pMaterialCbuf = pMaterialBuffer.get();
@@ -309,6 +310,19 @@ void Primitive::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 	if (pMaterialCbuf != nullptr)
 	{
 		pMaterialCbuf->Update(gfx, material);
+		pMaterialCbuf->Bind(gfx);
+	}
+	if (pTexture != nullptr)
+	{
+		pTexture->Bind(gfx);
+	}
+	if (pNormalTexture != nullptr)
+	{
+		pNormalTexture->Bind(gfx);
+	}
+	if (pSampler != nullptr)
+	{
+		pSampler->Bind(gfx);
 	}
 	Drawable::Draw(gfx);
 }

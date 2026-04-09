@@ -75,7 +75,11 @@ public:
 	void EnableImGui() noexcept;
 	void DisableImGui() noexcept;
 	bool IsImGuiEnabled() const noexcept;
+	void BindMainRenderTarget() noexcept;
+	void ClearMainRenderTarget(float r, float g, float b, bool clearDepth = true, bool clearStencil = true) noexcept;
 	void RestoreDefaultStates() noexcept;
+	void SetViewport(float width, float height, float topLeftX = 0.0f, float topLeftY = 0.0f, float minDepth = 0.0f, float maxDepth = 1.0f) noexcept;
+	void UnbindPixelShader() noexcept;
 	void DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG);
 	void DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox>& bounds) noexcept(!IS_DEBUG);
 
@@ -113,6 +117,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRSState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendState = nullptr;
 	std::unique_ptr<DebugWireframeRenderer> pDebugWireframeRenderer;
 	WireframeDebugSettings wireframeDebugSettings;
 

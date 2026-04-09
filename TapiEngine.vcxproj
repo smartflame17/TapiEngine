@@ -200,7 +200,10 @@
     <ClCompile Include="Graphics\Drawable\SolidSphere.cpp" />
     <ClCompile Include="Graphics\DebugWireframeRenderer.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
+    <ClCompile Include="Graphics\RenderQueue.cpp" />
+    <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\IBindable\IBindable.cpp" />
+    <ClCompile Include="Graphics\IBindable\BlendState.cpp" />
     <ClCompile Include="Graphics\IBindable\CubeTexture.cpp" />
     <ClCompile Include="Graphics\IBindable\DepthStencilState.cpp" />
     <ClCompile Include="Graphics\IBindable\IndexBuffer.cpp" />
@@ -208,13 +211,17 @@
     <ClCompile Include="Graphics\IBindable\PixelShader.cpp" />
     <ClCompile Include="Graphics\IBindable\RasterizerState.cpp" />
     <ClCompile Include="Graphics\IBindable\Sampler.cpp" />
+    <ClCompile Include="Graphics\IBindable\ShadowMap.cpp" />
+    <ClCompile Include="Graphics\IBindable\ShadowTransformCbuf.cpp" />
     <ClCompile Include="Graphics\IBindable\SkyboxTransformCbuf.cpp" />
     <ClCompile Include="Graphics\IBindable\Texture.cpp" />
     <ClCompile Include="Graphics\IBindable\Topology.cpp" />
     <ClCompile Include="Graphics\IBindable\TransformCBuf.cpp" />
     <ClCompile Include="Graphics\IBindable\VertexBuffer.cpp" />
     <ClCompile Include="Graphics\IBindable\VertexShader.cpp" />
+    <ClCompile Include="Graphics\Lighting\DirectionalLight.cpp" />
     <ClCompile Include="Graphics\Lighting\PointLight.cpp" />
+    <ClCompile Include="Graphics\Lighting\SpotLight.cpp" />
     <ClCompile Include="Graphics\Vertex.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\ImguiManager.cpp" />
@@ -335,6 +342,8 @@
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\Color.h" />
     <ClInclude Include="Graphics\DebugWireframeRenderer.h" />
+    <ClInclude Include="Graphics\RenderQueue.h" />
+    <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Graphics\Drawable\Box.h" />
     <ClInclude Include="Graphics\Drawable\CubeMap.h" />
     <ClInclude Include="Graphics\Drawable\Cone.h" />
@@ -349,6 +358,7 @@
     <ClInclude Include="Graphics\Drawable\SolidSphere.h" />
     <ClInclude Include="Graphics\Drawable\Sphere.h" />
     <ClInclude Include="Graphics\IBindable\ConstantBuffers.h" />
+    <ClInclude Include="Graphics\IBindable\BlendState.h" />
     <ClInclude Include="Graphics\IBindable\CubeTexture.h" />
     <ClInclude Include="Graphics\IBindable\DepthStencilState.h" />
     <ClInclude Include="Graphics\Drawable\Drawable.h" />
@@ -361,13 +371,18 @@
     <ClInclude Include="Graphics\IBindable\PixelShader.h" />
     <ClInclude Include="Graphics\IBindable\RasterizerState.h" />
     <ClInclude Include="Graphics\IBindable\Sampler.h" />
+    <ClInclude Include="Graphics\IBindable\ShadowMap.h" />
+    <ClInclude Include="Graphics\IBindable\ShadowTransformCbuf.h" />
     <ClInclude Include="Graphics\IBindable\SkyboxTransformCbuf.h" />
     <ClInclude Include="Graphics\IBindable\Texture.h" />
     <ClInclude Include="Graphics\IBindable\Topology.h" />
     <ClInclude Include="Graphics\IBindable\TransformCBuf.h" />
     <ClInclude Include="Graphics\IBindable\VertexBuffer.h" />
     <ClInclude Include="Graphics\IBindable\VertexShader.h" />
+    <ClInclude Include="Graphics\Lighting\DirectionalLight.h" />
     <ClInclude Include="Graphics\Lighting\PointLight.h" />
+    <ClInclude Include="Graphics\Lighting\SpotLight.h" />
+    <ClInclude Include="Graphics\Lighting\RenderLight.h" />
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -463,7 +478,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
+    <None Include="Shaders\LightingCommon.hlsli" />
     <FxCompile Include="Shaders\PhongVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -477,6 +495,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShadowMapVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
@@ -495,6 +521,8 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\TexturedPhongVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

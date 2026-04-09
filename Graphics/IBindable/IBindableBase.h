@@ -1,6 +1,7 @@
 // Contains headers for all derivation of IBindable
 #pragma once
 #include "ConstantBuffers.h"
+#include "BlendState.h"
 #include "IndexBuffer.h"
 #include "InputLayout.h"
 #include "PixelShader.h"
@@ -10,3 +11,5 @@
 #include "VertexShader.h"
 #include "Texture.h"
 #include "Sampler.h"
+#include "ShadowMap.h"
+#include "ShadowTransformCbuf.h"

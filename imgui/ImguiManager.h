@@ -10,7 +10,9 @@
 #include "../Scene/Scene.h"
 #include "../Graphics/Camera.h"
 #include "../Graphics/Graphics.h"
+#include "../Graphics/Lighting/DirectionalLight.h"
 #include "../Graphics/Lighting/PointLight.h"
+#include "../Graphics/Lighting/SpotLight.h"
 #include "../Input/Mouse.h"
 
 class ImguiManager
@@ -22,6 +24,8 @@ public:
 		Camera* activeCamera = nullptr;
 		Graphics* graphics = nullptr;
 		std::vector<PointLight*>* pointLights = nullptr;
+		std::vector<SpotLight*>* spotLights = nullptr;
+		std::vector<DirectionalLight*>* directionalLights = nullptr;
 		Mouse* mouse = nullptr;
 		bool* isPlayMode = nullptr;
 		bool* isPaused = nullptr;

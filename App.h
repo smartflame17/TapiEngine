@@ -9,7 +9,10 @@
 #include "Graphics/Drawable/Ground.h"
 #include "Graphics/Drawable/Model.h"
 #include "Graphics/Drawable/Primitive.h"
+#include "Graphics/Lighting/DirectionalLight.h"
 #include "Graphics/Lighting/PointLight.h"
+#include "Graphics/Lighting/SpotLight.h"
+#include "Graphics/Renderer.h"
 
 #include "Physics/PhysicsWorld.h"
 
@@ -49,6 +52,9 @@ private:
 	Camera* activeCam = nullptr; // reference to currently active camera
 
 	std::vector<PointLight*> pointLights;
+	std::vector<SpotLight*> spotLights;
+	std::vector<DirectionalLight*> directionalLights;
+	Renderer renderer;
 
 	// Persistent game objects for inter-scene use (e.g. player character)
 	std::vector<GameObject*> persistentObjects;

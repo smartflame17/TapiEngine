@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <optional>
 #include <string_view>
+#include <utility>
 
 namespace
 {
@@ -157,6 +158,22 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	}
 }
 
+void Node::DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+{
+	const auto localTransform =
+		MakeTransformMatrix(relativeTransform) *
+		DirectX::XMLoadFloat4x4(&bindLocalTransform);
+	const auto builtTransform = localTransform * accumulatedTransform;
+	for (const auto pMesh : meshPtrs)
+	{
+		pMesh->DrawShadow(gfx, builtTransform, pShadowVertexShaderBytecode);
+	}
+	for (const auto& pChild : childPtrs)
+	{
+		pChild->DrawShadow(gfx, builtTransform, pShadowVertexShaderBytecode);
+	}
+}
+
 void Node::AddChild(std::unique_ptr<Node> pChild) noexcept(!IS_DEBUG)
 {
 	assert(pChild);
@@ -228,6 +245,14 @@ void Model::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 	if (pRoot)
 	{
 		pRoot->Draw(gfx, GetAppliedTransformXM());
+	}
+}
+
+void Model::DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+{
+	if (pRoot)
+	{
+		pRoot->DrawShadow(gfx, GetAppliedTransformXM(), pShadowVertexShaderBytecode);
 	}
 }
 

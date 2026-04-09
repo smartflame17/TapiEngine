@@ -99,7 +99,8 @@ void BVHManager::Sync()
 	}
 
 	staticBVH.Build();
-	dynamicBVH.Refit();
+	//dynamicBVH.Refit();
+	dynamicBVH.Build();
 }
 
 // Frustrum culling query to find visible drawables

@@ -104,6 +104,11 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	GFX_THROW_FAILED(pDevice->CreateRasterizerState(&rsDesc, &pRSState));
 	pContext->RSSetState(pRSState.Get());
 
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	GFX_THROW_FAILED(pDevice->CreateBlendState(&blendDesc, &pBlendState));
+
 	// create depth stencil texture
 	wrl::ComPtr<ID3D11Texture2D> pDepthStencil;
 	D3D11_TEXTURE2D_DESC descDepth = {};
@@ -470,10 +475,57 @@ bool Graphics::IsImGuiEnabled() const noexcept
 	return isImGuiEnabled;
 }
 
+void Graphics::BindMainRenderTarget() noexcept
+{
+	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
+	SetViewport(viewportWidth, viewportHeight, viewportTopLeftX, viewportTopLeftY);
+}
+
+void Graphics::ClearMainRenderTarget(float r, float g, float b, bool clearDepth, bool clearStencil) noexcept
+{
+	const float color[] = { r, g, b, 1.0f };
+	pContext->ClearRenderTargetView(pTarget.Get(), color);
+
+	UINT clearFlags = 0u;
+	if (clearDepth)
+	{
+		clearFlags |= D3D11_CLEAR_DEPTH;
+	}
+	if (clearStencil)
+	{
+		clearFlags |= D3D11_CLEAR_STENCIL;
+	}
+	if (clearFlags != 0u)
+	{
+		pContext->ClearDepthStencilView(pDSV.Get(), clearFlags, 1.0f, 0u);
+	}
+}
+
 void Graphics::RestoreDefaultStates() noexcept
 {
+	const float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	pContext->OMSetBlendState(pBlendState.Get(), blendFactor, 0xffffffffu);
 	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
 	pContext->RSSetState(pRSState.Get());
+	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
+	SetViewport(viewportWidth, viewportHeight, viewportTopLeftX, viewportTopLeftY);
+}
+
+void Graphics::SetViewport(float width, float height, float topLeftX, float topLeftY, float minDepth, float maxDepth) noexcept
+{
+	D3D11_VIEWPORT vp = {};
+	vp.Width = width;
+	vp.Height = height;
+	vp.TopLeftX = topLeftX;
+	vp.TopLeftY = topLeftY;
+	vp.MinDepth = minDepth;
+	vp.MaxDepth = maxDepth;
+	pContext->RSSetViewports(1u, &vp);
+}
+
+void Graphics::UnbindPixelShader() noexcept
+{
+	pContext->PSSetShader(nullptr, nullptr, 0u);
 }
 
 void Graphics::DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG)

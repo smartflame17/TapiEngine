@@ -168,6 +168,250 @@ Node
 When rendering a Model, the engine will traverse the hierarchy of the model and apply the transforms accordingly.  
 It also applies the transform of its owning GameObject beforehand. (check out README in Scene directory).
 
+## Render Queue And Multi-Pass Lighting
+---
+The renderer now has an explicit submission phase and an explicit execution phase.  
+This replaces the older immediate-mode flow where scene traversal directly called `Draw()` on each object as soon as it was encountered.
+
+The main goal of this structure is to make multi-pass rendering possible without rewriting each drawable every time a new pass is added.
+
+### High-Level Flow
+
+At runtime, the frame now proceeds in this order:
+
+1. `App::RenderFrame()` begins the D3D frame as before.
+2. `App` calls `Renderer::Render(scene, activeCam)`.
+3. `Renderer` builds a `RenderView`.
+4. `Renderer` asks `Scene` to collect lights for the frame.
+5. `Renderer` creates a `RenderQueueBuilder` and asks `Scene` to submit visible content.
+6. `Scene` traverses visible drawables and light gizmos, but instead of drawing them immediately, it submits work into the queue.
+7. `Renderer` sorts the queue and executes passes in a fixed order.
+8. Each pass binds its own blend / depth-stencil / rasterizer state, then replays queued work.
+
+The important distinction is:
+- Submission decides what should be rendered.
+- Execution decides how and when it is rendered.
+
+### Core Types
+
+#### `RenderView`
+`RenderView` is the frame-level snapshot used during submission.
+
+It contains:
+- active camera pointer
+- view matrix
+- projection matrix
+- derived camera world position
+- viewport information
+- the list of gathered `RenderLight` values for the frame
+
+This means scene traversal does not need to query global renderer state directly.  
+Everything needed for queue submission is handed in explicitly.
+
+#### `RenderPassId`
+`RenderPassId` defines the pass order and gives each submitted item a destination pass.
+
+The currently defined passes are:
+- `Skybox`
+- `OpaqueBase`
+- `OpaqueLightAccum`
+- `EditorGizmos`
+- `Ui`
+- `StencilMask`
+- `Outline`
+
+Only the first few are active right now, but the enum already leaves room for future stencil-based outline work.
+
+#### `RenderItem`
+`RenderItem` is the queued unit of work.
+
+It currently supports two styles of submission:
+- drawable replay
+  - stores a `Drawable*`, transform, pass id, and sort key
+- callback submission
+  - stores a lambda for special work such as skybox or light gizmos
+
+This keeps the first version simple while already supporting both standard geometry and special-case pass logic.
+
+#### `PassState`
+`PassState` stores the pipeline state used when a pass executes.
+
+Right now it tracks:
+- blend state
+- depth-stencil state
+- rasterizer state
+- future-facing clear flags
+
+The point of `PassState` is that pass-local pipeline configuration is centralized in the renderer instead of spread across drawables.
+
+#### `RenderQueue`
+`RenderQueue` owns:
+- one list of opaque items
+- one list of items per explicit pass
+- one `PassState` per pass
+
+The opaque list is important because the same geometry can be replayed in multiple passes without being resubmitted multiple times.
+
+#### `RenderQueueBuilder`
+`RenderQueueBuilder` is the write-only submission interface used by scene-side code.
+
+It currently exposes:
+- `SubmitOpaque(...)`
+- `SubmitCallback(...)`
+
+Scene code can add work to the queue, but it does not execute any D3D draw calls itself.
+
+### Step-By-Step Frame Execution
+
+#### 1. Build the frame view
+`Renderer::BuildView()` derives the data needed for the frame:
+- camera matrices
+- camera position
+- viewport dimensions
+
+This is wrapped into `RenderView`.
+
+#### 2. Gather lights
+`Scene::CollectRenderLights()` walks the game object hierarchy and converts light components into plain `RenderLight` values.
+
+Currently:
+- `PointLight` produces a point-light `RenderLight`
+- `DirectionalLight` produces a directional-light `RenderLight`
+
+This is the point where the renderer becomes the source of truth for lighting, rather than `App.cpp` binding a point-light constant buffer manually.
+
+#### 3. Submit scene content
+`Scene::Submit(...)` performs visibility gathering and scene traversal.
+
+The scene:
+- submits the skybox as a callback in the `Skybox` pass
+- queries visible drawables from the BVH
+- submits each visible `DrawableComponent` through `SubmitOpaque(...)`
+- submits light gizmos as callbacks in the `EditorGizmos` pass
+
+No actual rendering happens yet.
+
+This is the key seam that makes later multithreaded submission realistic:
+- scene traversal writes queue data
+- renderer execution consumes queue data later
+
+#### 4. Configure pass states
+`Renderer::ConfigurePassStates()` assigns the pipeline state used by each pass.
+
+Currently:
+- `Skybox`
+  - opaque blend, custom skybox internals
+- `OpaqueBase`
+  - normal opaque blending
+  - depth writes enabled
+- `OpaqueLightAccum`
+  - additive blending
+  - depth test `EQUAL`
+  - depth writes disabled
+- `EditorGizmos`
+  - standard opaque-like state
+
+This is where new passes such as stencil masking or outlines will plug in later.
+
+#### 5. Sort the queue
+`RenderQueue::Sort()` sorts opaque items by sort key.
+
+The current opaque sort key is distance-based and intended for front-to-back ordering.  
+It is simple for now, but the structure is already there for later expansion into material / shader / state-aware sort keys.
+
+#### 6. Execute `Skybox`
+`Renderer::ExecuteCallbacks(RenderPassId::Skybox)` runs queued skybox callbacks first.
+
+This keeps the skybox as special-case work for now while still routing it through the pass system.
+
+#### 7. Execute `OpaqueBase`
+`Renderer::ExecuteOpaqueBase()` draws all queued opaque geometry once.
+
+During this pass:
+- base pass state is bound
+- the renderer chooses the first directional light as the primary directional light
+- frame lighting constants are bound with ambient enabled
+- the queued opaque geometry is replayed
+
+This pass establishes:
+- depth
+- ambient term
+- primary directional light contribution
+
+#### 8. Execute `OpaqueLightAccum`
+`Renderer::ExecuteOpaqueAccum()` replays the same opaque geometry once per additional light.
+
+During this pass:
+- additive blend state is bound
+- depth comparison is `EQUAL`
+- depth writes are disabled
+- ambient is disabled
+- one light is bound at a time
+- all opaque geometry is replayed for that light
+
+This is the current multi-pass light accumulation model.
+
+The default behavior is:
+- first directional light goes into the base pass
+- all point lights go into additive accumulation
+- additional directional lights also go into additive accumulation
+
+So the scene is not resubmitted multiple times.  
+Instead, one submitted opaque list is replayed under different pass-local lighting state.
+
+#### 9. Execute `EditorGizmos`
+Finally, editor-only helper visuals such as light gizmos are drawn from the `EditorGizmos` pass.
+
+This keeps runtime scene rendering separate from editor visualization.
+
+### Lighting Constant Buffer Split
+
+The lighting shader interface is now split into two pixel constant buffers:
+
+- `FrameLightCbuf`
+  - ambient color
+  - whether ambient should be applied this pass
+  - whether an active light exists
+  - current light type
+
+- `LightPassCbuf`
+  - one light's actual parameters for the current pass
+  - color
+  - intensity
+  - direction
+  - position
+  - attenuation
+  - enabled flag
+
+This split is intentional:
+- frame-level toggles stay separate from light payload data
+- one light can be rebound repeatedly while replaying the same geometry
+- the base pass and additive pass can differ only by constants and pass state
+
+### Why This Design Matters
+
+This queue structure is the foundation for later rendering features.
+
+It enables:
+- replaying geometry across multiple passes
+- central pass ordering
+- central pass-local state binding
+- future offscreen target support
+- future stencil mask / outline passes
+- future multithreaded submission
+
+Without a queue, every new multi-pass feature would force scene traversal and drawables to know about pass order and pass-specific behavior.  
+With the queue, drawables mostly stay responsible for describing geometry and material bindings, while the renderer owns orchestration.
+
+### Current Limitations
+
+The current queue system is intentionally small in scope.
+
+Not implemented yet:
+- transparent-object queueing
+- stencil-mask and outline execution
+
+
 ## Others
 ---
 I have used Microsoft's DirectXTK (DirectX Toolkit) for implementing sprite / text rendering.  
