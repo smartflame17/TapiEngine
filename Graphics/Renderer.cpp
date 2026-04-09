@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Drawable/Drawable.h"
 #include "IBindable/ShadowTransformCbuf.h"
+#include "Lighting/DirectionalLight.h"
 #include "../Scene/Scene.h"
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,7 @@
 namespace
 {
 	constexpr UINT kShadowMapSize = 2048u;
+	constexpr UINT kDirectionalShadowMapSlot = 4u;
 	constexpr UINT kSpotShadowMapSlot = 2u;
 	constexpr UINT kPointShadowMapSlot = 3u;
 	constexpr UINT kPointShadowFaceCount = 6u;
@@ -20,7 +22,8 @@ namespace
 	{
 		None = 0u,
 		Spot = 1u,
-		Point = 2u
+		Point = 2u,
+		Directional = 3u
 	};
 
 	D3D11_BLEND_DESC MakeOpaqueBlendDesc() noexcept
@@ -79,6 +82,7 @@ Renderer::Renderer(Graphics& gfx)
 	lightPassCbuf(gfx, 3u),
 	lightShadowCbuf(gfx, 4u),
 	shadowVertexShader(gfx, L"ShadowMapVS.cso"),
+	directionalShadowMap(gfx, kShadowMapSize, kDirectionalShadowMapSlot, ShadowMap::Type::Texture2D),
 	spotShadowMap(gfx, kShadowMapSize, kSpotShadowMapSlot, ShadowMap::Type::Texture2D),
 	pointShadowMap(gfx, kShadowMapSize, kPointShadowMapSlot, ShadowMap::Type::TextureCube),
 	shadowSampler(gfx, Sampler::Type::LinearClamp, 1u)
@@ -101,6 +105,7 @@ void Renderer::Render(Scene& scene, Camera* activeCamera) noexcept(!IS_DEBUG)
 	ExecuteOpaqueBase(view);
 	ExecuteOpaqueAccum(view);
 	ExecuteCallbacks(RenderPassId::EditorGizmos);
+	directionalShadowMap.Unbind(gfx);
 	spotShadowMap.Unbind(gfx);
 	pointShadowMap.Unbind(gfx);
 	gfx.RestoreDefaultStates();
@@ -181,10 +186,12 @@ void Renderer::ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG)
 {
 	pShadowCastingSpot = FindPrimarySpot(view.lights);
 	pShadowCastingPoint = FindPrimaryPoint(view.lights);
+	pShadowCastingDirectional = FindPrimaryDirectional(view.lights);
+	hasActiveDirectionalShadow = false;
 	hasActiveSpotLightShadow = false;
 	hasActivePointLightShadow = false;
 
-	if (pShadowCastingSpot == nullptr && pShadowCastingPoint == nullptr)
+	if (pShadowCastingDirectional == nullptr && pShadowCastingSpot == nullptr && pShadowCastingPoint == nullptr)
 	{
 		return;
 	}
@@ -207,6 +214,16 @@ void Renderer::ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG)
 			item.drawable->DrawShadow(gfx, shadowVertexShader.GetBytecode());
 		}
 	};
+
+	if (pShadowCastingDirectional != nullptr && view.camera != nullptr && pShadowCastingDirectional->pDirectionalLight != nullptr)
+	{
+		const auto directionalViewProjection = pShadowCastingDirectional->pDirectionalLight->GetLightViewProjection(view.camera->GetFrustum());
+		DirectX::XMStoreFloat4x4(&activeDirectionalLightViewProjection, directionalViewProjection);
+		ShadowTransformCbuf::SetLightViewProjection(directionalViewProjection);
+		hasActiveDirectionalShadow = true;
+		directionalShadowMap.BeginWrite(gfx);
+		drawShadowCasters();
+	}
 
 	if (pShadowCastingSpot != nullptr)
 	{
@@ -320,13 +337,29 @@ void Renderer::BindLighting(const RenderLight* light, bool applyAmbient) noexcep
 		pShadowCastingSpot != nullptr &&
 		light == pShadowCastingSpot &&
 		hasActiveSpotLightShadow;
+	const bool enableDirectionalShadow = light != nullptr &&
+		light->enabled != 0u &&
+		light->type == LightType::Directional &&
+		pShadowCastingDirectional != nullptr &&
+		light == pShadowCastingDirectional &&
+		hasActiveDirectionalShadow;
 	const bool enablePointShadow = light != nullptr &&
 		light->enabled != 0u &&
 		light->type == LightType::Point &&
 		pShadowCastingPoint != nullptr &&
 		light == pShadowCastingPoint &&
 		hasActivePointLightShadow;
-	if (enableSpotShadow)
+	if (enableDirectionalShadow)
+	{
+		DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection[0], DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activeDirectionalLightViewProjection)));
+		shadowData.shadowMapTexelSize = { 1.0f / static_cast<float>(kShadowMapSize), 1.0f / static_cast<float>(kShadowMapSize) };
+		shadowData.shadowEnabled = 1u;
+		shadowData.shadowType = static_cast<std::uint32_t>(ShadowType::Directional);
+		shadowData.shadowStrength = kShadowStrength;
+		directionalShadowMap.Bind(gfx);
+		shadowSampler.Bind(gfx);
+	}
+	else if (enableSpotShadow)
 	{
 		DirectX::XMStoreFloat4x4(&shadowData.lightViewProjection[0], DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&activeSpotLightViewProjection[0])));
 		shadowData.shadowLightPosition = light->position;

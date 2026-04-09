@@ -21,6 +21,7 @@ ShadowMap::ShadowMap(Graphics& gfx, UINT size, UINT slot, Type type)
 	textureDesc.MiscFlags = type == Type::TextureCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0u;
 	GFX_THROW_FAILED(GetDevice(gfx)->CreateTexture2D(&textureDesc, nullptr, &pTexture));
 
+	// For point light mapping, 6 faces as cube map depth view
 	if (type == Type::TextureCube)
 	{
 		pDepthStencilViews.reserve(6u);
@@ -38,7 +39,7 @@ ShadowMap::ShadowMap(Graphics& gfx, UINT size, UINT slot, Type type)
 			pDepthStencilViews.push_back(std::move(pDepthStencilView));
 		}
 	}
-	else
+	else // For directional light mapping, single 2D depth view
 	{
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 		dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;

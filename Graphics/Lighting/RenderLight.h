@@ -3,6 +3,8 @@
 #include <DirectXMath.h>
 #include <cstdint>
 
+class DirectionalLight;
+
 enum class LightType : std::uint32_t
 {
 	None = 0u,
@@ -25,4 +27,5 @@ struct RenderLight
 	float outerConeCos = 0.9063078f;
 	std::uint32_t enabled = 1u;
 	DirectX::XMFLOAT3 padding = { 0.0f, 0.0f, 0.0f };
+	const DirectionalLight* pDirectionalLight = nullptr;
 };

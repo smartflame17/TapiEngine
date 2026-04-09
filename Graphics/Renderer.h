@@ -89,16 +89,20 @@ private:
 	PixelConstantBuffer<LightPassCbuf> lightPassCbuf;
 	PixelConstantBuffer<LightShadowCbuf> lightShadowCbuf; // for shadow pass (contains light view-projection matrix and shadow map parameters), do NOT use on main pass
 	VertexShader shadowVertexShader;
+	ShadowMap directionalShadowMap;
 	ShadowMap spotShadowMap;
 	ShadowMap pointShadowMap;
 	Sampler shadowSampler;
+	DirectX::XMFLOAT4X4 activeDirectionalLightViewProjection = {};
 	std::array<DirectX::XMFLOAT4X4, 6u> activeSpotLightViewProjection = {};
 	std::array<DirectX::XMFLOAT4X4, 6u> activePointLightViewProjection = {};
+	bool hasActiveDirectionalShadow = false;
 	bool hasActiveSpotLightShadow = false;
 	bool hasActivePointLightShadow = false;
+	const RenderLight* pShadowCastingDirectional = nullptr;
 	const RenderLight* pShadowCastingPoint = nullptr;
 	const RenderLight* pShadowCastingSpot = nullptr;
 };
 
 // TODO: consider using a structured buffer for lights instead of cBuffers, to allow more than 1 light and more flexible light count (currently we are limited by cBuffer size and we have to set an upper limit on light count)
-// TODO: refactor shadow pass to be more flexible and support multiple shadow-casting lights (currently we only support 1 shadow-casting directional light and 1 shadow-casting spot light, and we have to choose which one is the "primary" light that casts shadows if both are present)
+// TODO: refactor shadow pass to be more flexible and support multiple shadow-casting lights (currently we only support 1 primary shadow-casting directional, spot, and point light per frame)
