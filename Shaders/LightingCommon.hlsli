@@ -13,6 +13,7 @@ struct RenderLightData
     //float3 padding;
 };
 
+Texture2D directionalShadowMapTex : register(t4);
 Texture2D spotShadowMapTex : register(t2);
 TextureCube pointShadowMapTex : register(t3);
 SamplerState shadowSampler : register(s1);
@@ -30,6 +31,7 @@ cbuffer LightShadowCbuf : register(b4)
 static const uint SHADOW_TYPE_NONE = 0u;
 static const uint SHADOW_TYPE_SPOT = 1u;
 static const uint SHADOW_TYPE_POINT = 2u;
+static const uint SHADOW_TYPE_DIRECTIONAL = 3u;
 
 uint GetPointShadowFaceIndex(float3 direction)
 {
@@ -58,9 +60,10 @@ float SampleSpotShadowFactor(float3 worldPos, float3 normal, float3 lightDirecti
     }
 
     float4 shadowClip = mul(float4(worldPos, 1.0f), lightViewProjection[0]);
-    const float invW = 1.0f / max(shadowClip.w, 0.0001f);
-    const float3 shadowNdc = shadowClip.xyz * invW;
-    const float2 shadowUv = float2(shadowNdc.x * 0.5f + 0.5f, -shadowNdc.y * 0.5f + 0.5f);
+    float3 shadowNdc = 0.0f.xxx;
+    shadowNdc = shadowClip.xyz * (1.0f / max(shadowClip.w, 0.0001f));
+    float2 shadowUv = 0.0f.xx;
+    shadowUv = float2(shadowNdc.x * 0.5f + 0.5f, -shadowNdc.y * 0.5f + 0.5f);
 
     if (shadowUv.x < 0.0f || shadowUv.x > 1.0f || shadowUv.y < 0.0f || shadowUv.y > 1.0f || shadowNdc.z <= 0.0f || shadowNdc.z >= 1.0f)
     {
@@ -75,6 +78,37 @@ float SampleSpotShadowFactor(float3 worldPos, float3 normal, float3 lightDirecti
     visibility += compareDepth <= spotShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(0.5f, -0.5f)).r ? 1.0f : 0.0f;
     visibility += compareDepth <= spotShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(-0.5f, 0.5f)).r ? 1.0f : 0.0f;
     visibility += compareDepth <= spotShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(0.5f, 0.5f)).r ? 1.0f : 0.0f;
+    visibility *= 0.25f;
+
+    return lerp(1.0f - shadowStrength, 1.0f, visibility);
+}
+
+float SampleDirectionalShadowFactor(float3 worldPos, float3 normal, float3 lightDirection)
+{
+    if (shadowEnabled == 0u || shadowType != SHADOW_TYPE_DIRECTIONAL)
+    {
+        return 1.0f;
+    }
+
+    float4 shadowClip = mul(float4(worldPos, 1.0f), lightViewProjection[0]);
+    float3 shadowNdc = 0.0f.xxx;
+    shadowNdc = shadowClip.xyz;
+    float2 shadowUv = 0.0f.xx;
+    shadowUv = float2(shadowNdc.x * 0.5f + 0.5f, -shadowNdc.y * 0.5f + 0.5f);
+
+    if (shadowUv.x < 0.0f || shadowUv.x > 1.0f || shadowUv.y < 0.0f || shadowUv.y > 1.0f || shadowNdc.z <= 0.0f || shadowNdc.z >= 1.0f)
+    {
+        return 1.0f;
+    }
+
+    const float depthBias = max(0.0003f * (1.0f - saturate(dot(normal, normalize(-lightDirection)))), 0.00008f);
+    const float compareDepth = shadowNdc.z - depthBias;
+    float visibility = 0.0f;
+
+    visibility += compareDepth <= directionalShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(-0.5f, -0.5f)).r ? 1.0f : 0.0f;
+    visibility += compareDepth <= directionalShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(0.5f, -0.5f)).r ? 1.0f : 0.0f;
+    visibility += compareDepth <= directionalShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(-0.5f, 0.5f)).r ? 1.0f : 0.0f;
+    visibility += compareDepth <= directionalShadowMapTex.Sample(shadowSampler, shadowUv + shadowMapTexelSize * float2(0.5f, 0.5f)).r ? 1.0f : 0.0f;
     visibility *= 0.25f;
 
     return lerp(1.0f - shadowStrength, 1.0f, visibility);
@@ -95,9 +129,9 @@ float SamplePointShadowFactor(float3 worldPos, float3 normal, float3 lightDirect
     }
 
     const uint faceIndex = GetPointShadowFaceIndex(toFragment);
-    const float4 shadowClip = mul(float4(worldPos, 1.0f), lightViewProjection[faceIndex]);
-    const float invW = 1.0f / max(shadowClip.w, 0.0001f);
-    const float3 shadowNdc = shadowClip.xyz * invW;
+    float4 shadowClip = mul(float4(worldPos, 1.0f), lightViewProjection[faceIndex]);
+    float3 shadowNdc = 0.0f.xxx;
+    shadowNdc = shadowClip.xyz * (1.0f / max(shadowClip.w, 0.0001f));
     if (shadowNdc.z <= 0.0f || shadowNdc.z >= 1.0f)
     {
         return 1.0f;
@@ -151,10 +185,18 @@ float3 EvaluatePhongLight(
             attenuation /= max(spotFactor, 0.0001f);
         }
     }
+    else
+    {
+        return 0.0f.xxx;
+    }
 
     const float NdotL = max(dot(normal, L), 0.0f);
     float shadowFactor = 1.0f;
-    if (lightType == 3u)
+    if (lightType == 1u)
+    {
+        shadowFactor = SampleDirectionalShadowFactor(worldPos, normal, light.direction);
+    }
+    else if (lightType == 3u)
     {
         shadowFactor = SampleSpotShadowFactor(worldPos, normal, light.direction);
     }
