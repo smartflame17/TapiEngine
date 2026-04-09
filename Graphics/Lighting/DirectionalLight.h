@@ -5,6 +5,7 @@
 #include "../../Components/Component.h"
 #include "RenderLight.h"
 #include "../../imgui/imgui.h"
+#include <DirectXCollision.h>
 
 class RenderQueueBuilder;
 
@@ -16,6 +17,7 @@ public:
 	void OnInspector() noexcept override;
 	void Reset() noexcept;
 	RenderLight BuildRenderLight() const noexcept;
+	DirectX::XMMATRIX GetLightViewProjection(const DirectX::BoundingFrustum& visibleFrustum) const noexcept;
 	//void SubmitGizmo(RenderQueueBuilder& builder) const;
 	void SetColor(DirectX::XMFLOAT3 newColor) noexcept;
 	void SetColor(float r, float g, float b) noexcept;
