@@ -29,9 +29,9 @@ cbuffer LightShadowCbuf : register(b4)
 };
 
 static const uint SHADOW_TYPE_NONE = 0u;
-static const uint SHADOW_TYPE_SPOT = 1u;
+static const uint SHADOW_TYPE_DIRECTIONAL = 1u;
 static const uint SHADOW_TYPE_POINT = 2u;
-static const uint SHADOW_TYPE_DIRECTIONAL = 3u;
+static const uint SHADOW_TYPE_SPOT = 3u;
 
 uint GetPointShadowFaceIndex(float3 direction)
 {

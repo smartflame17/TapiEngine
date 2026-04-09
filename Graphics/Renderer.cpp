@@ -21,9 +21,9 @@ namespace
 	enum class ShadowType : std::uint32_t
 	{
 		None = 0u,
-		Spot = 1u,
+		Directional = 1u,
 		Point = 2u,
-		Directional = 3u
+		Spot = 3u
 	};
 
 	D3D11_BLEND_DESC MakeOpaqueBlendDesc() noexcept
