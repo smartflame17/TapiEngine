@@ -49,6 +49,9 @@ private:
 	UiContext context;
 	ImGui::FileBrowser fileDialog;
 	bool settingsWindowOpen = false;
+	// cache size of window for dynamic resizing
+	int width;
+	int height;
 	ImGuizmo::OPERATION currentOperation = ImGuizmo::TRANSLATE;
 	ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
 };

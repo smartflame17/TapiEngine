@@ -15,6 +15,9 @@ ImguiManager::~ImguiManager()
 void ImguiManager::SetContext(UiContext context) noexcept
 {
 	this->context = std::move(context);
+	// Cache window size for dynamic resizing
+	width = this->context.graphics->GetWidth();
+	height = this->context.graphics->GetHeight();
 }
 
 void ImguiManager::DrawGizmo() noexcept
@@ -32,8 +35,13 @@ void ImguiManager::DrawGizmo() noexcept
 		return;
 	}
 
-	ImGui::SetNextWindowPos(ImVec2(300, 60), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Always);
+	// Relative size and position based on cached size of window
+	int PosX = static_cast<int>(width / 1920.0f * 300.0f);
+	int PosY = static_cast<int>(height / 1080.0f * 60.0f);
+	int SizeX = static_cast<int>(width / 1920.0f * 1280.0f);
+	int SizeY = static_cast<int>(height / 1080.0f * 720.0f);
+	ImGui::SetNextWindowPos(ImVec2(PosX, PosY), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(SizeX, SizeY), ImGuiCond_Always);
 	ImGui::Begin("Viewport", nullptr,
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_NoResize |
@@ -57,7 +65,9 @@ void ImguiManager::DrawGizmo() noexcept
 	}
 
 	ImGui::SetCursorPos(ImVec2(10.0f, 10.0f));
-	ImGui::BeginChild("##gizmo_toolbar", ImVec2(240.0f, 90.0f), true);
+	float GizmoToolbarWidth = width / 1920.0f * 240.0f;
+	float GizmoToolbarHeight = height / 1080.0f * 90.0f;
+	ImGui::BeginChild("##gizmo_toolbar", ImVec2(GizmoToolbarWidth, GizmoToolbarHeight), true);
 	if (ImGui::RadioButton("Translate", currentOperation == ImGuizmo::TRANSLATE)) currentOperation = ImGuizmo::TRANSLATE;
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Rotate", currentOperation == ImGuizmo::ROTATE)) currentOperation = ImGuizmo::ROTATE;
@@ -99,7 +109,9 @@ void ImguiManager::DrawGizmo() noexcept
 
 void ImguiManager::EditorWindow(bool* p_open)
 {
-	ImGui::SetNextWindowSize(ImVec2(300, 60), ImGuiCond_Always);
+	int SizeX = static_cast<int>(width / 1920.0f * 300.0f);
+	int SizeY = static_cast<int>(height / 1080.0f * 60.0f);
+	ImGui::SetNextWindowSize(ImVec2(SizeX, SizeY), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::Begin("Statistics", p_open,
 		ImGuiWindowFlags_NoResize |
@@ -111,9 +123,13 @@ void ImguiManager::EditorWindow(bool* p_open)
 	ImGui::End();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(ImVec2(1280, 60), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(300, 0), ImGuiCond_Always);
-	if (ImGui::Begin("TapiEngine v0.5", nullptr,
+	int TitleSizeX = static_cast<int>(width / 1920.0f * 1280.0f);
+	int TitleSizeY = static_cast<int>(height / 1080.0f * 60.0f);
+	int TitlePosX = static_cast<int>(width / 1920.0f * 300.0f);
+	ImGui::SetNextWindowSize(ImVec2(TitleSizeX, TitleSizeY), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(TitlePosX, 0), ImGuiCond_Always);
+	// TODO: version number should be automatically updated during build process
+	if (ImGui::Begin("TapiEngine v0.6", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
@@ -254,8 +270,12 @@ inline void ImguiManager::SettingsWindow()
 
 inline void ImguiManager::MultipurposeWindow()
 {
-	ImGui::SetNextWindowSize(ImVec2(1280, 300), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(300, 780), ImGuiCond_Always);
+	int PosX = static_cast<int>(width / 1920.0f * 300.0f);
+	int PosY = static_cast<int>(height / 1080.0f * 780.0f);
+	int SizeX = static_cast<int>(width / 1920.0f * 1280.0f);
+	int SizeY = static_cast<int>(height / 1080.0f * 300.0f);
+	ImGui::SetNextWindowSize(ImVec2(SizeX, SizeY), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(PosX, PosY), ImGuiCond_Always);
 	ImGui::Begin("Multipurpose", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
