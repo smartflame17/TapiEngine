@@ -420,6 +420,7 @@
     <None Include="assimp\include\SmoothingGroups.inl" />
     <None Include="assimp\include\vector2.inl" />
     <None Include="assimp\include\vector3.inl" />
+    <None Include="config.ini" />
     <None Include="ErrorHandling\DXGetErrorDescription.inl" />
     <None Include="ErrorHandling\DXGetErrorString.inl" />
     <None Include="ErrorHandling\DXTrace.inl" />

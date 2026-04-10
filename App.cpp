@@ -1,13 +1,26 @@
 #include "App.h"
 
+App::Config::Config()
+{
+	width = GetPrivateProfileIntA("Settings", "Width", 1920, ".\\config.ini");
+	height = GetPrivateProfileIntA("Settings", "Height", 1080, ".\\config.ini");
+
+	char buffer[256];
+	GetPrivateProfileStringA("Settings", "Version", "TapiEngine v??", buffer, sizeof(buffer), ".\\config.ini");
+	title = buffer;
+}
+
 App::App():
-	wnd (1920, 1080, "TapiEngine v0.5"),
+	config(),
+	wnd (config.width, config.height, config.title.c_str()),
 	renderer(wnd.Gfx())
 {
 	// Initialize scene objects
 	ResetSimulation();
 
-	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 100.0f));
+	// set projection matrix from config
+	float aspectRatio = static_cast<float>(config.height) / static_cast<float>(config.width);
+	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, aspectRatio, 0.5f, 100.0f));
 
 	// set editor cam starting position
 	editorCam.SetPosition(0.0f, 2.0f, -5.0f);

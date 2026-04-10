@@ -27,6 +27,14 @@
 
 class App
 {
+private:
+	struct Config
+	{
+		int width;
+		int height;
+		std::string title;
+		Config();
+	};
 public:
 	App();
 	~App();
@@ -40,6 +48,8 @@ private:
 
 	void HandleInput(float dt); // handles input per frame
 private:
+	Config config;
+
 	ImguiManager imgui;		// initializes imgui
 	Window wnd;
 	Timer timer;
