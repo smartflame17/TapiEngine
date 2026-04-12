@@ -143,26 +143,7 @@ private:
 		}
 		else
 		{
-			std::uint8_t mask = CustomBehaviour::None;
-
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Awake) != &CustomBehaviour::Awake)
-				mask |= CustomBehaviour::AwakeFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnEnable) != &CustomBehaviour::OnEnable)
-				mask |= CustomBehaviour::OnEnableFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Start) != &CustomBehaviour::Start)
-				mask |= CustomBehaviour::StartFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::Update) != &CustomBehaviour::Update)
-				mask |= CustomBehaviour::UpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::FixedUpdate) != &CustomBehaviour::FixedUpdate)
-				mask |= CustomBehaviour::FixedUpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::LateUpdate) != &CustomBehaviour::LateUpdate)
-				mask |= CustomBehaviour::LateUpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDisable) != &CustomBehaviour::OnDisable)
-				mask |= CustomBehaviour::OnDisableFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDestroy) != &CustomBehaviour::OnDestroy)
-				mask |= CustomBehaviour::OnDestroyFlag;
-
-			return mask;
+			return ::BuildScriptLifecycleMask<T>();
 		}
 	}
 
