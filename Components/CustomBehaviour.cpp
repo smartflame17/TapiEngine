@@ -1,6 +1,11 @@
 #include "CustomBehaviour.h"
 #include "../Scene/GameObject.h"
 #include "../Scene/Scene.h"
+#include "../imgui/imgui.h"
+#include <algorithm>
+#include <array>
+#include <cstring>
+#include <typeinfo>
 
 void CustomBehaviour::Awake()
 {
@@ -132,4 +137,72 @@ void CustomBehaviour::MarkQueuedForDestroy(bool queued) noexcept
 bool CustomBehaviour::IsQueuedForDestroy() const noexcept
 {
 	return queuedForDestroy;
+}
+
+void CustomBehaviour::OnInspector() noexcept
+{
+	const char* scriptName = typeid(*this).name();
+	if (const char* classPrefix = std::strstr(scriptName, "class "); classPrefix != nullptr)
+	{
+		scriptName = classPrefix + 6;
+	}
+
+	if (!ImGui::TreeNodeEx(scriptName, ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		return;
+	}
+
+	bool enabled = IsEnabled();
+	if (ImGui::Checkbox("Enabled", &enabled))
+	{
+		SetEnabled(enabled);
+	}
+
+	properties.clear();
+	ExposeVariables();
+
+	for (std::size_t index = 0; index < properties.size(); ++index)
+	{
+		ExposedProperty& property = properties[index];
+		ImGui::PushID(static_cast<int>(index));
+
+		switch (property.type)
+		{
+		case PropertyType::Int:
+			ImGui::InputInt(property.name.c_str(), static_cast<int*>(property.value));
+			break;
+
+		case PropertyType::Float:
+			ImGui::InputFloat(property.name.c_str(), static_cast<float*>(property.value));
+			break;
+
+		case PropertyType::String:
+		{
+			auto* value = static_cast<std::string*>(property.value);
+			std::vector<char> buffer(std::max<std::size_t>(value->size() + 1, 256), '\0');
+			std::memcpy(buffer.data(), value->c_str(), value->size());
+			if (ImGui::InputText(property.name.c_str(), buffer.data(), buffer.size()))
+			{
+				*value = buffer.data();
+			}
+			break;
+		}
+
+		case PropertyType::Vector3:
+			ImGui::InputFloat3(property.name.c_str(), static_cast<float*>(property.value));
+			break;
+
+		case PropertyType::Color:
+			ImGui::ColorEdit3(property.name.c_str(), static_cast<float*>(property.value));
+			break;
+
+		case PropertyType::Bool:
+			ImGui::Checkbox(property.name.c_str(), static_cast<bool*>(property.value));
+			break;
+		}
+
+		ImGui::PopID();
+	}
+
+	ImGui::TreePop();
 }
