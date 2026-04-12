@@ -178,6 +178,7 @@
     <ClCompile Include="Components\Component.cpp" />
     <ClCompile Include="Components\CustomBehaviour.cpp" />
     <ClCompile Include="Components\DrawableComponent.cpp" />
+    <ClCompile Include="Components\Scripts\ScriptTest.cpp" />
     <ClCompile Include="imgui\GraphEditor.cpp" />
     <ClCompile Include="imgui\ImCurveEdit.cpp" />
     <ClCompile Include="imgui\ImGradient.cpp" />
@@ -235,6 +236,7 @@
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="Physics\Physics.cpp" />
     <ClCompile Include="Physics\SpatialGrid.cpp" />
+    <ClCompile Include="Scene\ScriptRegistry.cpp" />
     <ClCompile Include="Tools\Timer.cpp" />
     <ClCompile Include="Tools\DungeonGenerator.cpp" />
     <ClCompile Include="Tools\BVH.cpp" />
@@ -246,6 +248,7 @@
     <ClInclude Include="Components\Component.h" />
     <ClInclude Include="Components\CustomBehaviour.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
+    <ClInclude Include="Components\Scripts\ScriptTest.h" />
     <ClInclude Include="Graphics\PhongMaterial.h" />
     <ClInclude Include="Graphics\TangentSpace.h" />
     <ClInclude Include="imgui\GraphEditor.h" />
@@ -399,6 +402,7 @@
     <ClInclude Include="Physics\PhysicsWorld.h" />
     <ClInclude Include="Physics\SpatialGrid.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Scene\ScriptRegistry.h" />
     <ClInclude Include="Scene\Transform.h" />
     <ClInclude Include="SmflmWin.h" />
     <ClInclude Include="Tools\TapiMath.h" />
