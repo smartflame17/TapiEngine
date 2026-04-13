@@ -257,6 +257,10 @@
     <ClInclude Include="imgui\ImGradient.h" />
     <ClInclude Include="imgui\ImGuizmo.h" />
     <ClInclude Include="imgui\ImSequencer.h" />
+    <ClInclude Include="imgui\imterm\misc.hpp" />
+    <ClInclude Include="imgui\imterm\terminal.hpp" />
+    <ClInclude Include="imgui\imterm\terminal_helpers.hpp" />
+    <ClInclude Include="imgui\imterm\utils.hpp" />
     <ClInclude Include="imgui\ImZoomSlider.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\BVHManager.h" />
