@@ -2,10 +2,16 @@
 #include "imgui.h"
 #include "imfilebrowser.h"
 #include "ImGuizmo.h"
+#include "imterm/terminal_helpers.hpp"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/sink.h"
 #include <functional>
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <algorithm>
+#include <memory>
+#include <mutex>
 
 #include "../Scene/Scene.h"
 #include "../Graphics/Camera.h"
@@ -18,6 +24,12 @@
 class ImguiManager
 {
 public:
+	struct LogTerminalHelper : ImTerm::basic_spdlog_terminal_helper<LogTerminalHelper, void, std::mutex>
+	{
+		using basic_spdlog_terminal_helper::basic_spdlog_terminal_helper;
+	};
+	using LogTerminal = ImTerm::terminal<LogTerminalHelper>;
+
 	struct UiContext
 	{
 		Scene* scene = nullptr;
@@ -54,4 +66,8 @@ private:
 	int height;
 	ImGuizmo::OPERATION currentOperation = ImGuizmo::TRANSLATE;
 	ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
+
+	std::shared_ptr<LogTerminalHelper> logTerminalHelper;
+	std::shared_ptr<spdlog::sinks::sink> logTerminalSink;
+	std::unique_ptr<LogTerminal> logTerminal;
 };

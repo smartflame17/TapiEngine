@@ -5,10 +5,29 @@ ImguiManager::ImguiManager()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	fileDialog.SetTitle("Select Model File");
+
+	logTerminalHelper = std::make_shared<LogTerminalHelper>();
+	logTerminalSink = logTerminalHelper;
+	logTerminal = std::make_unique<LogTerminal>("##EngineLogTerminal", 1280, 270, logTerminalHelper);
+	logTerminal->set_flags(
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoCollapse
+	);
+	if (const auto logger = spdlog::default_logger())
+	{
+		logger->sinks().push_back(logTerminalSink);
+	}
 }
 
 ImguiManager::~ImguiManager()
 {
+	if (const auto logger = spdlog::default_logger())
+	{
+		auto& sinks = logger->sinks();
+		sinks.erase(std::remove(sinks.begin(), sinks.end(), logTerminalSink), sinks.end());
+	}
 	ImGui::DestroyContext();
 }
 
@@ -287,7 +306,12 @@ inline void ImguiManager::MultipurposeWindow()
 	{
 		if (ImGui::BeginTabItem("Log"))
 		{
-			ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
+			//ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
+			if (logTerminal != nullptr)
+			{
+				ImGui::SetNextWindowPos(ImVec2(300, 810), ImGuiCond_Always);
+				logTerminal->show();
+			}
 			ImGui::EndTabItem();
 		}
 		if (ImGui::BeginTabItem("Asset Browser"))
