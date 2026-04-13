@@ -8,7 +8,10 @@ ImguiManager::ImguiManager()
 
 	logTerminalHelper = std::make_shared<LogTerminalHelper>();
 	logTerminalSink = logTerminalHelper;
-	logTerminal = std::make_unique<LogTerminal>("##EngineLogTerminal", 1280, 270, logTerminalHelper);
+
+	int logSizeX = static_cast<int>(width / 1920.0f * 1280.0f);
+	int logSizeY = static_cast<int>(height / 1080.0f * 270.0f);
+	logTerminal = std::make_unique<LogTerminal>("##EngineLogTerminal", logSizeX, logSizeY, logTerminalHelper);
 	logTerminal->set_flags(
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_NoMove |
@@ -309,7 +312,9 @@ inline void ImguiManager::MultipurposeWindow()
 			//ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
 			if (logTerminal != nullptr)
 			{
-				ImGui::SetNextWindowPos(ImVec2(300, 810), ImGuiCond_Always);
+				int logPosX = static_cast<int>(width / 1920.0f * 300.0f);
+				int logPosY = static_cast<int>(height / 1080.0f * 810.0f);
+				ImGui::SetNextWindowPos(ImVec2(logPosX, logPosY), ImGuiCond_Always);
 				logTerminal->show();
 			}
 			ImGui::EndTabItem();
