@@ -22,6 +22,7 @@ ImguiManager::ImguiManager()
 	{
 		logger->sinks().push_back(logTerminalSink);
 	}
+	TE_LOG("ImguiManager initialized and log terminal sink added to spdlog default logger.");
 }
 
 ImguiManager::~ImguiManager()

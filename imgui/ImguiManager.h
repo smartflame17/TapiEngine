@@ -71,3 +71,16 @@ private:
 	std::shared_ptr<spdlog::sinks::sink> logTerminalSink;
 	std::unique_ptr<LogTerminal> logTerminal;
 };
+
+
+#ifndef TE_LOG
+#define TE_LOG(...) SPDLOG_INFO(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGERROR
+#define TE_LOGERROR(...) SPDLOG_ERROR(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGWARNING
+#define TE_LOGWARNING(...) SPDLOG_WARN(__VA_ARGS__)
+#endif

@@ -105,19 +105,13 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
-	/*auto& bistro = scene.CreateGameObject("Bistro Scene");
-	bistro.AddComponent<DrawableComponent>(std::make_unique<Model>(
-		wnd.Gfx(),
-		"Graphics/Models/Bistro_Godot.glb"
-	));*/
-
-	auto& zhu = scene.CreateGameObject("zhu");
+	/*auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	zhu.SetPosition(1.0f, 0.0f, 0.0f);
-	zhu.SetScale(10.0f, 10.0f, 10.0f);
+	zhu.SetScale(10.0f, 10.0f, 10.0f);*/
 
 	CacheSceneComponents();
 
@@ -129,6 +123,8 @@ void App::ResetSimulation()
 	//DungeonGenerator gen(22222);
 	//gen.Generate(80, 40);
 	//gen.SaveToFile("dungeon2.txt");
+
+	spdlog::info("Simulation reset to initial state.");
 }
 
 // Cache pointers to important components (cameras, lights) for easy access during update and rendering
