@@ -168,3 +168,20 @@ void GameObject::SetParent(GameObject* newParent) noexcept
 {
 	parent = newParent;
 }
+
+CustomBehaviour* GameObject::AddScript(const std::string& scriptName)
+{
+	CustomBehaviour* script = ScriptRegistry::GetInstance().Create(scriptName, this);
+	if (script)
+	{
+		script->SetScriptName(scriptName);
+
+		std::unique_ptr<Component> componentPtr(script);
+		components.push_back(std::move(componentPtr));
+		scene.RegisterScript(*script);		// Lifecycle mask is already configured in the registry, so no need to configure again here
+
+		return script;
+	}
+	TE_LOGERROR("Failed to add script '%s' to GameObject '%s': Script not found in registry", scriptName.c_str(), name.c_str());
+	return nullptr;
+}

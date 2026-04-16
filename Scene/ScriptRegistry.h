@@ -42,6 +42,17 @@ public:
 	CustomBehaviour* Create(const std::string& name, GameObject* owner) const noexcept;
 	bool IsRegistered(const std::string& name) const noexcept;
 
+	// utility method to get a list of all registered script names, useful for inspector dropdowns and debugging
+	std::vector<std::string> GetRegisteredScriptNames() const noexcept
+	{
+		std::vector<std::string> names;
+		names.reserve(registry.size());
+		for (const auto& [name, entry] : registry)
+		{
+			names.push_back(name);
+		}
+		return names;
+	}
 private:
 	std::unordered_map<std::string, ScriptEntry> registry;
 };

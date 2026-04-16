@@ -12,6 +12,7 @@
 #include "../Components/Component.h"
 #include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
+#include "spdlog/spdlog.h"
 
 class Graphics;
 
@@ -48,6 +49,8 @@ public:
 
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;
+
+	CustomBehaviour* AddScript(const std::string& scriptName);
 
 	template<typename Fn>
 	void ForEachScript(Fn&& fn) noexcept
@@ -175,3 +178,15 @@ inline const T* Component::GetComponent() const noexcept
 {
 	return GetGameObject().GetComponent<T>();
 }
+
+#ifndef TE_LOG
+#define TE_LOG(...) SPDLOG_INFO(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGERROR
+#define TE_LOGERROR(...) SPDLOG_ERROR(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGWARNING
+#define TE_LOGWARNING(...) SPDLOG_WARN(__VA_ARGS__)
+#endif

@@ -88,6 +88,8 @@ public:
 	// Methods for inspector display and serialization
 	virtual void ExposeVariables() {} // Override by derived classes to expose variables for inspector and serialization
 	void OnInspector() noexcept override;
+	void SetScriptName(const std::string& name) noexcept { scriptName = name; }
+	const std::string& GetScriptName() const noexcept { return scriptName; }
 
 protected:
 	void ExposeInt(const std::string& name, int* value) {
@@ -116,6 +118,7 @@ private:
 	bool enableNotified = false;
 	bool queuedForDestroy = false;
 	std::uint8_t lifecycleMask = None;
+	std::string scriptName; // For inspector display
 };
 
 template<typename T>
