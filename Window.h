@@ -55,7 +55,7 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 
-	void SetTitle(const std::string& title);
+	void SetTitle(const std::string& title) const;
 	void EnableCursor() noexcept;
 	void DisableCursor() noexcept;
 	void RecenterCursor() noexcept;

@@ -92,10 +92,11 @@ Window::~Window() {
 	DestroyWindow(hWnd);
 }
 
-void Window::SetTitle(const std::string& title)
+void Window::SetTitle(const std::string& title) const
 {
 	if (SetWindowText(hWnd, title.c_str()) == 0)
 		throw SFWND_LAST_EXCEPT();
+	WritePrivateProfileStringA("Settings", "Version", title.c_str(), ".\\config.ini");
 }
 
 void Window::EnableCursor() noexcept
