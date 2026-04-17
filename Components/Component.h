@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <string>
 
 class GameObject;
 class Graphics;
@@ -31,3 +32,27 @@ private:
 	std::uint64_t id = 0;
 	GameObject* owner = nullptr;
 };
+
+enum class ComponentType : std::uint8_t
+{
+	Drawable,
+	CustomBehaviour,
+	Other,
+	Count
+};
+
+static inline std::string ComponentTypeToString(ComponentType type)
+{
+	switch (type)
+	{
+	case ComponentType::Drawable:
+		return "Drawable";
+	case ComponentType::CustomBehaviour:
+		return "Custom Behaviour";
+	case ComponentType::Other:
+		return "Other";
+	default:
+		assert(false && "Invalid ComponentType");
+		return "Unknown";
+	}
+}

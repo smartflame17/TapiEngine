@@ -293,6 +293,7 @@ void Scene::DestroyGameObject(GameObject& object) noexcept
 
 void Scene::DrawHierarchyWindow() noexcept
 {
+
 	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(0, 60), ImGuiCond_Always);
 	if (!ImGui::Begin(name.c_str(), nullptr,
@@ -416,9 +417,45 @@ void Scene::DrawInspectorWindow() noexcept
 	ImGui::Separator();
 	if (ImGui::Button("Add Component"))
 	{
-		//TODO: Button hook for adding components in editor-time
+		ImGui::OpenPopup("AddComponentPopup");
 	}
 
+	// TODO: make this inline
+	ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_Always);
+	if (ImGui::BeginPopupModal("AddComponentPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+	{
+		//Left child panel for component type selection
+		static int selectedComponentType = 0;
+		{
+			ImGui::BeginChild("ComponentTypeSelection", ImVec2(150, 0), ImGuiChildFlags_Borders);
+			for (int i = 0; i < static_cast<int>(ComponentType::Count); ++i)
+			{
+				const bool isSelected = (selectedComponentType == i);
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected, 
+					ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SelectOnNav))
+				{
+					selectedComponentType = i;
+				}
+			}
+			ImGui::EndChild();
+		}
+		ImGui::SameLine();
+		// Right child panel for component type description and add button
+		{
+			ImGui::BeginChild("ComponentTypeDescription", ImVec2(0, 0), ImGuiChildFlags_Borders);
+			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).c_str());
+
+			// TODO: Add descriptions and functionality for adding components
+			ImGui::Separator();
+			if (ImGui::Button("Close"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndChild();
+		}
+		
+		ImGui::EndPopup();
+	}
 	ImGui::End();
 }
 
