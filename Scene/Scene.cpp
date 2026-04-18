@@ -420,18 +420,24 @@ void Scene::DrawInspectorWindow() noexcept
 		ImGui::OpenPopup("AddComponentPopup");
 	}
 
-	// TODO: make this inline
-	ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_Always);
-	if (ImGui::BeginPopupModal("AddComponentPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+	DrawAddComponentPopup();
+	
+	ImGui::End();
+}
+
+inline void Scene::DrawAddComponentPopup() noexcept
+{
+	ImGui::SetNextWindowSize(ImVec2(600, 380), ImGuiCond_Always);
+	if (ImGui::BeginPopupModal("AddComponentPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		//Left child panel for component type selection
 		static int selectedComponentType = 0;
 		{
-			ImGui::BeginChild("ComponentTypeSelection", ImVec2(150, 0), ImGuiChildFlags_Borders);
+			ImGui::BeginChild("ComponentTypeSelection", ImVec2(150, 320), ImGuiChildFlags_Borders);
 			for (int i = 0; i < static_cast<int>(ComponentType::Count); ++i)
 			{
 				const bool isSelected = (selectedComponentType == i);
-				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected, 
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected,
 					ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SelectOnNav))
 				{
 					selectedComponentType = i;
@@ -440,23 +446,23 @@ void Scene::DrawInspectorWindow() noexcept
 			ImGui::EndChild();
 		}
 		ImGui::SameLine();
+		ImGui::BeginGroup();
 		// Right child panel for component type description and add button
 		{
-			ImGui::BeginChild("ComponentTypeDescription", ImVec2(0, 0), ImGuiChildFlags_Borders);
+			ImGui::BeginChild("ComponentTypeDescription", ImVec2(0, 320), ImGuiChildFlags_Borders);
 			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).c_str());
 
 			// TODO: Add descriptions and functionality for adding components
-			ImGui::Separator();
-			if (ImGui::Button("Close"))
-			{
-				ImGui::CloseCurrentPopup();
-			}
+			
 			ImGui::EndChild();
+			ImGui::EndGroup();
 		}
-		
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
 		ImGui::EndPopup();
 	}
-	ImGui::End();
 }
 
 const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const noexcept

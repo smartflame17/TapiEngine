@@ -55,6 +55,7 @@ public:
 
 private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
+	inline void DrawAddComponentPopup() noexcept;
 
 private:
 	std::string name;
