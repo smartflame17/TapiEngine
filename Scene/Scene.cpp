@@ -453,7 +453,32 @@ inline void Scene::DrawAddComponentPopup() noexcept
 			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).c_str());
 
 			// TODO: Add descriptions and functionality for adding components
-			
+			const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
+			switch (static_cast<ComponentType>(selectedComponentType))
+			{
+			case ComponentType::Drawable:
+				break;
+			case ComponentType::CustomBehaviour:
+				for (const auto& scriptName : scriptNames)
+				{
+					if (ImGui::Button(("Add " + scriptName).c_str()))
+					{
+						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
+						{
+							selectedObject->AddScript(scriptName);
+							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), selectedObject->GetName().c_str());
+							ImGui::CloseCurrentPopup();						
+						}
+						else TE_LOGERROR("Script '%s' is not registered in the ScriptRegistry", scriptName.c_str());
+					}
+				}
+
+				break;
+			case ComponentType::Other:
+				break;
+			default:
+				TE_LOGERROR("Unknown component type selected in AddComponentPopup");
+			}
 			ImGui::EndChild();
 			ImGui::EndGroup();
 		}
