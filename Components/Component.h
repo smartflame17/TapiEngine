@@ -20,6 +20,8 @@ public:
 
 	virtual void OnUpdate(float dt, bool isSimulationRunning) noexcept;
 	virtual void OnInspector() noexcept;
+	bool IsPendingInspectorRemoval() const noexcept;
+	void MarkPendingInspectorRemoval(bool pending) noexcept;
 
 	template<typename T>
 	T* GetComponent() noexcept;
@@ -28,9 +30,15 @@ public:
 	const T* GetComponent() const noexcept;
 	
 private:
+	virtual const char* GetInspectorTitle() const noexcept;
+	virtual void DrawInspectorContents() noexcept;
+
+private:
 	static std::uint64_t nextId;
 	std::uint64_t id = 0;
 	GameObject* owner = nullptr;
+	bool inspectorCollapsed = false;
+	bool pendingInspectorRemoval = false;
 };
 
 enum class ComponentType : std::uint8_t

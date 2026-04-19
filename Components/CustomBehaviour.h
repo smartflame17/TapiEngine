@@ -87,7 +87,6 @@ public:
 
 	// Methods for inspector display and serialization
 	virtual void ExposeVariables() {} // Override by derived classes to expose variables for inspector and serialization
-	void OnInspector() noexcept override;
 	void SetScriptName(const std::string& name) noexcept { scriptName = name; }
 	const std::string& GetScriptName() const noexcept { return scriptName; }
 
@@ -112,6 +111,10 @@ protected:
 	}
 public:
 	std::vector<ExposedProperty> properties; // List of exposed properties for inspector and serialization
+private:
+	const char* GetInspectorTitle() const noexcept override;
+	void DrawInspectorContents() noexcept override;
+
 private:
 	bool isEnabled = true;
 	bool hasStarted = false;

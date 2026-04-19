@@ -105,18 +105,21 @@ void Camera::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Camera"))
 	{
-		OnInspector();
+		DrawInspectorContents();
 	}
 	ImGui::End();
 }
 
-void Camera::OnInspector() noexcept
+const char* Camera::GetInspectorTitle() const noexcept
+{
+	return "Camera";
+}
+
+void Camera::DrawInspectorContents() noexcept
 {
 	DirectX::XMFLOAT3 position = GetPosition();
 	DirectX::XMFLOAT3 rotation = GetRotation();
 
-	ImGui::Text("Camera");
-	ImGui::Separator();
 	ImGui::Text("Position");
 	/*ImGui::SliderFloat("X", &x, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
 	ImGui::SliderFloat("Y", &y, -MAX_DISTANCE, MAX_DISTANCE, "%.1f");
@@ -129,7 +132,6 @@ void Camera::OnInspector() noexcept
 	{
 		SetPosition(position.x, position.y, position.z);
 	}
-	ImGui::Separator();
 	bool rotationChanged = false;
 	rotationChanged |= ImGui::SliderFloat("Pitch", &rotation.x, -PI / 2.0f + 0.01f, PI / 2.0f - 0.01f, "%.3f");
 	rotationChanged |= ImGui::SliderFloat("Yaw", &rotation.y, -PI, PI, "%.3f");

@@ -14,7 +14,6 @@ class DirectionalLight : public Component
 public:
 	DirectionalLight(Graphics& gfx);
 	void SpawnControlWindow() noexcept;
-	void OnInspector() noexcept override;
 	void Reset() noexcept;
 	RenderLight BuildRenderLight() const noexcept;
 	DirectX::XMMATRIX GetLightViewProjection(const DirectX::BoundingFrustum& visibleFrustum) const noexcept;
@@ -22,6 +21,10 @@ public:
 	void SetColor(DirectX::XMFLOAT3 newColor) noexcept;
 	void SetColor(float r, float g, float b) noexcept;
 	void SetIntensity(float newIntensity) noexcept;
+
+private:
+	const char* GetInspectorTitle() const noexcept override;
+	void DrawInspectorContents() noexcept override;
 
 private:
 	//mutable SolidSphere gizmo;

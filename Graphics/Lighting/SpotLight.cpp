@@ -25,16 +25,18 @@ void SpotLight::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Spot Light"))
 	{
-		OnInspector();
+		DrawInspectorContents();
 	}
 	ImGui::End();
 }
 
-void SpotLight::OnInspector() noexcept
+const char* SpotLight::GetInspectorTitle() const noexcept
 {
-	ImGui::Text("Spot Light");
-	ImGui::Separator();
+	return "Spot Light";
+}
 
+void SpotLight::DrawInspectorContents() noexcept
+{
 	if (auto* owner = TryGetGameObject())
 	{
 		auto position = owner->GetTransform().position;

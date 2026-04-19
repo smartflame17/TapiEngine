@@ -16,6 +16,7 @@ class DrawableComponent;
 class Drawable;
 class Camera;
 class CustomBehaviour;
+class Component;
 class RenderQueueBuilder;
 struct RenderView;
 
@@ -41,6 +42,7 @@ public:
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;
 	void RegisterScript(CustomBehaviour& script) noexcept;
 	void HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept;
+	void QueueComponentRemoval(Component& component) noexcept;
 	void DestroyGameObject(GameObject& object) noexcept;
 	void DrawHierarchyWindow() noexcept;
 	void DrawInspectorWindow() noexcept;
@@ -52,6 +54,7 @@ public:
 	GameObject* GetSelectedObject() const noexcept;
 	DirectX::XMMATRIX GetSelectedWorldTransformMatrix() const noexcept;
 	void SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept;
+	const std::vector<Component*>& GetPendingComponentRemovals() const noexcept;
 
 private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
@@ -65,4 +68,5 @@ private:
 	BVHManager bvhManager;
 	ScriptManager scriptManager;
 	GameObject* selectedObject = nullptr;
+	std::vector<Component*> pendingComponentRemovals;
 };

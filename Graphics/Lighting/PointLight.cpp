@@ -12,15 +12,18 @@ void PointLight::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Light"))
 	{
-		OnInspector();
+		DrawInspectorContents();
 	}
 	ImGui::End();
 }
 
-void PointLight::OnInspector() noexcept
+const char* PointLight::GetInspectorTitle() const noexcept
 {
-	ImGui::Text("Point Light");
-	ImGui::Separator();
+	return "Point Light";
+}
+
+void PointLight::DrawInspectorContents() noexcept
+{
 	if (auto* owner = TryGetGameObject())
 	{
 		auto position = owner->GetTransform().position;

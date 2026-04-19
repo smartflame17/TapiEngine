@@ -24,15 +24,16 @@ void DrawableComponent::Submit(RenderQueueBuilder& queueBuilder, const RenderVie
 	}
 }
 
-void DrawableComponent::OnInspector() noexcept
+const char* DrawableComponent::GetInspectorTitle() const noexcept
 {
-	if (ImGui::TreeNodeEx("DrawableComponent", ImGuiTreeNodeFlags_DefaultOpen))
+	return "Drawable";
+}
+
+void DrawableComponent::DrawInspectorContents() noexcept
+{
+	if (drawable)
 	{
-		if (drawable)
-		{
-			drawable->DrawInspector();
-		}
-		ImGui::TreePop();
+		drawable->DrawInspector();
 	}
 }
 

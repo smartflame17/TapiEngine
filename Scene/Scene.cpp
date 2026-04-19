@@ -38,7 +38,7 @@ void Scene::Clear() noexcept
 	scriptManager.Clear();
 	drawables.clear();
 	rootObjects.clear();
-	drawables.clear();
+	pendingComponentRemovals.clear();
 	bvhManager.Clear();
 	skybox.reset();
 	selectedObject = nullptr;
@@ -270,6 +270,14 @@ void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
 	scriptManager.HandleEnableStateChanged(script);
 }
 
+void Scene::QueueComponentRemoval(Component& component) noexcept
+{
+	if (std::find(pendingComponentRemovals.begin(), pendingComponentRemovals.end(), &component) == pendingComponentRemovals.end())
+	{
+		pendingComponentRemovals.push_back(&component);
+	}
+}
+
 void Scene::DestroyGameObject(GameObject& object) noexcept
 {
 	if (object.IsPendingKill())
@@ -356,7 +364,8 @@ void Scene::DrawInspectorWindow() noexcept
 	if (!ImGui::Begin("Inspector", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_AlwaysVerticalScrollbar
 		))
 	{
 		ImGui::End();
@@ -407,7 +416,7 @@ void Scene::DrawInspectorWindow() noexcept
 	{
 		for (const auto& component : components)
 		{
-			if (component != nullptr)
+			if (component != nullptr && !component->IsPendingInspectorRemoval())
 			{
 				component->OnInspector();
 				ImGui::Spacing();
@@ -421,8 +430,13 @@ void Scene::DrawInspectorWindow() noexcept
 	}
 
 	DrawAddComponentPopup();
-	
+
 	ImGui::End();
+}
+
+const std::vector<Component*>& Scene::GetPendingComponentRemovals() const noexcept
+{
+	return pendingComponentRemovals;
 }
 
 inline void Scene::DrawAddComponentPopup() noexcept
