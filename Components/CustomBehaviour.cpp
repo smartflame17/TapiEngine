@@ -141,16 +141,17 @@ bool CustomBehaviour::IsQueuedForDestroy() const noexcept
 
 void CustomBehaviour::OnInspector() noexcept
 {
-	const char* scriptName = typeid(*this).name();
+	/*const char* scriptName = typeid(*this).name();
 	if (const char* classPrefix = std::strstr(scriptName, "class "); classPrefix != nullptr)
 	{
 		scriptName = classPrefix + 6;
-	}
+	}*/
 
-	if (!ImGui::TreeNodeEx(scriptName, ImGuiTreeNodeFlags_DefaultOpen))
+	/*if (!ImGui::TreeNodeEx(scriptName, ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		return;
-	}
+	}*/
+	ImGui::BeginChild(scriptName.c_str(), ImVec2(0, 0), true);
 
 	bool enabled = IsEnabled();
 	if (ImGui::Checkbox("Enabled", &enabled))
@@ -204,5 +205,6 @@ void CustomBehaviour::OnInspector() noexcept
 		ImGui::PopID();
 	}
 
-	ImGui::TreePop();
+	//ImGui::TreePop();
+	ImGui::EndChild();
 }
