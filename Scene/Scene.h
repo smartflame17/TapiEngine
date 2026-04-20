@@ -69,5 +69,5 @@ private:
 	BVHManager bvhManager;
 	ScriptManager scriptManager;
 	GameObject* selectedObject = nullptr;
-	std::vector<Component*> pendingComponentRemovals;		// TODO: need to handle case per component type, before CleanupDestroyedObjects is called, and after rendering frame
+	std::vector<Component*> pendingComponentRemovals;		// Save components pending removal for deferred handling after rendering
 };
