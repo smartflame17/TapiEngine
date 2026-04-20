@@ -118,15 +118,11 @@ public:
 	bool RemoveComponent() noexcept
 	{
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
-		for (auto it = components.begin(); it != components.end(); ++it)
+		for (auto& component : components)
 		{
-			if (dynamic_cast<T*>(it->get()) != nullptr)
+			if (dynamic_cast<T*>(component.get()) != nullptr)
 			{
-				if constexpr (std::is_base_of_v<DrawableComponent, T>)
-				{
-					scene.UnregisterDrawable(static_cast<DrawableComponent*>(it->get()));
-				}
-				components.erase(it);
+				scene.QueueComponentRemoval(*component);
 				return true;
 			}
 		}
