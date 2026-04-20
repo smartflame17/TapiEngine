@@ -11,6 +11,33 @@ void ScriptManager::RegisterScript(CustomBehaviour& script) noexcept
 	}
 }
 
+void ScriptManager::UnregisterScript(CustomBehaviour& script) noexcept
+{
+	RemoveFromActiveLists(script);
+	auto removePending = [&](auto& scripts)
+	{
+		scripts.erase(std::remove(scripts.begin(), scripts.end(), &script), scripts.end());
+	};
+	removePending(pendingRegistration);
+	removePending(pendingImmediateActivation);
+	removePending(awakeQueue);
+	removePending(startQueue);
+	removePending(destroyQueue);
+
+	if (script.WasEnableNotified() && script.SupportsOnDisable())
+	{
+		script.OnDisable();
+	}
+
+	if (script.SupportsOnDestroy())
+	{
+		script.OnDestroy();
+	}
+
+	script.MarkEnableNotified(false);
+	script.MarkQueuedForDestroy(false);
+}
+
 void ScriptManager::HandleEnableStateChanged(CustomBehaviour& script) noexcept
 {
 	// Early exit for invalid scipts
