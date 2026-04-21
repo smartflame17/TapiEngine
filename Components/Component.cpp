@@ -48,7 +48,7 @@ void Component::OnInspector() noexcept
 		return;
 	}
 
-	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id))); //BUG: ID collisions happen when components are removed and new one is added
+	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));
 	ImGui::BeginChild(
 		"ComponentInspectorPanel",
 		ImVec2(0.0f, 0.0f),
