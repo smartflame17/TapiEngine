@@ -20,5 +20,6 @@ This is because scripts are not known at compile time, so we cannot use template
 ### Editor time Component Deletion (Under work)
 
 Currently only hidden in imgui editor, and pending component unregistration is required (the GameObject still holds it, memory is still allocated, and scripts will still execute in game time)  
-
+For `DrawableComponent`, we already have the needed functionality, just needs wiring.
+For `CustomBehaviour`, we need to add a sweep at the end of each frame to handle pending deletion list.
 Hopefully in the future, we can encapsulate everything under `AddComponent<T>` and `RemoveComponent<T>` in `GameObject.h`
