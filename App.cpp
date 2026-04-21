@@ -284,6 +284,7 @@ int App::Begin()
 		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
 		const float alpha = accumulator / dt;
 		RenderFrame(alpha);
+		scene.CleanupPendingComponentRemovals();
 		scene.CleanupDestroyedObjects();
 		CacheSceneComponents();
 	}

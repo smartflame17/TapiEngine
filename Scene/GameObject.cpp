@@ -142,6 +142,10 @@ void GameObject::Update(float dt, bool isSimulationRunning) noexcept
 {
 	for (auto& component : components)
 	{
+		if (component->IsPendingInspectorRemoval())
+		{
+			continue;
+		}
 		if (dynamic_cast<CustomBehaviour*>(component.get()) != nullptr)
 		{
 			continue;

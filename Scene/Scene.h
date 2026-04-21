@@ -39,6 +39,7 @@ public:
 	void Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG);
 	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
 	void CleanupDestroyedObjects() noexcept;
+	void CleanupPendingComponentRemovals() noexcept;
 	void SetSkybox(std::unique_ptr<Drawable> drawable);
 	void RegisterDrawable(DrawableComponent* drawable) noexcept;
 	void UnregisterDrawable(DrawableComponent* drawable) noexcept;

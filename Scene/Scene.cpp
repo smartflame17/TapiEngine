@@ -12,6 +12,7 @@
 #include "../Graphics/Lighting/SpotLight.h"
 #include <algorithm>
 #include <iostream>
+#include <unordered_set>
 
 Scene::Scene() : name("Scene") {}
 
@@ -118,6 +119,66 @@ void Scene::CleanupDestroyedObjects() noexcept
 	};
 
 	sweep(sweep, rootObjects);
+}
+
+// Actual cleanup is done after all rendering is done and before next frame
+void Scene::CleanupPendingComponentRemovals() noexcept
+{
+	if (pendingComponentRemovals.empty())
+	{
+		return;
+	}
+	std::unordered_set<Component*> pendingSet;
+	pendingSet.reserve(pendingComponentRemovals.size());
+
+	for (Component* component : pendingComponentRemovals) // move to set for quick lookup
+	{
+		if (component != nullptr)
+		{
+			pendingSet.insert(component);
+		}
+	}
+
+	// Lambda to unregister components based on their type (may be better to refactor to have components save their type via enum class?)
+	auto unregisterComponent = [this](Component& component) noexcept
+		{
+			if (auto* drawable = dynamic_cast<DrawableComponent*>(&component))
+			{
+				UnregisterDrawable(drawable);
+			}
+
+			if (auto* script = dynamic_cast<CustomBehaviour*>(&component))
+			{
+				scriptManager.UnregisterScript(*script);
+			}
+		};
+
+	// Run through game objects to remove the component that are pending removal
+	auto sweep = [&](auto& self, std::vector<std::unique_ptr<GameObject>>& objects) -> void
+		{
+			for (auto& object : objects)
+			{
+				auto& components = object->components;
+				for (auto it = components.begin(); it != components.end(); )
+				{
+					Component* component = it->get();
+					if (component != nullptr && pendingSet.find(component) != pendingSet.end())
+					{
+						unregisterComponent(*component);
+						it = components.erase(it);	// free memory
+					}
+					else
+					{
+						++it;
+					}
+				}
+
+				self(self, object->children);
+			}
+		};
+
+	sweep(sweep, rootObjects);
+	pendingComponentRemovals.clear();
 }
 
 void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG)
@@ -272,6 +333,8 @@ void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
 
 void Scene::QueueComponentRemoval(Component& component) noexcept // TODO: bug here, the deletion of component is not handled properly
 {
+	component.MarkPendingInspectorRemoval(true);
+	// maybe we dont need duplicate check here?
 	if (std::find(pendingComponentRemovals.begin(), pendingComponentRemovals.end(), &component) == pendingComponentRemovals.end())
 	{
 		pendingComponentRemovals.push_back(&component);
