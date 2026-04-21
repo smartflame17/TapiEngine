@@ -544,10 +544,10 @@ inline void Scene::DrawAddComponentPopup() noexcept
 				{
 					TE_LOGERROR("No AddComponentHandler set in Scene to handle adding component of type '%s'", ComponentTypeToString(type).data());
 				}
-				else if (!addComponentResult)
+				/*else if (!addComponentResult)
 				{
 					TE_LOGERROR("AddComponentHandler failed to add component of type '%s' to GameObject '%s'", ComponentTypeToString(type).data(), selectedObject->GetName().c_str());
-				}
+				}*/
 			
 			/*const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
 			switch (static_cast<ComponentType>(selectedComponentType))
