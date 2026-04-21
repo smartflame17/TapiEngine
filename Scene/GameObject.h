@@ -121,7 +121,7 @@ public:
 	{
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (auto it = components.begin(); it != components.end(); ++it)
-		{
+		{  // TODO: add support for other types of components
 			if (dynamic_cast<T*>(it->get()) != nullptr)
 			{
 				if constexpr (std::is_base_of_v<DrawableComponent, T>)
