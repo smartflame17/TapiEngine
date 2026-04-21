@@ -52,6 +52,7 @@ App::~App()
 
 }
 
+// TODO: In the future, this method will be replaced with scene file deserialization and handle initialization of scene-dependent systems and resources
 void App::ResetSimulation()
 {
 	scene.Clear();
@@ -123,6 +124,67 @@ void App::ResetSimulation()
 	//DungeonGenerator gen(22222);
 	//gen.Generate(80, 40);
 	//gen.SaveToFile("dungeon2.txt");
+
+	scene.SetAddComponentHandler([this](GameObject& go, ComponentType type) -> bool
+		{
+			switch (type)
+			{
+			case ComponentType::Drawable:         break; // later
+			case ComponentType::CustomBehaviour: 
+			{
+				auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames(); // get list of registered scripts for dropdown
+				for (auto& scriptName : scriptNames)
+				{
+					if (ImGui::Button(("Add " + scriptName).c_str())){
+						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
+						{
+							scene.GetSelectedObject()->AddScript(scriptName);
+							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), scene.GetSelectedObject()->GetName().c_str());
+							ImGui::CloseCurrentPopup();
+							return true;
+						}
+					}
+				}
+			} break;
+			case ComponentType::SpotLight:
+			{
+				if (ImGui::Button("Add Spot Light"))
+				{
+					go.AddComponent<SpotLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::PointLight:
+			{
+				if (ImGui::Button("Add Point Light"))
+				{
+					go.AddComponent<PointLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::DirectionalLight:
+			{
+				if (ImGui::Button("Add Directional Light"))
+				{
+					go.AddComponent<DirectionalLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::Camera:
+			{
+				if (ImGui::Button("Add Camera"))
+				{
+					go.AddComponent<Camera>();
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			default: return false;
+			}
+		});
 
 	spdlog::info("Simulation reset to initial state.");
 }
