@@ -270,7 +270,7 @@ void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
 	scriptManager.HandleEnableStateChanged(script);
 }
 
-void Scene::QueueComponentRemoval(Component& component) noexcept
+void Scene::QueueComponentRemoval(Component& component) noexcept // TODO: bug here, the deletion of component is not handled properly
 {
 	if (std::find(pendingComponentRemovals.begin(), pendingComponentRemovals.end(), &component) == pendingComponentRemovals.end())
 	{
@@ -467,11 +467,11 @@ inline void Scene::DrawAddComponentPopup() noexcept
 			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).data());
 
 			// TODO: Add descriptions and functionality for adding components
-			
+			bool addComponentResult = false;
 				const auto type = static_cast<ComponentType>(selectedComponentType);
 				if (selectedObject != nullptr && addComponentHandler != nullptr)
 				{
-					const bool addComponentResult = addComponentHandler(*selectedObject, type);
+					addComponentResult = addComponentHandler(*selectedObject, type);
 				}
 				if (selectedObject == nullptr)
 				{
@@ -480,6 +480,10 @@ inline void Scene::DrawAddComponentPopup() noexcept
 				else if (addComponentHandler == nullptr)
 				{
 					TE_LOGERROR("No AddComponentHandler set in Scene to handle adding component of type '%s'", ComponentTypeToString(type).data());
+				}
+				else if (!addComponentResult)
+				{
+					TE_LOGERROR("AddComponentHandler failed to add component of type '%s' to GameObject '%s'", ComponentTypeToString(type).data(), selectedObject->GetName().c_str());
 				}
 			
 			/*const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
