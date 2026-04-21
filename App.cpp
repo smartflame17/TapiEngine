@@ -138,8 +138,8 @@ void App::ResetSimulation()
 					if (ImGui::Button(("Add " + scriptName).c_str())){
 						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
 						{
-							scene.GetSelectedObject()->AddScript(scriptName);
-							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), scene.GetSelectedObject()->GetName().c_str());
+							go.AddScript(scriptName);
+							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), go.GetName().c_str());
 							ImGui::CloseCurrentPopup();
 							return true;
 						}
