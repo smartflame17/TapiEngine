@@ -48,7 +48,7 @@ void Component::OnInspector() noexcept
 		return;
 	}
 
-	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));
+	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));		// BUG: if component is removed and another component is added to the same object, the new component might get the same id, causing ImGui ID collision. Need to handle this case by either ensuring unique ids even after removal, or by using a different method for generating ImGui IDs that doesn't rely on component id.
 	ImGui::BeginChild(
 		"ComponentInspectorPanel",
 		ImVec2(0.0f, 0.0f),
