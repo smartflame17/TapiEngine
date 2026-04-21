@@ -4,11 +4,13 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <functional>
 #include <DirectXMath.h>
 #include "../imgui/imgui.h"
 #include "../Graphics/Lighting/RenderLight.h"
 #include "BVHManager.h"
 #include "ScriptManager.h"
+#include "../Components/Component.h"
 
 class Graphics;
 class GameObject;
@@ -60,6 +62,9 @@ private:
 	void DrawHierarchyNode(GameObject& object) noexcept;
 	inline void DrawAddComponentPopup() noexcept;
 
+public:
+	using AddComponentHandler = std::function<bool(GameObject&, ComponentType)>; // enum class needs declaration
+	void SetAddComponentHandler(AddComponentHandler handler) noexcept;
 private:
 	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
@@ -69,4 +74,5 @@ private:
 	ScriptManager scriptManager;
 	GameObject* selectedObject = nullptr;
 	std::vector<Component*> pendingComponentRemovals;		// TODO: need to handle case per component type, before CleanupDestroyedObjects is called, and after rendering frame
+	AddComponentHandler addComponentHandler;
 };

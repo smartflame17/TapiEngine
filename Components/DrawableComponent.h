@@ -12,6 +12,7 @@ struct RenderView;
 class DrawableComponent : public Component
 {
 public:
+	static constexpr ComponentType StaticType = ComponentType::Drawable;
 	explicit DrawableComponent(std::unique_ptr<Drawable> drawablePtr);
 
 	void OnUpdate(float dt, bool isSimulationRunning) noexcept override;

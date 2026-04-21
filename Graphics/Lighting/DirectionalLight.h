@@ -12,6 +12,8 @@ class RenderQueueBuilder;
 class DirectionalLight : public Component
 {
 public:
+	static constexpr ComponentType StaticType = ComponentType::DirectionalLight;
+
 	DirectionalLight(Graphics& gfx);
 	void SpawnControlWindow() noexcept;
 	void Reset() noexcept;

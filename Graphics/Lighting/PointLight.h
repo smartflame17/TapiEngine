@@ -11,7 +11,9 @@ class RenderQueueBuilder;
 class PointLight : public Component
 {
 public:
-	PointLight(Graphics& gfx, float radius = 0.5f);
+	static constexpr ComponentType StaticType = ComponentType::PointLight;
+
+	PointLight(Graphics& gfx, float radius = 0.5f) ;
 	void SpawnControlWindow() noexcept;	// ImGui window for editing light properties
 	void Reset() noexcept;
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);

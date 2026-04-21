@@ -44,9 +44,10 @@ public:
 	};
 
 public:
-	CustomBehaviour() = default;
+	static constexpr ComponentType StaticType = ComponentType::CustomBehaviour;
+	CustomBehaviour() noexcept;
 	virtual ~CustomBehaviour() = default;
-	CustomBehaviour(GameObject* owner) : Component()
+	explicit CustomBehaviour(GameObject* owner) noexcept : CustomBehaviour()
 	{
 		SetOwner(owner);
 	}

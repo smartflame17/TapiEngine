@@ -17,6 +17,7 @@ namespace
 
 SpotLight::SpotLight(Graphics& gfx, float radius)
 	:
+	Component(StaticType),
 	gizmo(gfx, radius)
 {
 }
@@ -32,7 +33,7 @@ void SpotLight::SpawnControlWindow() noexcept
 
 const char* SpotLight::GetInspectorTitle() const noexcept
 {
-	return "Spot Light";
+	return ComponentTypeToString(StaticType).data();
 }
 
 void SpotLight::DrawInspectorContents() noexcept

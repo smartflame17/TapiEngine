@@ -5,8 +5,9 @@
 
 std::uint64_t Component::nextId = 1;
 
-Component::Component() :
-	id(nextId++)
+Component::Component(ComponentType type) noexcept:
+	id(nextId++),
+	type(type)
 {}
 
 void Component::SetOwner(GameObject* gameObject) noexcept
@@ -97,6 +98,7 @@ void Component::MarkPendingInspectorRemoval(bool pending) noexcept
 	pendingInspectorRemoval = pending;
 }
 
+// This function should be overridden by components that want to have a custom title in the inspector
 const char* Component::GetInspectorTitle() const noexcept
 {
 	return "Component";

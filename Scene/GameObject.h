@@ -78,6 +78,8 @@ public:
 		T& componentRef = *component;
 		components.push_back(std::move(component));
 
+		//TODO: can optimize by caching component type in GameObject, so we don't have to check every component for every type query
+		// also needs to handle other compoent types like lights, camera etc. that require registration to other systems
 		if constexpr (std::is_base_of_v<DrawableComponent, T>)
 		{
 			scene.RegisterDrawable(&componentRef);

@@ -3,6 +3,7 @@
 #include "../Graphics/RenderQueue.h"
 
 DrawableComponent::DrawableComponent(std::unique_ptr<Drawable> drawablePtr) :
+	Component(StaticType),
 	drawable(std::move(drawablePtr))
 {}
 

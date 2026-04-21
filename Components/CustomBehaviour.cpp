@@ -7,6 +7,10 @@
 #include <cstring>
 #include <typeinfo>
 
+CustomBehaviour::CustomBehaviour() noexcept :
+	Component(StaticType)
+{}
+
 void CustomBehaviour::Awake()
 {
 }

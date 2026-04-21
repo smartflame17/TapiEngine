@@ -4,6 +4,7 @@
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
+	Component(StaticType),
 	mesh(gfx, radius)
 {
 }
@@ -19,7 +20,8 @@ void PointLight::SpawnControlWindow() noexcept
 
 const char* PointLight::GetInspectorTitle() const noexcept
 {
-	return "Point Light";
+	return ComponentTypeToString(StaticType).data();
+	//return "Point Light";
 }
 
 void PointLight::DrawInspectorContents() noexcept

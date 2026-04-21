@@ -11,6 +11,8 @@ class RenderQueueBuilder;
 class SpotLight : public Component
 {
 public:
+	static constexpr ComponentType StaticType = ComponentType::SpotLight;
+
 	SpotLight(Graphics& gfx, float radius = 0.4f);
 	void SpawnControlWindow() noexcept;
 	void Reset() noexcept;

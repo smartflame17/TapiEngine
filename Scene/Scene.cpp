@@ -451,7 +451,7 @@ inline void Scene::DrawAddComponentPopup() noexcept
 			for (int i = 0; i < static_cast<int>(ComponentType::Count); ++i)
 			{
 				const bool isSelected = (selectedComponentType == i);
-				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected,
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).data(), isSelected,	// as component type string is created from string literal, it is null terminated and safe to use data() here
 					ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SelectOnNav))
 				{
 					selectedComponentType = i;
@@ -464,10 +464,25 @@ inline void Scene::DrawAddComponentPopup() noexcept
 		// Right child panel for component type description and add button
 		{
 			ImGui::BeginChild("ComponentTypeDescription", ImVec2(0, 320), ImGuiChildFlags_Borders);
-			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).c_str());
+			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).data());
 
 			// TODO: Add descriptions and functionality for adding components
-			const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
+			
+				const auto type = static_cast<ComponentType>(selectedComponentType);
+				if (selectedObject != nullptr && addComponentHandler != nullptr)
+				{
+					const bool addComponentResult = addComponentHandler(*selectedObject, type);
+				}
+				if (selectedObject == nullptr)
+				{
+					TE_LOGERROR("No GameObject selected to add component of type '%s'", ComponentTypeToString(type).data());
+				}
+				else if (addComponentHandler == nullptr)
+				{
+					TE_LOGERROR("No AddComponentHandler set in Scene to handle adding component of type '%s'", ComponentTypeToString(type).data());
+				}
+			
+			/*const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
 			switch (static_cast<ComponentType>(selectedComponentType))
 			{
 			case ComponentType::Drawable:
@@ -488,11 +503,39 @@ inline void Scene::DrawAddComponentPopup() noexcept
 				}
 
 				break;
+			case ComponentType::SpotLight:
+				if (ImGui::Button("Add Spot Light"))
+				{
+					selectedObject->AddComponent<SpotLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::PointLight:
+				if (ImGui::Button("Add Point Light"))
+				{
+					selectedObject->AddComponent<PointLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::DirectionalLight:
+				if (ImGui::Button("Add Directional Light"))
+				{
+					selectedObject->AddComponent<DirectionalLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::Camera:
+				if (ImGui::Button("Add Camera"))
+				{
+					selectedObject->AddComponent<Camera>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
 			case ComponentType::Other:
 				break;
 			default:
 				TE_LOGERROR("Unknown component type selected in AddComponentPopup");
-			}
+			}*/
 			ImGui::EndChild();
 			ImGui::EndGroup();
 		}
@@ -581,4 +624,9 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 		}
 		ImGui::TreePop();
 	}
+}
+
+void Scene::SetAddComponentHandler(AddComponentHandler handler) noexcept
+{
+	addComponentHandler = std::move(handler);
 }

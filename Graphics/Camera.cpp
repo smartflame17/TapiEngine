@@ -1,7 +1,11 @@
 #include "Camera.h"
 
 #define PI 3.14159265359f
-#define MAX_DISTANCE 1000.0f		// max distance camera can move in any direction
+#define MAX_DISTANCE 1000.0f		// max distance camera can move in any direction <-- wtf change this to something else later if needed
+
+Camera::Camera() noexcept :
+	Component(StaticType)
+{ }
 
 DirectX::XMFLOAT3 Camera::GetPosition() const noexcept
 {
@@ -112,7 +116,7 @@ void Camera::SpawnControlWindow() noexcept
 
 const char* Camera::GetInspectorTitle() const noexcept
 {
-	return "Camera";
+	return ComponentTypeToString(StaticType).data();
 }
 
 void Camera::DrawInspectorContents() noexcept

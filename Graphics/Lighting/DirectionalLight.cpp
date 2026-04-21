@@ -29,6 +29,7 @@ namespace
 DirectionalLight::DirectionalLight(Graphics& gfx)
 	/*:
 	gizmo(gfx, radius)*/
+	: Component(StaticType)
 {
 }
 
@@ -44,7 +45,7 @@ void DirectionalLight::SpawnControlWindow() noexcept
 
 const char* DirectionalLight::GetInspectorTitle() const noexcept
 {
-	return "Directional Light";
+	return ComponentTypeToString(StaticType).data();
 }
 
 void DirectionalLight::DrawInspectorContents() noexcept
