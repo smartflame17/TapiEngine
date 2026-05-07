@@ -142,18 +142,26 @@ void Scene::CleanupPendingComponentRemovals() noexcept
 	// Lambda to unregister components based on their type (may be better to refactor to have components save their type via enum class?)
 	auto unregisterComponent = [this](Component& component) noexcept
 		{
-			if (auto* drawable = dynamic_cast<DrawableComponent*>(&component))
+			if (component.IsType(ComponentType::Drawable))
+				UnregisterDrawable(static_cast<DrawableComponent*>(&component));
+			/*if (auto* drawable = dynamic_cast<DrawableComponent*>(&component))
 			{
 				UnregisterDrawable(drawable);
+			}*/
+			else if (component.IsType(ComponentType::CustomBehaviour))
+			{
+				auto* script = static_cast<CustomBehaviour*>(&component);
+				scriptManager.UnregisterScript(*script);
 			}
-
+				
+			/*
 			if (auto* script = dynamic_cast<CustomBehaviour*>(&component))
 			{
 				scriptManager.UnregisterScript(*script);
-			}
+			}*/
 		};
 
-	// Run through game objects to remove the component that are pending removal
+	// Run through game objects to remove the component that are pending removal -> we can change this to only run through objects that are related to the pending components if we want to optimize
 	auto sweep = [&](auto& self, std::vector<std::unique_ptr<GameObject>>& objects) -> void
 		{
 			for (auto& object : objects)
@@ -165,7 +173,7 @@ void Scene::CleanupPendingComponentRemovals() noexcept
 					if (component != nullptr && pendingSet.find(component) != pendingSet.end())
 					{
 						unregisterComponent(*component);
-						it = components.erase(it);	// free memory
+						it = components.erase(it);	// free memory (RAII unique ptr)
 					}
 					else
 					{
