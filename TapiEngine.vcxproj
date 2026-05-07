@@ -546,6 +546,10 @@
     </None>
     <None Include="imgui\imterm\terminal.tpp" />
     <None Include="imgui\README.md" />
+    <None Include="LICENSE.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Scene\README.md">
       <SubType>

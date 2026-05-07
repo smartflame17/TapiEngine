@@ -1111,6 +1111,7 @@
     <None Include="config.ini" />
     <None Include="Shaders\LightingCommon.hlsli" />
     <None Include="imgui\imterm\terminal.tpp" />
+    <None Include="LICENSE.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />

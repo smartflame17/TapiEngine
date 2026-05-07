@@ -39,4 +39,12 @@ After building, run the executable from your build output directory. You should 
 - The open-source community for inspiration and guidance
 
 ---
+
+## License
+TapiEngine is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for more details.
+
+
+
+
+
 Made with ❤️ by [smartflame17](https://github.com/smartflame17)
