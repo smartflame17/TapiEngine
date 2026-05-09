@@ -536,6 +536,7 @@
     <None Include="assimp\include\SmoothingGroups.inl" />
     <None Include="assimp\include\vector2.inl" />
     <None Include="assimp\include\vector3.inl" />
+    <None Include="Components\readme.md" />
     <None Include="config.ini" />
     <None Include="ErrorHandling\DXGetErrorDescription.inl" />
     <None Include="ErrorHandling\DXGetErrorString.inl" />

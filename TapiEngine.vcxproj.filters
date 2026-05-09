@@ -1112,6 +1112,7 @@
     <None Include="Shaders\LightingCommon.hlsli" />
     <None Include="imgui\imterm\terminal.tpp" />
     <None Include="LICENSE.md" />
+    <None Include="Components\readme.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
