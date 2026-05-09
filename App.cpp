@@ -64,7 +64,7 @@ void App::ResetSimulation()
 
 	scene.SetSkybox(std::make_unique<CubeMap>(
 		wnd.Gfx(),
-		"Graphics/Textures/Skybox/WaterMountain"
+		"Graphics/Textures/Skybox/CloudySky"
 	));
 
 	// GO initialization
@@ -86,8 +86,8 @@ void App::ResetSimulation()
 	directionalLightObject.SetRotation(0.4f, -0.7f, 0.0f);
 	directionalLightObject.GetComponent<DirectionalLight>()->SetIntensity(0.4f);
 
-	auto& groundObject = scene.CreateGameObject("Ground");
-	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
+	/*auto& groundObject = scene.CreateGameObject("Ground");
+	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));*/
 
 	auto& texturedCube = scene.CreateGameObject("Textured Cube");
 	texturedCube.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
@@ -105,6 +105,12 @@ void App::ResetSimulation()
 		Primitive::SurfaceMode::Material
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
+
+	auto& sponza = scene.CreateGameObject("sponza");
+	sponza.AddComponent<DrawableComponent>(std::make_unique<Model>(
+		wnd.Gfx(),
+		"Graphics/Models/sponza/sponza.gltf"
+	));
 
 	/*auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
