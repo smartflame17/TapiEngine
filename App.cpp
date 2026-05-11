@@ -106,11 +106,11 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
-	auto& sponza = scene.CreateGameObject("sponza");
+	/*auto& sponza = scene.CreateGameObject("sponza");
 	sponza.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/sponza/sponza.gltf"
-	));
+	));*/
 
 	/*auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
@@ -212,21 +212,21 @@ void App::CacheSceneComponents() noexcept
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (auto camera = dynamic_cast<Camera*>(component.get()))
+			if (component->isType<Camera>())
 			{
-				gameCams.push_back(camera);
+				gameCams.push_back(static_cast<Camera*>(component.get()));
 			}
-			if (auto pointLight = dynamic_cast<PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
-				pointLights.push_back(pointLight);
+				pointLights.push_back(static_cast<PointLight*>(component.get()));
 			}
-			if (auto spotLight = dynamic_cast<SpotLight*>(component.get()))
+			if (component->isType<SpotLight>())
 			{
-				spotLights.push_back(spotLight);
+				spotLights.push_back(static_cast<SpotLight*>(component.get()));
 			}
-			if (auto directionalLight = dynamic_cast<DirectionalLight*>(component.get()))
+			if (component->isType<DirectionalLight>())
 			{
-				directionalLights.push_back(directionalLight);
+				directionalLights.push_back(static_cast<DirectionalLight*>(component.get()));
 			}
 		}
 
