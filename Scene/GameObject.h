@@ -57,8 +57,9 @@ public:
 	{
 		for (auto& component : components)
 		{
-			if (auto* script = dynamic_cast<CustomBehaviour*>(component.get()))
+			if (component->isType<CustomBehaviour>())
 			{
+				auto* script = static_cast<CustomBehaviour*>(component.get());
 				fn(*script);
 			}
 		}
@@ -98,8 +99,10 @@ public:
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (auto& component : components)
 		{
-			if (auto casted = dynamic_cast<T*>(component.get()))
-				return casted;
+			if (component->isType<T>())
+			{
+				return static_cast<T*>(component.get());
+			}
 		}
 		return nullptr;
 	}
@@ -110,8 +113,10 @@ public:
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (const auto& component : components)
 		{
-			if (const auto casted = dynamic_cast<const T*>(component.get()))
-				return casted;
+			if (component->isType<T>())
+			{
+				return static_cast<const T*>(component.get());
+			}
 		}
 		return nullptr;
 	}
@@ -122,7 +127,7 @@ public:
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (auto& component : components)
 		{
-			if (dynamic_cast<T*>(component.get()) != nullptr)
+			if (component->isType<T>())
 			{
 				scene.QueueComponentRemoval(*component);
 				return true;

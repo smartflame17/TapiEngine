@@ -13,10 +13,12 @@ GameObject::~GameObject()
 {
 	for (auto& component : components)
 	{
-		if (auto drawable = dynamic_cast<DrawableComponent*>(component.get()))
+		if (component->isType<DrawableComponent>())
 		{
-			scene.UnregisterDrawable(drawable);
+			scene.UnregisterDrawable(static_cast<DrawableComponent*>(component.get()));
 		}
+
+		// TODO: handle scripts and other component types too
 	}
 }
 
@@ -146,7 +148,7 @@ void GameObject::Update(float dt, bool isSimulationRunning) noexcept
 		{
 			continue;
 		}
-		if (dynamic_cast<CustomBehaviour*>(component.get()) != nullptr)
+		if (component->isType<CustomBehaviour>())
 		{
 			continue;
 		}

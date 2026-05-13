@@ -236,12 +236,14 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
+				auto* pointLight = static_cast<PointLight*>(component.get());
 				pointLight->SubmitGizmo(queueBuilder);
 			}
-			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			else if (component->isType<SpotLight>())
 			{
+				auto* spotLight = static_cast<SpotLight*>(component.get());
 				spotLight->SubmitGizmo(queueBuilder);
 			}
 			/*else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
@@ -275,16 +277,19 @@ void Scene::CollectRenderLights(std::vector<RenderLight>& lights) const noexcept
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
+				auto* pointLight = static_cast<PointLight*>(component.get());
 				lights.push_back(pointLight->BuildRenderLight());
 			}
-			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			else if (component->isType<SpotLight>())
 			{
+				auto* spotLight = static_cast<SpotLight*>(component.get());
 				lights.push_back(spotLight->BuildRenderLight());
 			}
-			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
+			else if (component->isType<DirectionalLight>())
 			{
+				auto* directionalLight = static_cast<DirectionalLight*>(component.get());
 				lights.push_back(directionalLight->BuildRenderLight());
 			}
 		}
