@@ -12,14 +12,18 @@ struct RenderView;
 class DrawableComponent : public Component
 {
 public:
+	static constexpr ComponentType StaticType = ComponentType::Drawable;
 	explicit DrawableComponent(std::unique_ptr<Drawable> drawablePtr);
 
 	void OnUpdate(float dt, bool isSimulationRunning) noexcept override;
 	void Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) const noexcept;
-	void OnInspector() noexcept override;
 	Drawable* GetDrawable() noexcept;
 	const Drawable* GetDrawable() const noexcept;
 	DirectX::BoundingBox GetWorldBounds() const noexcept;
+
+private:
+	const char* GetInspectorTitle() const noexcept override;
+	void DrawInspectorContents() noexcept override;
 
 private:
 	std::unique_ptr<Drawable> drawable;

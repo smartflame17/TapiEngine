@@ -3,6 +3,7 @@
 #include "../Graphics/RenderQueue.h"
 
 DrawableComponent::DrawableComponent(std::unique_ptr<Drawable> drawablePtr) :
+	Component(StaticType),
 	drawable(std::move(drawablePtr))
 {}
 
@@ -24,15 +25,16 @@ void DrawableComponent::Submit(RenderQueueBuilder& queueBuilder, const RenderVie
 	}
 }
 
-void DrawableComponent::OnInspector() noexcept
+const char* DrawableComponent::GetInspectorTitle() const noexcept
 {
-	if (ImGui::TreeNodeEx("DrawableComponent", ImGuiTreeNodeFlags_DefaultOpen))
+	return "Drawable";
+}
+
+void DrawableComponent::DrawInspectorContents() noexcept
+{
+	if (drawable)
 	{
-		if (drawable)
-		{
-			drawable->DrawInspector();
-		}
-		ImGui::TreePop();
+		drawable->DrawInspector();
 	}
 }
 

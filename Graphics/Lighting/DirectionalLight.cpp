@@ -29,6 +29,7 @@ namespace
 DirectionalLight::DirectionalLight(Graphics& gfx)
 	/*:
 	gizmo(gfx, radius)*/
+	: Component(StaticType)
 {
 }
 
@@ -37,15 +38,18 @@ void DirectionalLight::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Directional Light"))
 	{
-		OnInspector();
+		DrawInspectorContents();
 	}
 	ImGui::End();
 }
 
-void DirectionalLight::OnInspector() noexcept
+const char* DirectionalLight::GetInspectorTitle() const noexcept
 {
-	ImGui::Text("Directional Light");
-	ImGui::Separator();
+	return ComponentTypeToString(StaticType).data();
+}
+
+void DirectionalLight::DrawInspectorContents() noexcept
+{
 	if (auto* owner = TryGetGameObject())
 	{
 		auto rotation = owner->GetTransform().rotation;

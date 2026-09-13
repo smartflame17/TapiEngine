@@ -9,7 +9,8 @@
 class Camera : public Component
 {
 public:
-	Camera() = default;
+	static constexpr ComponentType StaticType = ComponentType::Camera;
+	Camera() noexcept;
 
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
 	const DirectX::BoundingFrustum& GetFrustum() const noexcept;
@@ -23,7 +24,10 @@ public:
 	void Rotate(float dx, float dy) noexcept;
 
 	void SpawnControlWindow() noexcept;	// imgui window for controlling camera
-	void OnInspector() noexcept override;
+private:
+	const char* GetInspectorTitle() const noexcept override;
+	void DrawInspectorContents() noexcept override;
+
 private:
 	DirectX::XMFLOAT3 GetPosition() const noexcept;
 	DirectX::XMFLOAT3 GetRotation() const noexcept;

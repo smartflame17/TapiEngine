@@ -12,6 +12,7 @@
 #include "../Graphics/Lighting/SpotLight.h"
 #include <algorithm>
 #include <iostream>
+#include <unordered_set>
 
 Scene::Scene() : name("Scene") {}
 
@@ -38,7 +39,7 @@ void Scene::Clear() noexcept
 	scriptManager.Clear();
 	drawables.clear();
 	rootObjects.clear();
-	drawables.clear();
+	pendingComponentRemovals.clear();
 	bvhManager.Clear();
 	skybox.reset();
 	selectedObject = nullptr;
@@ -120,6 +121,74 @@ void Scene::CleanupDestroyedObjects() noexcept
 	sweep(sweep, rootObjects);
 }
 
+// Actual cleanup is done after all rendering is done and before next frame
+void Scene::CleanupPendingComponentRemovals() noexcept
+{
+	if (pendingComponentRemovals.empty())
+	{
+		return;
+	}
+	std::unordered_set<Component*> pendingSet;
+	pendingSet.reserve(pendingComponentRemovals.size());
+
+	for (Component* component : pendingComponentRemovals) // move to set for quick lookup
+	{
+		if (component != nullptr)
+		{
+			pendingSet.insert(component);
+		}
+	}
+
+	// Lambda to unregister components based on their type (may be better to refactor to have components save their type via enum class?)
+	auto unregisterComponent = [this](Component& component) noexcept
+		{
+			if (component.IsType(ComponentType::Drawable))
+				UnregisterDrawable(static_cast<DrawableComponent*>(&component));
+			/*if (auto* drawable = dynamic_cast<DrawableComponent*>(&component))
+			{
+				UnregisterDrawable(drawable);
+			}*/
+			else if (component.IsType(ComponentType::CustomBehaviour))
+			{
+				auto* script = static_cast<CustomBehaviour*>(&component);
+				scriptManager.UnregisterScript(*script);
+			}
+				
+			/*
+			if (auto* script = dynamic_cast<CustomBehaviour*>(&component))
+			{
+				scriptManager.UnregisterScript(*script);
+			}*/
+		};
+
+	// Run through game objects to remove the component that are pending removal -> we can change this to only run through objects that are related to the pending components if we want to optimize
+	auto sweep = [&](auto& self, std::vector<std::unique_ptr<GameObject>>& objects) -> void
+		{
+			for (auto& object : objects)
+			{
+				auto& components = object->components;
+				for (auto it = components.begin(); it != components.end(); )
+				{
+					Component* component = it->get();
+					if (component != nullptr && pendingSet.find(component) != pendingSet.end())
+					{
+						unregisterComponent(*component);
+						it = components.erase(it);	// free memory (RAII unique ptr)
+					}
+					else
+					{
+						++it;
+					}
+				}
+
+				self(self, object->children);
+			}
+		};
+
+	sweep(sweep, rootObjects);
+	pendingComponentRemovals.clear();
+}
+
 void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG)
 {
 	if (skybox)
@@ -167,12 +236,14 @@ void Scene::Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noe
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
+				auto* pointLight = static_cast<PointLight*>(component.get());
 				pointLight->SubmitGizmo(queueBuilder);
 			}
-			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			else if (component->isType<SpotLight>())
 			{
+				auto* spotLight = static_cast<SpotLight*>(component.get());
 				spotLight->SubmitGizmo(queueBuilder);
 			}
 			/*else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
@@ -206,16 +277,19 @@ void Scene::CollectRenderLights(std::vector<RenderLight>& lights) const noexcept
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (const auto* pointLight = dynamic_cast<const PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
+				auto* pointLight = static_cast<PointLight*>(component.get());
 				lights.push_back(pointLight->BuildRenderLight());
 			}
-			else if (const auto* spotLight = dynamic_cast<const SpotLight*>(component.get()))
+			else if (component->isType<SpotLight>())
 			{
+				auto* spotLight = static_cast<SpotLight*>(component.get());
 				lights.push_back(spotLight->BuildRenderLight());
 			}
-			else if (const auto* directionalLight = dynamic_cast<const DirectionalLight*>(component.get()))
+			else if (component->isType<DirectionalLight>())
 			{
+				auto* directionalLight = static_cast<DirectionalLight*>(component.get());
 				lights.push_back(directionalLight->BuildRenderLight());
 			}
 		}
@@ -270,6 +344,16 @@ void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
 	scriptManager.HandleEnableStateChanged(script);
 }
 
+void Scene::QueueComponentRemoval(Component& component) noexcept // TODO: bug here, the deletion of component is not handled properly
+{
+	component.MarkPendingInspectorRemoval(true);
+	// maybe we dont need duplicate check here?
+	if (std::find(pendingComponentRemovals.begin(), pendingComponentRemovals.end(), &component) == pendingComponentRemovals.end())
+	{
+		pendingComponentRemovals.push_back(&component);
+	}
+}
+
 void Scene::DestroyGameObject(GameObject& object) noexcept
 {
 	if (object.IsPendingKill())
@@ -293,6 +377,7 @@ void Scene::DestroyGameObject(GameObject& object) noexcept
 
 void Scene::DrawHierarchyWindow() noexcept
 {
+
 	ImGui::SetNextWindowSize(ImVec2(300, 720), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(0, 60), ImGuiCond_Always);
 	if (!ImGui::Begin(name.c_str(), nullptr,
@@ -355,7 +440,8 @@ void Scene::DrawInspectorWindow() noexcept
 	if (!ImGui::Begin("Inspector", nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_AlwaysVerticalScrollbar
 		))
 	{
 		ImGui::End();
@@ -406,7 +492,7 @@ void Scene::DrawInspectorWindow() noexcept
 	{
 		for (const auto& component : components)
 		{
-			if (component != nullptr)
+			if (component != nullptr && !component->IsPendingInspectorRemoval())
 			{
 				component->OnInspector();
 				ImGui::Spacing();
@@ -416,10 +502,129 @@ void Scene::DrawInspectorWindow() noexcept
 	ImGui::Separator();
 	if (ImGui::Button("Add Component"))
 	{
-		//TODO: Button hook for adding components in editor-time
+		ImGui::OpenPopup("AddComponentPopup");
 	}
 
+	DrawAddComponentPopup();
+
 	ImGui::End();
+}
+
+const std::vector<Component*>& Scene::GetPendingComponentRemovals() const noexcept
+{
+	return pendingComponentRemovals;
+}
+
+inline void Scene::DrawAddComponentPopup() noexcept
+{
+	ImGui::SetNextWindowSize(ImVec2(600, 380), ImGuiCond_Always);
+	if (ImGui::BeginPopupModal("AddComponentPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		//Left child panel for component type selection
+		static int selectedComponentType = 0;
+		{
+			ImGui::BeginChild("ComponentTypeSelection", ImVec2(150, 320), ImGuiChildFlags_Borders);
+			for (int i = 0; i < static_cast<int>(ComponentType::Count); ++i)
+			{
+				const bool isSelected = (selectedComponentType == i);
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).data(), isSelected,	// as component type string is created from string literal, it is null terminated and safe to use data() here
+					ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SelectOnNav))
+				{
+					selectedComponentType = i;
+				}
+			}
+			ImGui::EndChild();
+		}
+		ImGui::SameLine();
+		ImGui::BeginGroup();
+		// Right child panel for component type description and add button
+		{
+			ImGui::BeginChild("ComponentTypeDescription", ImVec2(0, 320), ImGuiChildFlags_Borders);
+			ImGui::Text("Selected component type = %s", ComponentTypeToString(static_cast<ComponentType>(selectedComponentType)).data());
+
+			// TODO: Add descriptions and functionality for adding components
+			bool addComponentResult = false;
+				const auto type = static_cast<ComponentType>(selectedComponentType);
+				if (selectedObject != nullptr && addComponentHandler != nullptr)
+				{
+					addComponentResult = addComponentHandler(*selectedObject, type);
+				}
+				if (selectedObject == nullptr)
+				{
+					TE_LOGERROR("No GameObject selected to add component of type '%s'", ComponentTypeToString(type).data());
+				}
+				else if (addComponentHandler == nullptr)
+				{
+					TE_LOGERROR("No AddComponentHandler set in Scene to handle adding component of type '%s'", ComponentTypeToString(type).data());
+				}
+				/*else if (!addComponentResult)
+				{
+					TE_LOGERROR("AddComponentHandler failed to add component of type '%s' to GameObject '%s'", ComponentTypeToString(type).data(), selectedObject->GetName().c_str());
+				}*/
+			
+			/*const auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames();
+			switch (static_cast<ComponentType>(selectedComponentType))
+			{
+			case ComponentType::Drawable:
+				break;
+			case ComponentType::CustomBehaviour:
+				for (const auto& scriptName : scriptNames)
+				{
+					if (ImGui::Button(("Add " + scriptName).c_str()))
+					{
+						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
+						{
+							selectedObject->AddScript(scriptName);
+							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), selectedObject->GetName().c_str());
+							ImGui::CloseCurrentPopup();						
+						}
+						else TE_LOGERROR("Script '%s' is not registered in the ScriptRegistry", scriptName.c_str());
+					}
+				}
+
+				break;
+			case ComponentType::SpotLight:
+				if (ImGui::Button("Add Spot Light"))
+				{
+					selectedObject->AddComponent<SpotLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::PointLight:
+				if (ImGui::Button("Add Point Light"))
+				{
+					selectedObject->AddComponent<PointLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::DirectionalLight:
+				if (ImGui::Button("Add Directional Light"))
+				{
+					selectedObject->AddComponent<DirectionalLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::Camera:
+				if (ImGui::Button("Add Camera"))
+				{
+					selectedObject->AddComponent<Camera>();
+					ImGui::CloseCurrentPopup();
+				}
+				break;
+			case ComponentType::Other:
+				break;
+			default:
+				TE_LOGERROR("Unknown component type selected in AddComponentPopup");
+			}*/
+			ImGui::EndChild();
+			ImGui::EndGroup();
+		}
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 }
 
 const std::vector<std::unique_ptr<GameObject>>& Scene::GetRootObjects() const noexcept
@@ -499,4 +704,9 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 		}
 		ImGui::TreePop();
 	}
+}
+
+void Scene::SetAddComponentHandler(AddComponentHandler handler) noexcept
+{
+	addComponentHandler = std::move(handler);
 }

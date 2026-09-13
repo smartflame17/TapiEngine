@@ -1,10 +1,13 @@
 #include "Component.h"
 #include "../Scene/GameObject.h"
+#include "../Scene/Scene.h"
+#include "../imgui/imgui.h"
 
 std::uint64_t Component::nextId = 1;
 
-Component::Component() :
-	id(nextId++)
+Component::Component(ComponentType type) noexcept:
+	id(nextId++),
+	type(type)
 {}
 
 void Component::SetOwner(GameObject* gameObject) noexcept
@@ -33,5 +36,74 @@ void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
 }
 
 void Component::OnInspector() noexcept
+{
+	if (pendingInspectorRemoval)
+	{
+		return;
+	}
+
+	GameObject* ownerObject = TryGetGameObject();
+	if (ownerObject == nullptr)
+	{
+		return;
+	}
+
+	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));		// BUG: if component is removed and another component is added to the same object, the new component might get the same id, causing ImGui ID collision. Need to handle this case by either ensuring unique ids even after removal, or by using a different method for generating ImGui IDs that doesn't rely on component id.
+	ImGui::BeginChild(
+		"ComponentInspectorPanel",
+		ImVec2(0.0f, 0.0f),
+		ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysUseWindowPadding
+	);
+
+	if (ImGui::ArrowButton("##Collapse", inspectorCollapsed ? ImGuiDir_Right : ImGuiDir_Down))
+	{
+		inspectorCollapsed = !inspectorCollapsed;
+	}
+
+	ImGui::SameLine();
+	ImGui::AlignTextToFramePadding();
+	ImGui::TextUnformatted(GetInspectorTitle());
+
+	const float closeButtonWidth = ImGui::GetFrameHeight();
+	const float closeButtonX = ImGui::GetWindowContentRegionMax().x - closeButtonWidth;
+	if (closeButtonX > ImGui::GetCursorPosX())
+	{
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(closeButtonX);
+	}
+
+	if (ImGui::Button("X"))
+	{
+		pendingInspectorRemoval = true;
+		ownerObject->GetScene().QueueComponentRemoval(*this);
+	}
+
+	if (!inspectorCollapsed && !pendingInspectorRemoval)
+	{
+		ImGui::Separator();
+		DrawInspectorContents();
+	}
+
+	ImGui::EndChild();
+	ImGui::PopID();
+}
+
+bool Component::IsPendingInspectorRemoval() const noexcept
+{
+	return pendingInspectorRemoval;
+}
+
+void Component::MarkPendingInspectorRemoval(bool pending) noexcept
+{
+	pendingInspectorRemoval = pending;
+}
+
+// This function should be overridden by components that want to have a custom title in the inspector
+const char* Component::GetInspectorTitle() const noexcept
+{
+	return "Component";
+}
+
+void Component::DrawInspectorContents() noexcept
 {
 }

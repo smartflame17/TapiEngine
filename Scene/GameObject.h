@@ -12,6 +12,7 @@
 #include "../Components/Component.h"
 #include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
+#include "spdlog/spdlog.h"
 
 class Graphics;
 
@@ -49,13 +50,16 @@ public:
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;
 
+	CustomBehaviour* AddScript(const std::string& scriptName);
+
 	template<typename Fn>
 	void ForEachScript(Fn&& fn) noexcept
 	{
 		for (auto& component : components)
 		{
-			if (auto* script = dynamic_cast<CustomBehaviour*>(component.get()))
+			if (component->isType<CustomBehaviour>())
 			{
+				auto* script = static_cast<CustomBehaviour*>(component.get());
 				fn(*script);
 			}
 		}
@@ -75,6 +79,8 @@ public:
 		T& componentRef = *component;
 		components.push_back(std::move(component));
 
+		//TODO: can optimize by caching component type in GameObject, so we don't have to check every component for every type query
+		// also needs to handle other compoent types like lights, camera etc. that require registration to other systems
 		if constexpr (std::is_base_of_v<DrawableComponent, T>)
 		{
 			scene.RegisterDrawable(&componentRef);
@@ -93,8 +99,10 @@ public:
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (auto& component : components)
 		{
-			if (auto casted = dynamic_cast<T*>(component.get()))
-				return casted;
+			if (component->isType<T>())
+			{
+				return static_cast<T*>(component.get());
+			}
 		}
 		return nullptr;
 	}
@@ -105,8 +113,10 @@ public:
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
 		for (const auto& component : components)
 		{
-			if (const auto casted = dynamic_cast<const T*>(component.get()))
-				return casted;
+			if (component->isType<T>())
+			{
+				return static_cast<const T*>(component.get());
+			}
 		}
 		return nullptr;
 	}
@@ -115,15 +125,11 @@ public:
 	bool RemoveComponent() noexcept
 	{
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
-		for (auto it = components.begin(); it != components.end(); ++it)
+		for (auto& component : components)
 		{
-			if (dynamic_cast<T*>(it->get()) != nullptr)
+			if (component->isType<T>())
 			{
-				if constexpr (std::is_base_of_v<DrawableComponent, T>)
-				{
-					scene.UnregisterDrawable(static_cast<DrawableComponent*>(it->get()));
-				}
-				components.erase(it);
+				scene.QueueComponentRemoval(*component);
 				return true;
 			}
 		}
@@ -143,26 +149,7 @@ private:
 		}
 		else
 		{
-			std::uint8_t mask = CustomBehaviour::None;
-
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Awake) != &CustomBehaviour::Awake)
-				mask |= CustomBehaviour::AwakeFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnEnable) != &CustomBehaviour::OnEnable)
-				mask |= CustomBehaviour::OnEnableFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::Start) != &CustomBehaviour::Start)
-				mask |= CustomBehaviour::StartFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::Update) != &CustomBehaviour::Update)
-				mask |= CustomBehaviour::UpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::FixedUpdate) != &CustomBehaviour::FixedUpdate)
-				mask |= CustomBehaviour::FixedUpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)(float)>(&T::LateUpdate) != &CustomBehaviour::LateUpdate)
-				mask |= CustomBehaviour::LateUpdateFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDisable) != &CustomBehaviour::OnDisable)
-				mask |= CustomBehaviour::OnDisableFlag;
-			if constexpr (static_cast<void (CustomBehaviour::*)()>(&T::OnDestroy) != &CustomBehaviour::OnDestroy)
-				mask |= CustomBehaviour::OnDestroyFlag;
-
-			return mask;
+			return ::BuildScriptLifecycleMask<T>();
 		}
 	}
 
@@ -194,3 +181,15 @@ inline const T* Component::GetComponent() const noexcept
 {
 	return GetGameObject().GetComponent<T>();
 }
+
+#ifndef TE_LOG
+#define TE_LOG(...) SPDLOG_INFO(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGERROR
+#define TE_LOGERROR(...) SPDLOG_ERROR(__VA_ARGS__)
+#endif
+
+#ifndef TE_LOGWARNING
+#define TE_LOGWARNING(...) SPDLOG_WARN(__VA_ARGS__)
+#endif

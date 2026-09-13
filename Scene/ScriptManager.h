@@ -10,6 +10,7 @@ class ScriptManager
 {
 public:
 	void RegisterScript(CustomBehaviour& script) noexcept;
+	void UnregisterScript(CustomBehaviour& script) noexcept;
 	void HandleEnableStateChanged(CustomBehaviour& script) noexcept;
 	void QueueDestroy(GameObject& object) noexcept;
 

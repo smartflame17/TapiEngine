@@ -104,7 +104,7 @@ The following is the execution order of the ```CustomBehaviour``` class in the e
  Engine steps the physics simulation
  |
  v
- CustomBehaviour.FixedUpdate() [Use for physics-related updates, as it is called at a fixed time step]]
+ CustomBehaviour.FixedUpdate() [Use for physics-related updates, as it is called at a fixed time step]
  CustomBehaviour.Update() [Use for regular updates, such as handling input or non-physics related logic]
  CustomBehaviour.LateUpdate() [Use for animation or camera updates]
  |
@@ -119,3 +119,16 @@ The ```ScriptManager``` class uses deferred operations on the list of ```CustomB
 
 For example, when a ```GameObject``` is destoyed via a ```CustomBehaviour``` script during ```Update()```, it is simply marked as destroyed, 
 and the actual destruction is handled at the end of the frame by the ```ScriptManager```, ensuring that the list of components is not modified while it is being iterated through.  
+
+# Spacial Acceleration
+
+Check out the README under `\Tools` for more information on spacial acceleration technique used (BVH).
+
+The per-scene `BVHManager` is responsible for building and managing the Bounding Volume Hierarchy (BVH) for efficient rendering.
+Inside `BVHManager`, we have separate BVH trees for static (non-moving) and dynamic (moving) objects.
+
+`Sync()` is called to update the BVH trees by the renderer when it is ready to draw the scene. Any updates required are applied during this phase.
+The `Scene` class first queries the `BVHManager` with `QueryVisibleDrawables()` for visible objects within the view frustrum.   
+The retrieved list is used by the `Renderer` to configure the render queue.
+
+`BVHManager` also provides a way for editor-time object picking, by raycasting against the BVH trees to find the closest intersecting object.

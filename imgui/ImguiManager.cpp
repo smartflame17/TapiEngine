@@ -5,10 +5,52 @@ ImguiManager::ImguiManager()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	fileDialog.SetTitle("Select Model File");
+
+	logTerminalHelper = std::make_shared<LogTerminalHelper>();
+	logTerminalSink = logTerminalHelper;
+
+	int logSizeX = static_cast<int>(width / 1920.0f * 1280.0f);
+	int logSizeY = static_cast<int>(height / 1080.0f * 270.0f);
+	logTerminal = std::make_unique<LogTerminal>("##EngineLogTerminal", logSizeX, logSizeY, logTerminalHelper);
+	logTerminal->set_flags(
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoCollapse
+	);
+	logTerminalHelper->set_formatter(
+		std::make_unique<spdlog::pattern_formatter>("%^[%T.%e] [%l] %v%$")
+	);
+
+	auto& levelColors = logTerminal->theme().log_level_colors;
+	const ImTerm::theme::constexpr_color white{ 1.0f, 1.0f, 1.0f, 1.0f };
+	const ImTerm::theme::constexpr_color yellow{ 1.0f, 0.85f, 0.20f, 1.0f };
+	const ImTerm::theme::constexpr_color red{ 1.0f, 0.25f, 0.25f, 1.0f };
+	const ImTerm::theme::constexpr_color green{ 0.25f, 1.0f, 0.25f, 1.0f };
+
+	levelColors[ImTerm::message::severity::trace] = white;
+	levelColors[ImTerm::message::severity::debug] = white;
+	levelColors[ImTerm::message::severity::info] = green;
+
+	levelColors[ImTerm::message::severity::warn] = yellow;
+	levelColors[ImTerm::message::severity::err] = red;
+	levelColors[ImTerm::message::severity::critical] = red;
+	if (const auto logger = spdlog::default_logger())
+	{
+		logger->sinks().push_back(logTerminalSink);
+	}
+	TE_LOG("ImguiManager initialized and log terminal sink added to spdlog default logger.");
+	TE_LOGERROR("This is an error message to test the log terminal sink.");
+	TE_LOGWARNING("This is a warning message to test the log terminal sink.");
 }
 
 ImguiManager::~ImguiManager()
 {
+	if (const auto logger = spdlog::default_logger())
+	{
+		auto& sinks = logger->sinks();
+		sinks.erase(std::remove(sinks.begin(), sinks.end(), logTerminalSink), sinks.end());
+	}
 	ImGui::DestroyContext();
 }
 
@@ -287,7 +329,14 @@ inline void ImguiManager::MultipurposeWindow()
 	{
 		if (ImGui::BeginTabItem("Log"))
 		{
-			ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
+			//ImGui::TextUnformatted("This is a log window. Redirect application's log output here.");
+			if (logTerminal != nullptr)
+			{
+				int logPosX = static_cast<int>(width / 1920.0f * 300.0f);
+				int logPosY = static_cast<int>(height / 1080.0f * 810.0f);
+				ImGui::SetNextWindowPos(ImVec2(logPosX, logPosY), ImGuiCond_Always);
+				logTerminal->show();
+			}
 			ImGui::EndTabItem();
 		}
 		if (ImGui::BeginTabItem("Asset Browser"))

@@ -4,6 +4,7 @@
 
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
+	Component(StaticType),
 	mesh(gfx, radius)
 {
 }
@@ -12,15 +13,19 @@ void PointLight::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Light"))
 	{
-		OnInspector();
+		DrawInspectorContents();
 	}
 	ImGui::End();
 }
 
-void PointLight::OnInspector() noexcept
+const char* PointLight::GetInspectorTitle() const noexcept
 {
-	ImGui::Text("Point Light");
-	ImGui::Separator();
+	return ComponentTypeToString(StaticType).data();
+	//return "Point Light";
+}
+
+void PointLight::DrawInspectorContents() noexcept
+{
 	if (auto* owner = TryGetGameObject())
 	{
 		auto position = owner->GetTransform().position;

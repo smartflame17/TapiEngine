@@ -52,6 +52,7 @@ App::~App()
 
 }
 
+// TODO: In the future, this method will be replaced with scene file deserialization and handle initialization of scene-dependent systems and resources
 void App::ResetSimulation()
 {
 	scene.Clear();
@@ -63,7 +64,7 @@ void App::ResetSimulation()
 
 	scene.SetSkybox(std::make_unique<CubeMap>(
 		wnd.Gfx(),
-		"Graphics/Textures/Skybox/WaterMountain"
+		"Graphics/Textures/Skybox/CloudySky"
 	));
 
 	// GO initialization
@@ -85,8 +86,8 @@ void App::ResetSimulation()
 	directionalLightObject.SetRotation(0.4f, -0.7f, 0.0f);
 	directionalLightObject.GetComponent<DirectionalLight>()->SetIntensity(0.4f);
 
-	auto& groundObject = scene.CreateGameObject("Ground");
-	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));
+	/*auto& groundObject = scene.CreateGameObject("Ground");
+	groundObject.AddComponent<DrawableComponent>(std::make_unique<Ground>(wnd.Gfx()));*/
 
 	auto& texturedCube = scene.CreateGameObject("Textured Cube");
 	texturedCube.AddComponent<DrawableComponent>(std::make_unique<Primitive>(
@@ -105,19 +106,19 @@ void App::ResetSimulation()
 	));
 	materialCube.SetPosition(1.5f, 1.0f, 0.0f);
 
-	/*auto& bistro = scene.CreateGameObject("Bistro Scene");
-	bistro.AddComponent<DrawableComponent>(std::make_unique<Model>(
+	/*auto& sponza = scene.CreateGameObject("sponza");
+	sponza.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
-		"Graphics/Models/Bistro_Godot.glb"
+		"Graphics/Models/sponza/sponza.gltf"
 	));*/
 
-	auto& zhu = scene.CreateGameObject("zhu");
+	/*auto& zhu = scene.CreateGameObject("zhu");
 	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
 		wnd.Gfx(),
 		"Graphics/Models/2b_nier_automata/scene.gltf"
 	));
 	zhu.SetPosition(1.0f, 0.0f, 0.0f);
-	zhu.SetScale(10.0f, 10.0f, 10.0f);
+	zhu.SetScale(10.0f, 10.0f, 10.0f);*/
 
 	CacheSceneComponents();
 
@@ -129,6 +130,69 @@ void App::ResetSimulation()
 	//DungeonGenerator gen(22222);
 	//gen.Generate(80, 40);
 	//gen.SaveToFile("dungeon2.txt");
+
+	scene.SetAddComponentHandler([this](GameObject& go, ComponentType type) -> bool
+		{
+			switch (type)
+			{
+			case ComponentType::Drawable:         break; // later
+			case ComponentType::CustomBehaviour: 
+			{
+				auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames(); // get list of registered scripts for dropdown
+				for (auto& scriptName : scriptNames)
+				{
+					if (ImGui::Button(("Add " + scriptName).c_str())){
+						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
+						{
+							go.AddScript(scriptName);
+							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), go.GetName().c_str());
+							ImGui::CloseCurrentPopup();
+							return true;
+						}
+					}
+				}
+			} break;
+			case ComponentType::SpotLight:
+			{
+				if (ImGui::Button("Add Spot Light"))
+				{
+					go.AddComponent<SpotLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::PointLight:
+			{
+				if (ImGui::Button("Add Point Light"))
+				{
+					go.AddComponent<PointLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::DirectionalLight:
+			{
+				if (ImGui::Button("Add Directional Light"))
+				{
+					go.AddComponent<DirectionalLight>(wnd.Gfx());
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			case ComponentType::Camera:
+			{
+				if (ImGui::Button("Add Camera"))
+				{
+					go.AddComponent<Camera>();
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
+			default: return false;
+			}
+		});
+
+	spdlog::info("Simulation reset to initial state.");
 }
 
 // Cache pointers to important components (cameras, lights) for easy access during update and rendering
@@ -148,21 +212,21 @@ void App::CacheSceneComponents() noexcept
 
 		for (const auto& component : gameObject.GetComponents())
 		{
-			if (auto camera = dynamic_cast<Camera*>(component.get()))
+			if (component->isType<Camera>())
 			{
-				gameCams.push_back(camera);
+				gameCams.push_back(static_cast<Camera*>(component.get()));
 			}
-			if (auto pointLight = dynamic_cast<PointLight*>(component.get()))
+			if (component->isType<PointLight>())
 			{
-				pointLights.push_back(pointLight);
+				pointLights.push_back(static_cast<PointLight*>(component.get()));
 			}
-			if (auto spotLight = dynamic_cast<SpotLight*>(component.get()))
+			if (component->isType<SpotLight>())
 			{
-				spotLights.push_back(spotLight);
+				spotLights.push_back(static_cast<SpotLight*>(component.get()));
 			}
-			if (auto directionalLight = dynamic_cast<DirectionalLight*>(component.get()))
+			if (component->isType<DirectionalLight>())
 			{
-				directionalLights.push_back(directionalLight);
+				directionalLights.push_back(static_cast<DirectionalLight*>(component.get()));
 			}
 		}
 
@@ -226,6 +290,7 @@ int App::Begin()
 		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
 		const float alpha = accumulator / dt;
 		RenderFrame(alpha);
+		scene.CleanupPendingComponentRemovals();
 		scene.CleanupDestroyedObjects();
 		CacheSceneComponents();
 	}

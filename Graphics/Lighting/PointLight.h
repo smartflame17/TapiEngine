@@ -11,9 +11,10 @@ class RenderQueueBuilder;
 class PointLight : public Component
 {
 public:
-	PointLight(Graphics& gfx, float radius = 0.5f);
+	static constexpr ComponentType StaticType = ComponentType::PointLight;
+
+	PointLight(Graphics& gfx, float radius = 0.5f) ;
 	void SpawnControlWindow() noexcept;	// ImGui window for editing light properties
-	void OnInspector() noexcept override;
 	void Reset() noexcept;
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
 	RenderLight BuildRenderLight() const noexcept;
@@ -22,6 +23,10 @@ public:
 	void SetColor(float r, float g, float b) noexcept;
 	void SetIntensity(float newIntensity) noexcept;
 	void SetAttenuation(float constant, float linear, float quadratic) noexcept;
+
+private:
+	const char* GetInspectorTitle() const noexcept override;
+	void DrawInspectorContents() noexcept override;
 
 private:
 	DirectX::XMFLOAT3 diffuseColor = { 1.0f, 1.0f, 1.0f };
