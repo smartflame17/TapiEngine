@@ -112,14 +112,6 @@ void App::ResetSimulation()
 		"Graphics/Models/sponza/sponza.gltf"
 	));*/
 
-	/*auto& zhu = scene.CreateGameObject("zhu");
-	zhu.AddComponent<DrawableComponent>(std::make_unique<Model>(
-		wnd.Gfx(),
-		"Graphics/Models/2b_nier_automata/scene.gltf"
-	));
-	zhu.SetPosition(1.0f, 0.0f, 0.0f);
-	zhu.SetScale(10.0f, 10.0f, 10.0f);*/
-
 	CacheSceneComponents();
 
 	if (isPlayMode)

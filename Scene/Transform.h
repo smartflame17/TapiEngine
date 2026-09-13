@@ -1,6 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <cfloat>
 #include <cmath>
 
 struct Transform
@@ -41,13 +42,28 @@ inline Transform MakeTransformFromMatrix(DirectX::FXMMATRIX matrix) noexcept
 
 	const float n11 = m._11 / safeScaleX;
 	const float n12 = m._12 / safeScaleX;
-	const float n13 = m._13 / safeScaleX;
-	const float n23 = m._23 / safeScaleY;
+	const float n21 = m._21 / safeScaleY;
+	const float n22 = m._22 / safeScaleY;
+	const float n31 = m._31 / safeScaleZ;
+	const float n32 = m._32 / safeScaleZ;
 	const float n33 = m._33 / safeScaleZ;
 
-	transform.rotation.x = std::atan2(n23, n33);
-	transform.rotation.y = std::atan2(-n13, std::sqrt(n23 * n23 + n33 * n33));
-	transform.rotation.z = std::atan2(n12, n11);
+	// Invert XMMatrixRotationRollPitchYaw: row-vector Rz(roll) * Rx(pitch) * Ry(yaw).
+	// ImGuizmo's Euler decomposition uses a different order and cannot be used here.
+	const float cosPitch = std::sqrt(n31 * n31 + n33 * n33);
+	transform.rotation.x = std::atan2(-n32, cosPitch);
+	if (cosPitch > 16.0f * FLT_EPSILON)
+	{
+		transform.rotation.y = std::atan2(n31, n33);
+		transform.rotation.z = std::atan2(n12, n22);
+	}
+	else
+	{
+		// At +/-90 degrees pitch, yaw and roll are coupled. Choose yaw = 0
+		// and recover the equivalent roll from the remaining stable elements.
+		transform.rotation.y = 0.0f;
+		transform.rotation.z = std::atan2(-n21, n11);
+	}
 
 	return transform;
 }
