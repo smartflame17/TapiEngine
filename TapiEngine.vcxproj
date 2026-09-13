@@ -708,6 +708,11 @@
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="repo\Images\architecture.png" />
+    <Image Include="repo\Images\overview.png" />
+    <Image Include="repo\Images\renderqueue.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets" Condition="Exists('packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets')" />
