@@ -1,6 +1,6 @@
 ﻿# TapiEngine <img width="48" height="48" alt="tapiengine_logo" src="https://github.com/user-attachments/assets/a454d340-ef25-4178-b578-b205978240da" />
 
-<img src="./repo/Images/overview.png" alt="Sponza scene loaded in TapiEngine" width="60%" height="auto"/>>
+<img src="./repo/Images/overview.png" alt="Sponza scene loaded in TapiEngine" width="60%" height="auto"/>
 
 TapiEngine is a basic 3D engine written in C++ with minimal external dependencies. It leverages the WinAPI and Direct3D 11 to provide a lightweight yet functional environment for 3D graphics development on Windows.
 
@@ -19,7 +19,7 @@ TapiEngine is a basic 3D engine written in C++ with minimal external dependencie
 A scene-based archtecture similar to Unity's GameObject-Component system is implemented in TapiEngine. Each scene contains multiple objects, and each object can have multiple components that define its behavior and properties. This modular approach allows for easy extension and customization of the engine's functionality.
 
 ### Render Queue
-<img src="./repo/Images/renderqueue.png" alt="Render Queue diagram" width="50%" height="auto"/>>
+<img src="./repo/Images/renderqueue.png" alt="Render Queue diagram" width="50%" height="auto"/>
 
 The scene collects all renderable objects and sorts them instead of immediate rendering. This centralizes the rendering process, allowing for better control over rendering order and optimizations. It also helps not mess up the pipeline state.
 
