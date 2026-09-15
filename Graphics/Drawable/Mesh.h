@@ -8,6 +8,7 @@
 #include "../IBindable/Texture.h"
 #include "../IBindable/Topology.h"
 #include "../IBindable/TransformCBuf.h"
+#include "../IBindable/SkinningCbuf.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -27,12 +28,15 @@ public:
 		bool supportsTextureMapping = false,
 		bool normalMapEnabled = false);
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG);
-	void DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG);
+	void DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, const ShadowDrawContext& context) const noexcept(!IS_DEBUG);
+	void EnableSkinning(Graphics& gfx);
+	void SetSkinningPalette(const std::vector<DirectX::XMFLOAT4X4>& palette);
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void DrawInspector(Graphics& gfx, const char* label = nullptr) noexcept;
 	void SetTransform(const Transform& transform) noexcept = delete;
 
 private:
+	SkinningCbuf* skinning = nullptr;
 	void ApplyBaseColorTexturePath(Graphics& gfx) noexcept;
 	void ApplyNormalMapPath(Graphics& gfx) noexcept;
 	void RefreshMaterialState() noexcept;

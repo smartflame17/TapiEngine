@@ -8,6 +8,8 @@
 #include "../../Scene/Transform.h"
 
 class IBindable;
+class VertexShader;
+struct ShadowDrawContext;
 
 class Drawable
 {
@@ -18,7 +20,7 @@ public:
 	Drawable(const Drawable&) = delete;
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	virtual void Draw(Graphics& gfx) const noexcept(!IS_DEBUG);
-	virtual void DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG);
+	virtual void DrawShadow(Graphics& gfx, const ShadowDrawContext& context) const noexcept(!IS_DEBUG);
 	virtual void Update(float dt) noexcept {}
 	virtual void DrawInspector() noexcept {}
 	virtual ~Drawable() = default;
@@ -31,6 +33,7 @@ public:
 	DirectX::BoundingBox GetWorldBounds(DirectX::FXMMATRIX externalMatrix) const noexcept;
 
 protected:
+	void DrawShadowGeometry(Graphics& gfx, const VertexShader& shader) const noexcept(!IS_DEBUG);
 	void AddBind(std::unique_ptr<IBindable> bind) noexcept(!IS_DEBUG);
 	void AddIndexBuffer(std::unique_ptr<IndexBuffer> ibuf) noexcept;
 	DirectX::XMMATRIX GetAppliedTransformXM() const noexcept;

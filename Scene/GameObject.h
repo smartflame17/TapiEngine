@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <stdexcept>
 #include <DirectXMath.h>
 #include "Scene.h"
 #include "Transform.h"
@@ -15,6 +16,7 @@
 #include "spdlog/spdlog.h"
 
 class Graphics;
+class Animator;
 
 class GameObject
 {
@@ -74,6 +76,12 @@ public:
 	T& AddComponent(Args&&... args)
 	{
 		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
+		if constexpr (std::is_same_v<T, Animator>)
+		{
+			for (const auto& existing : components)
+				if (existing->IsType(ComponentType::Animator) && !existing->IsPendingInspectorRemoval())
+					throw std::logic_error("Only one Animator is allowed per GameObject.");
+		}
 		auto component = std::make_unique<T>(std::forward<Args>(args)...);
 		component->SetOwner(this);
 		T& componentRef = *component;

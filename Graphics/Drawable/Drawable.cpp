@@ -4,6 +4,7 @@
 #include "../IBindable/ShadowTransformCbuf.h"
 #include "../IBindable/TransformCBuf.h"
 #include "../IBindable/VertexShader.h"
+#include "../ShadowDrawContext.h"
 
 Drawable::Drawable() noexcept
 {
@@ -34,8 +35,15 @@ void Drawable::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 	gfx.DrawIndexed(pIndexBuffer->GetCount());
 }
 
-void Drawable::DrawShadow(Graphics& gfx, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+void Drawable::DrawShadow(Graphics& gfx, const ShadowDrawContext& context) const noexcept(!IS_DEBUG)
 {
+	DrawShadowGeometry(gfx, context.rigid);
+}
+
+void Drawable::DrawShadowGeometry(Graphics& gfx, const VertexShader& shader) const noexcept(!IS_DEBUG)
+{
+	shader.BindShader(gfx);
+	const auto pShadowVertexShaderBytecode = shader.GetBytecode();
 	const auto bindShadowResources = [&](const auto& bindCollection)
 		{
 			for (const auto& bind : bindCollection)

@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "../ShadowDrawContext.h"
 #include "../../imgui/imgui.h"
 #include <utility>
 
@@ -72,10 +73,22 @@ void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	Drawable::Draw(gfx);
 }
 
-void Mesh::DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, ID3DBlob* pShadowVertexShaderBytecode) const noexcept(!IS_DEBUG)
+void Mesh::DrawShadow(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform, const ShadowDrawContext& context) const noexcept(!IS_DEBUG)
 {
 	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
-	Drawable::DrawShadow(gfx, pShadowVertexShaderBytecode);
+	DrawShadowGeometry(gfx, skinning ? context.skinned : context.rigid);
+}
+
+void Mesh::EnableSkinning(Graphics& gfx)
+{
+	auto buffer = std::make_unique<SkinningCbuf>(gfx);
+	skinning = buffer.get();
+	AddBind(std::move(buffer));
+}
+
+void Mesh::SetSkinningPalette(const std::vector<DirectX::XMFLOAT4X4>& palette)
+{
+	if (skinning) skinning->SetPalette(palette);
 }
 
 DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
