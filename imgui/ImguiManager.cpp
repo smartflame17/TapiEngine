@@ -170,8 +170,10 @@ void ImguiManager::EditorWindow(bool* p_open)
 	int TitlePosX = static_cast<int>(width / 1920.0f * 300.0f);
 	ImGui::SetNextWindowSize(ImVec2(TitleSizeX, TitleSizeY), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(TitlePosX, 0), ImGuiCond_Always);
-	// TODO: version number should be automatically updated during build process
-	if (ImGui::Begin("TapiEngine v0.6", nullptr,
+	
+	char buffer[256];
+	GetPrivateProfileStringA("Settings", "Version", "TapiEngine v??", buffer, sizeof(buffer), ".\\config.ini");
+	if (ImGui::Begin(buffer, nullptr,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |

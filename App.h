@@ -23,6 +23,7 @@
 
 #include "Components/Component.h"
 #include "Components/DrawableComponent.h"
+#include "Components/Animator.h"
 #define TARGET_FPS 60.0f
 
 // error logging macros (can be redefined by user to redirect to file or other logging system if desired)

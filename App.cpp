@@ -1,5 +1,4 @@
 #include "App.h"
-#include "Components/Animator.h"
 
 App::Config::Config()
 {
