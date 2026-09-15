@@ -1,4 +1,5 @@
 #include "TransformCBuf.h"
+#include "../Animation/Animation.h"
 
 TransformCbuf::TransformCbuf(Graphics& gfx, const Drawable& parent):
 	parent(parent)
@@ -20,7 +21,8 @@ void TransformCbuf::Bind(Graphics& gfx) noexcept
 		),
 		DirectX::XMMatrixTranspose(
 			model
-		)
+		),
+		DirectX::XMMatrixTranspose(Animation::NormalMatrix(model))
 	};	
 
 	const DirectX::XMMATRIX cameraMatrix = gfx.GetCamera();

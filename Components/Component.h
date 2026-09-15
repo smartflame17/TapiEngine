@@ -16,6 +16,7 @@ enum class ComponentType : std::uint8_t
 	DirectionalLight,
 	Camera,
 	Other,
+	Animator,
 	Count
 };
 
@@ -37,6 +38,8 @@ constexpr std::string_view ComponentTypeToString(ComponentType type) noexcept
 		return "Camera";
 	case ComponentType::Other:
 		return "Other";
+	case ComponentType::Animator:
+		return "Animator";
 	default:
 		assert(false && "Invalid ComponentType");
 		return "Unknown";

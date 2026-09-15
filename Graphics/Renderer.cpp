@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "ShadowDrawContext.h"
 #include "Camera.h"
 #include "Drawable/Drawable.h"
 #include "IBindable/ShadowTransformCbuf.h"
@@ -82,6 +83,7 @@ Renderer::Renderer(Graphics& gfx)
 	lightPassCbuf(gfx, 3u),
 	lightShadowCbuf(gfx, 4u),
 	shadowVertexShader(gfx, L"ShadowMapVS.cso"),
+	skinnedShadowVertexShader(gfx, L"SkinnedShadowMapVS.cso"),
 	directionalShadowMap(gfx, kShadowMapSize, kDirectionalShadowMapSlot, ShadowMap::Type::Texture2D),
 	spotShadowMap(gfx, kShadowMapSize, kSpotShadowMapSlot, ShadowMap::Type::Texture2D),
 	pointShadowMap(gfx, kShadowMapSize, kPointShadowMapSlot, ShadowMap::Type::TextureCube),
@@ -211,7 +213,7 @@ void Renderer::ExecuteShadowPass(const RenderView& view) noexcept(!IS_DEBUG)
 			}
 
 			item.drawable->SetExternalTransformMatrix(DirectX::XMLoadFloat4x4(&item.transform));
-			item.drawable->DrawShadow(gfx, shadowVertexShader.GetBytecode());
+			item.drawable->DrawShadow(gfx, { shadowVertexShader, skinnedShadowVertexShader });
 		}
 	};
 

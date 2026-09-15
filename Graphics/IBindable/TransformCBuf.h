@@ -20,6 +20,7 @@ private:
 	{
 		DirectX::XMMATRIX modelViewProjection;
 		DirectX::XMMATRIX model;
+		DirectX::XMMATRIX normalModel;
 	};
 	struct Camera
 	{

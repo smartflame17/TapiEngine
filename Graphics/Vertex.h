@@ -18,6 +18,8 @@ namespace Dvtx
 			Texture2D,
 			Normal,
 			Tangent,
+			BlendIndices,
+			BlendWeights,
 			Float3Color,
 			Float4Color,
 			BGRAColor,
@@ -53,6 +55,18 @@ namespace Dvtx
 			using SysType = DirectX::XMFLOAT3;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 			static constexpr const char* semantic = "Tangent";
+		};
+		template<> struct Map<BlendIndices>
+		{
+			using SysType = DirectX::XMUINT4;
+			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32A32_UINT;
+			static constexpr const char* semantic = "BLENDINDICES";
+		};
+		template<> struct Map<BlendWeights>
+		{
+			using SysType = DirectX::XMFLOAT4;
+			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			static constexpr const char* semantic = "BLENDWEIGHT";
 		};
 		template<> struct Map<Float3Color>
 		{
@@ -156,6 +170,12 @@ namespace Dvtx
 				break;
 			case VertexLayout::Float3Color:
 				SetAttribute<VertexLayout::Float3Color>(pAttribute, std::forward<T>(val));
+				break;
+			case VertexLayout::BlendIndices:
+				SetAttribute<VertexLayout::BlendIndices>(pAttribute, std::forward<T>(val));
+				break;
+			case VertexLayout::BlendWeights:
+				SetAttribute<VertexLayout::BlendWeights>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Float4Color:
 				SetAttribute<VertexLayout::Float4Color>(pAttribute, std::forward<T>(val));

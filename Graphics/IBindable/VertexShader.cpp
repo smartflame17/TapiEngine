@@ -15,6 +15,11 @@ VertexShader::VertexShader(Graphics& gfx, const std::wstring& path)
 
 void VertexShader::Bind(Graphics& gfx) noexcept
 {
+	BindShader(gfx);
+}
+
+void VertexShader::BindShader(Graphics& gfx) const noexcept
+{
 	GetContext(gfx)->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 }
 

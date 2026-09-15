@@ -89,6 +89,7 @@ private:
 	PixelConstantBuffer<LightPassCbuf> lightPassCbuf;
 	PixelConstantBuffer<LightShadowCbuf> lightShadowCbuf; // for shadow pass (contains light view-projection matrix and shadow map parameters), do NOT use on main pass
 	VertexShader shadowVertexShader;
+	VertexShader skinnedShadowVertexShader;
 	ShadowMap directionalShadowMap;
 	ShadowMap spotShadowMap;
 	ShadowMap pointShadowMap;

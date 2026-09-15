@@ -80,6 +80,10 @@ namespace Dvtx
 			return sizeof(Map<Tangent>::SysType);
 		case Float3Color:
 			return sizeof(Map<Float3Color>::SysType);
+		case BlendIndices:
+			return sizeof(Map<BlendIndices>::SysType);
+		case BlendWeights:
+			return sizeof(Map<BlendWeights>::SysType);
 		case Float4Color:
 			return sizeof(Map<Float4Color>::SysType);
 		case BGRAColor:
@@ -108,6 +112,10 @@ namespace Dvtx
 			return GenerateDesc<Tangent>(GetOffset());
 		case Float3Color:
 			return GenerateDesc<Float3Color>(GetOffset());
+		case BlendIndices:
+			return GenerateDesc<BlendIndices>(GetOffset());
+		case BlendWeights:
+			return GenerateDesc<BlendWeights>(GetOffset());
 		case Float4Color:
 			return GenerateDesc<Float4Color>(GetOffset());
 		case BGRAColor:
