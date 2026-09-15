@@ -48,43 +48,19 @@ void Component::OnInspector() noexcept
 		return;
 	}
 
-	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));		// BUG: if component is removed and another component is added to the same object, the new component might get the same id, causing ImGui ID collision. Need to handle this case by either ensuring unique ids even after removal, or by using a different method for generating ImGui IDs that doesn't rely on component id.
-	ImGui::BeginChild(
-		"ComponentInspectorPanel",
-		ImVec2(0.0f, 0.0f),
-		ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysUseWindowPadding
-	);
-
-	if (ImGui::ArrowButton("##Collapse", inspectorCollapsed ? ImGuiDir_Right : ImGuiDir_Down))
+	// Keep the header and its contents scoped to this component's lifetime ID.
+	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));
+	bool visible = true;
+	const bool expanded = ImGui::CollapsingHeader(GetInspectorTitle(), &visible, ImGuiTreeNodeFlags_DefaultOpen);
+	if (!visible)
 	{
-		inspectorCollapsed = !inspectorCollapsed;
-	}
-
-	ImGui::SameLine();
-	ImGui::AlignTextToFramePadding();
-	ImGui::TextUnformatted(GetInspectorTitle());
-
-	const float closeButtonWidth = ImGui::GetFrameHeight();
-	const float closeButtonX = ImGui::GetWindowContentRegionMax().x - closeButtonWidth;
-	if (closeButtonX > ImGui::GetCursorPosX())
-	{
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(closeButtonX);
-	}
-
-	if (ImGui::Button("X"))
-	{
-		pendingInspectorRemoval = true;
 		ownerObject->GetScene().QueueComponentRemoval(*this);
 	}
-
-	if (!inspectorCollapsed && !pendingInspectorRemoval)
+	else if (expanded)
 	{
-		ImGui::Separator();
 		DrawInspectorContents();
 	}
 
-	ImGui::EndChild();
 	ImGui::PopID();
 }
 

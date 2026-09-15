@@ -88,7 +88,6 @@ private:
 	static std::uint64_t nextId;
 	std::uint64_t id = 0;
 	GameObject* owner = nullptr;
-	bool inspectorCollapsed = false;
 	bool pendingInspectorRemoval = false;
 	ComponentType type = ComponentType::Other;
 };
