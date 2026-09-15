@@ -9,6 +9,7 @@
 #include "../Graphics/Lighting/DirectionalLight.h"
 #include "../Graphics/Lighting/SpotLight.h"
 #include "../Graphics/Lighting/PointLight.h"
+#include "../imgui/imgui_internal.h"
 #include <d3d11sdklayers.h>
 #include <cmath>
 #include <fstream>
@@ -60,6 +61,97 @@ Model& AttachModel(GameObject& object, Graphics& gfx, std::shared_ptr<const Mode
 {
 	auto model = std::make_unique<Model>(gfx, std::move(asset)); auto* result = model.get();
 	object.AddComponent<DrawableComponent>(std::move(model)); return *result;
+}
+void TestComponentInspector()
+{
+	struct InspectorComponent : Component
+	{
+		int draws = 0;
+		float x = 0;
+		ImGuiID headerId = 0, sliderId = 0;
+		ImVec2 headerMin, headerMax, sliderCenter;
+		void DrawInspectorContents() noexcept override
+		{
+			++draws;
+			headerId = ImGui::GetItemID();
+			headerMin = ImGui::GetItemRectMin(); headerMax = ImGui::GetItemRectMax();
+			// Camera and light inspectors use this label, which conflicted with the old removal button.
+			ImGui::SliderFloat("X", &x, -10, 10);
+			sliderId = ImGui::GetItemID();
+			const auto min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+			sliderCenter = {(min.x + max.x) * .5f, (min.y + max.y) * .5f};
+		}
+	};
+	Scene scene;
+	auto& object = scene.CreateGameObject("inspector");
+	auto& first = object.AddComponent<InspectorComponent>();
+	auto& second = object.AddComponent<InspectorComponent>();
+	auto& io = ImGui::GetIO(); io.DisplaySize = {1600, 900}; io.DeltaTime = 1.0f / 60;
+	unsigned char* pixels; int width, height; io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	auto frame = [&]
+	{
+		ImGui::NewFrame();
+		ImGui::SetNextWindowPos({20, 20}); ImGui::SetNextWindowSize({340, 700});
+		ImGui::Begin("Component Inspector Regression", nullptr, ImGuiWindowFlags_NoSavedSettings);
+		for (const auto& component : object.GetComponents()) component->OnInspector();
+		ImGui::End(); ImGui::Render();
+	};
+	auto click = [&](ImVec2 position)
+	{
+		io.AddMousePosEvent(position.x, position.y); frame();
+		io.AddMouseButtonEvent(0, true); frame();
+		io.AddMouseButtonEvent(0, false); frame();
+	};
+	auto closePosition = [](const InspectorComponent& component)
+	{
+		return ImVec2(component.headerMax.x - ImGui::GetStyle().FramePadding.x - ImGui::GetFontSize() * .5f,
+			(component.headerMin.y + component.headerMax.y) * .5f);
+	};
+	frame(); frame();
+	Check(first.draws > 0 && second.draws > 0, "Component inspectors default to expanded");
+	io.AddMousePosEvent(first.sliderCenter.x, first.sliderCenter.y); frame(); frame();
+	Check(ImGui::GetCurrentContext()->HoveredIdPreviousFrame == first.sliderId &&
+		ImGui::GetCurrentContext()->HoveredIdPreviousFrameItemCount == 1,
+		"X-position slider does not conflict with the component removal button");
+	Check(first.headerId != second.headerId && first.sliderId != second.sliderId,
+		"Same-title components have independent header and content IDs");
+	click({first.headerMin.x + 5, (first.headerMin.y + first.headerMax.y) * .5f});
+	const int collapsedDraws = first.draws, secondDraws = second.draws;
+	frame();
+	Check(first.draws == collapsedDraws && second.draws > secondDraws,
+		"Collapsing one component persists without collapsing its sibling");
+	click(closePosition(first));
+	Check(first.IsPendingInspectorRemoval() && !second.IsPendingInspectorRemoval() &&
+		scene.GetPendingComponentRemovals().size() == 1, "Closing a collapsed header queues only that component");
+	frame();
+	Check(first.draws == collapsedDraws && scene.GetPendingComponentRemovals().size() == 1,
+		"Pending component remains hidden and is queued once");
+	const auto removedId = first.GetId();
+	scene.CleanupPendingComponentRemovals();
+	Check(object.GetComponents().size() == 1 && object.GetComponents().front().get() == &second,
+		"Cleanup removes the closed component from its GameObject");
+	auto& replacement = object.AddComponent<InspectorComponent>();
+	frame();
+	Check(replacement.GetId() > removedId && replacement.GetId() != second.GetId() && replacement.draws > 0,
+		"Replacement component receives a fresh ID and starts expanded");
+	Check(replacement.headerId != second.headerId && replacement.sliderId != second.sliderId,
+		"Replacement inspector does not conflict with surviving components");
+	io.AddMousePosEvent(replacement.sliderCenter.x, replacement.sliderCenter.y); frame(); frame();
+	Check(ImGui::GetCurrentContext()->HoveredIdPreviousFrame == replacement.sliderId &&
+		ImGui::GetCurrentContext()->HoveredIdPreviousFrameItemCount == 1,
+		"X-position slider remains conflict-free after removal and replacement");
+	const auto close = closePosition(replacement);
+	io.AddMousePosEvent(close.x, close.y); frame();
+	io.AddMouseButtonEvent(0, true); frame();
+	const int drawsBeforeClose = replacement.draws;
+	io.AddMouseButtonEvent(0, false); frame();
+	Check(replacement.IsPendingInspectorRemoval() && replacement.draws == drawsBeforeClose,
+		"Closing an expanded header immediately skips its contents");
+	scene.CleanupPendingComponentRemovals();
+	Check(object.GetComponents().size() == 1 && scene.GetPendingComponentRemovals().empty(),
+		"Expanded component removal completes cleanly");
+	io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
+	std::cout << "PASS component inspector collapse, close, and remove/add ID isolation\n";
 }
 void TestComponents(Graphics& gfx)
 {
@@ -273,7 +365,7 @@ int main(int argc,char** argv)
 			Graphics gfx(hwnd,1600,900);gfx.DisableImGui();
 			ComPtr<ID3D11InfoQueue> diagnostics;Access::GetDevice(gfx)->QueryInterface(IID_PPV_ARGS(&diagnostics));
 			if(diagnostics) diagnostics->ClearStoredMessages();
-			TestComponents(gfx);TestShadows(gfx);TestRendering(gfx,out);
+			TestComponentInspector();TestComponents(gfx);TestShadows(gfx);TestRendering(gfx,out);
 			if(diagnostics)
 			{
 				for(UINT64 i=0;i<diagnostics->GetNumStoredMessages();++i)
