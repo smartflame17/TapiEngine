@@ -1113,6 +1113,7 @@
     <None Include="imgui\imterm\terminal.tpp" />
     <None Include="LICENSE.md" />
     <None Include="Components\readme.md" />
+    <None Include="Graphics\Animation\README.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -1151,5 +1152,43 @@
     <Image Include="repo\Images\renderqueue.png">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Components\Animator.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Animation\Animation.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Assets\AssimpImporter.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClInclude Include="Components\Animator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Animation\Animation.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Assets\ModelAsset.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IBindable\SkinningCbuf.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ShadowDrawContext.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <FxCompile Include="Shaders\SkinnedPhongVS.hlsl">
+      <Filter>리소스 파일\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkinnedTexturedPhongVS.hlsl">
+      <Filter>리소스 파일\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkinnedShadowMapVS.hlsl">
+      <Filter>리소스 파일\Shaders</Filter>
+    </FxCompile>
+    <None Include="Shaders\Skinning.hlsli">
+      <Filter>리소스 파일\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

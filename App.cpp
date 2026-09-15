@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Components/Animator.h"
 
 App::Config::Config()
 {
@@ -111,6 +112,15 @@ void App::ResetSimulation()
 		wnd.Gfx(),
 		"Graphics/Models/sponza/sponza.gltf"
 	));*/
+	auto& riggedfigure = scene.CreateGameObject("riggedfigure");
+	riggedfigure.AddComponent<DrawableComponent>(std::make_unique<Model>(
+		wnd.Gfx(),
+		"Graphics/Models/Humanoid/Body.fbx"
+	));
+	riggedfigure.SetScale(0.007f, 0.007f, 0.007f);
+	auto& animator = riggedfigure.AddComponent<Animator>();
+	animator.LoadAnimations("Graphics/Models/Humanoid/Animations/Walking.fbx", true);
+	animator.LoadAnimations("Graphics/Models/Humanoid/Animations/Jump.fbx", false);
 
 	CacheSceneComponents();
 
@@ -128,6 +138,19 @@ void App::ResetSimulation()
 			switch (type)
 			{
 			case ComponentType::Drawable:         break; // later
+			case ComponentType::Animator:
+			{
+				const auto* existing = go.GetComponent<Animator>();
+				ImGui::BeginDisabled(existing != nullptr && !existing->IsPendingInspectorRemoval());
+				if (ImGui::Button("Add Animator"))
+				{
+					go.AddComponent<Animator>();
+					ImGui::CloseCurrentPopup();
+					ImGui::EndDisabled();
+					return true;
+				}
+				ImGui::EndDisabled();
+			} break;
 			case ComponentType::CustomBehaviour: 
 			{
 				auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames(); // get list of registered scripts for dropdown
@@ -182,6 +205,7 @@ void App::ResetSimulation()
 			} break;
 			default: return false;
 			}
+			return false;
 		});
 
 	spdlog::info("Simulation reset to initial state.");
@@ -245,7 +269,8 @@ int App::Begin()
 			return *ecode;
 
 		// Accumulate the time elapsed since the last frame
-		accumulator += timer.Mark();
+		const float frameDelta = timer.Mark();
+		accumulator += frameDelta;
 
 		if (needsReset)
 		{
@@ -281,6 +306,7 @@ int App::Begin()
 
 		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
 		const float alpha = accumulator / dt;
+		scene.UpdateAnimations(frameDelta, isPlayMode, isPaused);
 		RenderFrame(alpha);
 		scene.CleanupPendingComponentRemovals();
 		scene.CleanupDestroyedObjects();

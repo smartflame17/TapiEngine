@@ -1,4 +1,6 @@
 #include "Scene.h"
+#include "../Components/Animator.h"
+#include "../Graphics/Drawable/Model.h"
 #include "GameObject.h"
 #include "../Components/Component.h"
 #include "../Components/CustomBehaviour.h"
@@ -80,6 +82,26 @@ void Scene::Update(float dt, bool isSimulationRunning) noexcept
 		}
 		object->Update(dt, isSimulationRunning);
 	}
+}
+
+void Scene::UpdateAnimations(float frameDelta, bool isPlayMode, bool isPaused) noexcept
+{
+	auto visit = [&](auto& self, GameObject& object) -> void
+	{
+		if (object.IsPendingKill()) return;
+		Animator* animator = nullptr;
+		for (const auto& component : object.GetComponents())
+			if (component->IsType(ComponentType::Animator) && !component->IsPendingInspectorRemoval())
+				animator = static_cast<Animator*>(component.get());
+		const bool applied = animator && animator->UpdateAnimation(frameDelta, isPlayMode, isPaused);
+		if (!applied)
+			for (const auto& component : object.GetComponents())
+				if (component->IsType(ComponentType::Drawable) && !component->IsPendingInspectorRemoval())
+					if (auto* model = dynamic_cast<Model*>(static_cast<DrawableComponent*>(component.get())->GetDrawable()); model && model->HasSkin())
+						model->ResetPose();
+		for (const auto& child : object.GetChildren()) self(self, *child);
+	};
+	for (auto& root : rootObjects) visit(visit, *root);
 }
 
 void Scene::LateUpdate(float dt, bool isSimulationRunning) noexcept

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -541,6 +541,7 @@
     <None Include="ErrorHandling\DXGetErrorDescription.inl" />
     <None Include="ErrorHandling\DXGetErrorString.inl" />
     <None Include="ErrorHandling\DXTrace.inl" />
+    <None Include="Graphics\Animation\README.md" />
     <None Include="Graphics\README.md">
       <SubType>
       </SubType>
@@ -723,4 +724,30 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets'))" />
   </Target>
+  <ItemGroup>
+    <ClCompile Include="Components\Animator.cpp" />
+    <ClCompile Include="Graphics\Animation\Animation.cpp" />
+    <ClCompile Include="Graphics\Assets\AssimpImporter.cpp" />
+    <ClInclude Include="Components\Animator.h" />
+    <ClInclude Include="Graphics\Animation\Animation.h" />
+    <ClInclude Include="Graphics\Assets\ModelAsset.h" />
+    <ClInclude Include="Graphics\IBindable\SkinningCbuf.h" />
+    <ClInclude Include="Graphics\ShadowDrawContext.h" />
+    <None Include="Shaders\Skinning.hlsli" />
+    <FxCompile Include="Shaders\SkinnedPhongVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkinnedTexturedPhongVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkinnedShadowMapVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+  </ItemGroup>
 </Project>

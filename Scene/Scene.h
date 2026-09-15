@@ -36,6 +36,7 @@ public:
 	void ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept;
 	void FixedUpdate(bool isSimulationRunning) noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
+	void UpdateAnimations(float frameDelta, bool isPlayMode, bool isPaused) noexcept;
 	void Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG);
 	void LateUpdate(float dt, bool isSimulationRunning) noexcept;
 	void CleanupDestroyedObjects() noexcept;
