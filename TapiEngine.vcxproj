@@ -71,6 +71,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <Box3DBinaryName>box3d</Box3DBinaryName>
+    <Box3DBinaryName Condition="'$(Configuration)'=='Debug'">box3dd</Box3DBinaryName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -710,8 +714,8 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
-    <Library Include="Physics\box3d\Debug\box3dd.lib" />
-    <Library Include="Physics\box3d\Release\box3d.lib" />
+    <Library Include="Physics\box3d\Debug\box3dd.lib" Condition="'$(Configuration)'=='Debug'" />
+    <Library Include="Physics\box3d\Release\box3d.lib" Condition="'$(Configuration)'=='Release'" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc" />
@@ -722,6 +726,9 @@
     <Image Include="repo\Images\renderqueue.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyBox3DRuntime" AfterTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)Physics\box3d\$(Configuration)\$(Box3DBinaryName).dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets" Condition="Exists('packages\directxtk_desktop_win10.2025.7.10.1\build\native\directxtk_desktop_win10.targets')" />
   </ImportGroup>
@@ -733,6 +740,9 @@
   </Target>
   <ItemGroup>
     <ClCompile Include="Components\Animator.cpp" />
+    <ClCompile Include="Physics\Physics.cpp" />
+    <ClInclude Include="Physics\Physics.h" />
+    <ClInclude Include="Tools\FixedStepClock.h" />
     <ClCompile Include="Graphics\Animation\Animation.cpp" />
     <ClCompile Include="Graphics\Assets\AssimpImporter.cpp" />
     <ClInclude Include="Components\Animator.h" />

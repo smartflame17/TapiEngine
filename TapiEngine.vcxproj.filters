@@ -1170,6 +1170,15 @@
     <ClCompile Include="Components\Animator.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Physics\Physics.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClInclude Include="Physics\Physics.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\FixedStepClock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClCompile Include="Graphics\Animation\Animation.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

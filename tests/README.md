@@ -1,5 +1,18 @@
 # Transform regression tests
 
+## Physics tests
+
+Run `./tests/RunPhysicsTests.ps1 -Configuration Debug` and repeat with `Release`.
+These headless tests exercise real Box3D worlds, singleton cleanup/reset,
+falling-body motion, and fixed timing at different rendering rates and stalls.
+No engine build or scene assets are required for this default Core suite.
+
+After building the corresponding x64 engine configuration, add `-Suite App`
+for the hidden-window App smoke tests, or `-Suite All` for both. App tests need
+the default scene assets and D3D11. They cover Play/Pause/Resume/Stop, Escape,
+script ordering, and world lifetime during reset and shutdown.
+See `Physics/README.md` for the service contract and timing behavior.
+
 ## Skeletal animation tests
 
 After building the engine in the corresponding x64 configuration, run:
