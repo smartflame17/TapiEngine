@@ -16,6 +16,8 @@
 
 #include "imgui/ImguiManager.h"
 
+#include <box3d/box3d.h>
+
 #include "Scene/Scene.h"
 #include "Scene/GameObject.h"
 

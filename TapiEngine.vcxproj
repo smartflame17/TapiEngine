@@ -77,14 +77,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;$(ProjectDir)\Physics\box3d\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;$(ProjectDir)\Physics\box3d\Debug</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;$(ProjectDir)\Physics\box3d\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -110,7 +110,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;$(ProjectDir)\Physics\box3d\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
@@ -130,14 +130,14 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;$(ProjectDir)\Physics\box3d\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;$(ProjectDir)\Physics\box3d\Debug</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
@@ -159,7 +159,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp\include;$(ProjectDir)\spdlog\include;$(ProjectDir)\Physics\box3d\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -168,7 +168,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);assimp-vc143-mtd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp\lib;$(ProjectDir)\Physics\box3d\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)\assimp\bin\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
@@ -264,6 +264,14 @@
     <ClInclude Include="imgui\imterm\terminal_helpers.hpp" />
     <ClInclude Include="imgui\imterm\utils.hpp" />
     <ClInclude Include="imgui\ImZoomSlider.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\base.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\box3d.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\collision.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\config.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\constants.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\id.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\math_functions.h" />
+    <ClInclude Include="Physics\box3d\include\box3d\types.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\BVHManager.h" />
     <ClInclude Include="Scene\ScriptManager.h" />
@@ -548,6 +556,8 @@
       </SubType>
     </None>
     <None Include="packages.config" />
+    <None Include="Physics\box3d\Debug\box3dd.dll" />
+    <None Include="Physics\box3d\Release\box3d.dll" />
     <None Include="Scene\README.md">
       <SubType>
       </SubType>
@@ -700,6 +710,8 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+    <Library Include="Physics\box3d\Debug\box3dd.lib" />
+    <Library Include="Physics\box3d\Release\box3d.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc" />

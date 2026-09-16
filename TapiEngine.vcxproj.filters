@@ -1049,6 +1049,30 @@
     <ClInclude Include="spdlog\include\spdlog\version.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\base.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\box3d.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\collision.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\config.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\constants.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\id.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\math_functions.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\box3d\include\box3d\types.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -1099,6 +1123,8 @@
     <None Include="LICENSE.md" />
     <None Include="Components\readme.md" />
     <None Include="Graphics\Animation\README.md" />
+    <None Include="Physics\box3d\Debug\box3dd.dll" />
+    <None Include="Physics\box3d\Release\box3d.dll" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -1121,6 +1147,8 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
+    <Library Include="Physics\box3d\Debug\box3dd.lib" />
+    <Library Include="Physics\box3d\Release\box3d.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc">
