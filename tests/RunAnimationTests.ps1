@@ -36,6 +36,8 @@ try {
     if ($LASTEXITCODE) { throw 'GPU skinning tests failed.' }
     }
     if ($Suite -in @('All','Integration')) {
+        $box3dName = if ($Configuration -eq 'Debug') { 'box3dd' } else { 'box3d' }
+        $box3dDir = Join-Path $repo "Physics/box3d/$Configuration"
         $tk = Join-Path $repo 'packages/directxtk_desktop_win10.2025.7.10.1'
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
@@ -44,9 +46,10 @@ try {
         })
         if (!$objects.Count) { throw "Build the engine in $Configuration x64 before running integration tests." }
         $defines = if ($Configuration -eq 'Debug') { @('/D_DEBUG','/DIS_DEBUG=true') } else { @('/DNDEBUG','/DIS_DEBUG=false') }
-        & $cl @common @defines "/I$tk/include" tests/AnimationIntegrationTests.cpp "/Fo$out\AnimationIntegrationTests.obj" "/Fe$out\AnimationIntegrationTests.exe" /link @libraries "/LIBPATH:$tk/native/lib/x64/$Configuration" @objects DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+        & $cl @common @defines "/I$tk/include" tests/AnimationIntegrationTests.cpp "/Fo$out\AnimationIntegrationTests.obj" "/Fe$out\AnimationIntegrationTests.exe" /link @libraries "/LIBPATH:$tk/native/lib/x64/$Configuration" @objects "$box3dDir/$box3dName.lib" DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
         if ($LASTEXITCODE) { throw 'Integration test compilation failed.' }
         Copy-Item -LiteralPath "$repo\assimp\bin\assimp-vc143-mtd.dll" -Destination $out -Force
+        Copy-Item -LiteralPath "$box3dDir/$box3dName.dll" -Destination $out -Force
         & "$out\AnimationIntegrationTests.exe" $out
         if ($LASTEXITCODE) { throw 'Animation integration tests failed.' }
     }
