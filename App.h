@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Tools/Timer.h"
+#include "Tools/FixedStepClock.h"
 #include "Tools/DungeonGenerator.h"
 
 #include "Graphics/Camera.h"
@@ -16,7 +17,7 @@
 
 #include "imgui/ImguiManager.h"
 
-#include <box3d/box3d.h>
+#include "Physics/Physics.h"
 
 #include "Scene/Scene.h"
 #include "Scene/GameObject.h"
@@ -24,7 +25,6 @@
 #include "Components/Component.h"
 #include "Components/DrawableComponent.h"
 #include "Components/Animator.h"
-#define TARGET_FPS 60.0f
 
 // error logging macros (can be redefined by user to redirect to file or other logging system if desired)
 #ifndef TE_LOG
@@ -54,7 +54,9 @@ public:
 	~App();
 	int Begin();	// handles message pump between windows and the app
 private:
-	void Update(float dt);	// called per frame
+	friend class AppPhysicsTestAccess;
+	void Update(float frameDelta); // advances fixed ticks and per-frame animation
+	void ResetFrameTiming() noexcept;
 	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
 	void ResetSimulation();	// resets camera, light, and all drawables to initial state
 	void CacheSceneComponents() noexcept;
@@ -64,6 +66,7 @@ private:
 private:
 	Config config;
 
+	Physics physics; // Outlives Scene; reject a second App before initializing UI/window state.
 	ImguiManager imgui;		// initializes imgui
 	Window wnd;
 	Timer timer;
@@ -87,11 +90,13 @@ private:
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
 	bool isPaused = false;   // true = Simulation Paused (while in Play Mode)
 	bool needsReset = false;  // flag to indicate if simulation needs reset (used to defer reset until end of frame)
+	bool previousPlayMode = false;
+	bool previousPaused = false;
 
 	// Input state
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 
-	const float dt = 1.0f / TARGET_FPS;
-	float accumulator = 0.0f;
+	static constexpr float dt = static_cast<float>(Physics::FixedTimeStep);
+	FixedStepClock fixedClock{ Physics::FixedTimeStep };
 };

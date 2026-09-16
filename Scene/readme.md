@@ -101,10 +101,12 @@ The following is the execution order of the ```CustomBehaviour``` class in the e
  CustomBehaviour.Start() [Use for initialization that requires other components to be initialized as well]
  |
  v
- Engine steps the physics simulation
+ CustomBehaviour.FixedUpdate() [Apply physics-related changes before this tick is simulated]
  |
  v
- CustomBehaviour.FixedUpdate() [Use for physics-related updates, as it is called at a fixed time step]
+ Engine steps the physics simulation [1/60 second with 4 internal substeps]
+ |
+ v
  CustomBehaviour.Update() [Use for regular updates, such as handling input or non-physics related logic]
  CustomBehaviour.LateUpdate() [Use for animation or camera updates]
  |
@@ -115,7 +117,11 @@ The following is the execution order of the ```CustomBehaviour``` class in the e
  ScriptManager cleans up destroyed CustomBehaviour components / GameObjects
 ```
 
-The ```ScriptManager``` class uses deferred operations on the list of ```CustomBehaviour``` components to avoid modifying the list while iterating through it.  
+The ```ScriptManager``` class uses deferred operations on the list of ```CustomBehaviour``` components to avoid modifying the list while iterating through it.
+
+App schedules these fixed ticks independently of rendering. Physics and script
+updates run only in unpaused Play mode. See [Physics foundation](../Physics/README.md)
+for world ownership, timing limits, and reset behavior.
 
 For example, when a ```GameObject``` is destoyed via a ```CustomBehaviour``` script during ```Update()```, it is simply marked as destroyed, 
 and the actual destruction is handled at the end of the frame by the ```ScriptManager```, ensuring that the list of components is not modified while it is being iterated through.  

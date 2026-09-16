@@ -37,7 +37,7 @@ App::App():
 		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
-		[this]() { ResetSimulation(); }
+		[this]() { needsReset = true; }
 	});
 
 	// Mouse cursor start position
@@ -47,15 +47,13 @@ App::App():
 	wnd.DisableCursor();	// disable OS cursor, we'll handle it ourselves for better control in 3D space
 }
 
-App::~App()
-{
-
-}
+App::~App() = default;
 
 // TODO: In the future, this method will be replaced with scene file deserialization and handle initialization of scene-dependent systems and resources
 void App::ResetSimulation()
 {
 	scene.Clear();
+	physics.Reset();
 	gameCams.clear();
 	pointLights.clear();
 	spotLights.clear();
@@ -208,6 +206,7 @@ void App::ResetSimulation()
 		});
 
 	spdlog::info("Simulation reset to initial state.");
+	ResetFrameTiming();
 }
 
 // Cache pointers to important components (cameras, lights) for easy access during update and rendering
@@ -259,54 +258,64 @@ void App::CacheSceneComponents() noexcept
 
 int App::Begin()
 {
-	// Define timestep and init timer
-	timer.Mark();
+	ResetFrameTiming();
 
 	// If ecode has value (some event handling)
 	while (true) {
 		if (const auto ecode = Window::ProcessMessages())
 			return *ecode;
 
-		// Accumulate the time elapsed since the last frame
 		const float frameDelta = timer.Mark();
-		accumulator += frameDelta;
-
-		if (needsReset)
-		{
-			ResetSimulation();
-			needsReset = false;
-		}
 
 		if (isPlayMode) wnd.DisableCursor();
 		else wnd.EnableCursor();
 
 		HandleInput(dt);
-
-		// As long as we have enough accumulated time,
-		// run the update logic in fixed steps.
-		while (accumulator >= dt)
-		{
-			const bool isSimulationRunning = isPlayMode && !isPaused;
-
-			scene.ProcessScriptAwakeAndStart(isSimulationRunning);
-
-			// TODO: Step Physics world here
-
-			scene.FixedUpdate(isSimulationRunning);
-			scene.Update(dt, isSimulationRunning);
-			scene.LateUpdate(dt, isSimulationRunning);
-
-			accumulator -= dt;
-		}
-
-		// alpha represents how far we are between the last physics frame and the next one (0.0 to 1.0)
-		const float alpha = accumulator / dt;
-		scene.UpdateAnimations(frameDelta, isPlayMode, isPaused);
-		RenderFrame(alpha);
+		Update(frameDelta);
+		RenderFrame(static_cast<float>(fixedClock.GetAlpha()));
 		scene.CleanupPendingComponentRemovals();
 		scene.CleanupDestroyedObjects();
 		CacheSceneComponents();
 	}
+}
+
+void App::ResetFrameTiming() noexcept
+{
+	fixedClock.Reset();
+	timer.Mark();
+}
+
+void App::Update(float frameDelta)
+{
+	if (needsReset)
+	{
+		ResetSimulation();
+		needsReset = false;
+		frameDelta = 0.0f;
+	}
+	else if (isPlayMode != previousPlayMode || isPaused != previousPaused)
+	{
+		// The elapsed interval crossed a Play/Pause/Resume boundary.
+		ResetFrameTiming();
+		frameDelta = 0.0f;
+	}
+	previousPlayMode = isPlayMode;
+	previousPaused = isPaused;
+
+	fixedClock.Advance(frameDelta);
+	while (fixedClock.ConsumeStep())
+	{
+		const bool isSimulationRunning = isPlayMode && !isPaused;
+		scene.ProcessScriptAwakeAndStart(isSimulationRunning);
+		scene.FixedUpdate(isSimulationRunning);
+		if (isSimulationRunning)
+		{
+			physics.Step();
+		}
+		scene.Update(dt, isSimulationRunning);
+		scene.LateUpdate(dt, isSimulationRunning);
+	}
+	scene.UpdateAnimations(frameDelta, isPlayMode, isPaused);
 }
 
 // Run per-frame update for rendering
@@ -507,7 +516,8 @@ void App::HandleInput(float dt)
 		if (isPlayMode)
 		{
 			isPlayMode = false;
-			ResetSimulation();
+			isPaused = false;
+			needsReset = true;
 		}
 	}
 }
