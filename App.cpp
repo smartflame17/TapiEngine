@@ -290,11 +290,7 @@ int App::Begin()
 
 			scene.ProcessScriptAwakeAndStart(isSimulationRunning);
 
-			// Step Physics
-			if (isSimulationRunning)
-			{
-				physicsWorld.Update(dt);
-			}
+			// TODO: Step Physics world here
 
 			scene.FixedUpdate(isSimulationRunning);
 			scene.Update(dt, isSimulationRunning);

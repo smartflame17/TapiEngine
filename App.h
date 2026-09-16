@@ -14,8 +14,6 @@
 #include "Graphics/Lighting/SpotLight.h"
 #include "Graphics/Renderer.h"
 
-#include "Physics/PhysicsWorld.h"
-
 #include "imgui/ImguiManager.h"
 
 #include "Scene/Scene.h"
@@ -91,9 +89,6 @@ private:
 	// Input state
 	int lastMouseX = 0;
 	int lastMouseY = 0;
-
-	// Physics
-	Physics::PhysicsWorld physicsWorld;
 
 	const float dt = 1.0f / TARGET_FPS;
 	float accumulator = 0.0f;
