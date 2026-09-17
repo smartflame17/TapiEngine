@@ -368,7 +368,9 @@ void Scene::HandleScriptEnableStateChanged(CustomBehaviour& script) noexcept
 
 void Scene::QueueComponentRemoval(Component& component) noexcept // TODO: bug here, the deletion of component is not handled properly
 {
+	if (component.IsPendingInspectorRemoval()) return;
 	component.MarkPendingInspectorRemoval(true);
+	if (auto* owner = component.TryGetGameObject()) owner->DetachPhysicsComponent(component);
 	// maybe we dont need duplicate check here?
 	if (std::find(pendingComponentRemovals.begin(), pendingComponentRemovals.end(), &component) == pendingComponentRemovals.end())
 	{
@@ -488,9 +490,9 @@ void Scene::DrawInspectorWindow() noexcept
 	}
 	ImGui::Separator();
 
-	auto& objectTransform = selectedObject->GetTransform();
+	auto objectTransform = selectedObject->GetTransform();
 	ImGui::Text("Transform");
-	ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
+	bool transformChanged = ImGui::DragFloat3("Position", &objectTransform.position.x, 0.05f);
 	DirectX::XMFLOAT3 rotationDegrees = {
 		DirectX::XMConvertToDegrees(objectTransform.rotation.x),
 		DirectX::XMConvertToDegrees(objectTransform.rotation.y),
@@ -498,11 +500,13 @@ void Scene::DrawInspectorWindow() noexcept
 	};
 	if (ImGui::DragFloat3("Rotation", &rotationDegrees.x, 0.5f))
 	{
+		transformChanged = true;
 		objectTransform.rotation.x = DirectX::XMConvertToRadians(rotationDegrees.x);
 		objectTransform.rotation.y = DirectX::XMConvertToRadians(rotationDegrees.y);
 		objectTransform.rotation.z = DirectX::XMConvertToRadians(rotationDegrees.z);
 	}
-	ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
+	transformChanged |= ImGui::DragFloat3("Scale", &objectTransform.scale.x, 0.05f, 0.01f, 200.0f, "%.2f");
+	if (transformChanged) selectedObject->SetTransform(objectTransform);
 	ImGui::Separator();
 
 	const auto& components = selectedObject->GetComponents();
@@ -672,11 +676,11 @@ void Scene::SetSelectedWorldTransformMatrix(DirectX::FXMMATRIX matrix) noexcept
 		{
 			const auto parentWorld = parent->GetWorldTransformMatrix();
 			const auto local = matrix * DirectX::XMMatrixInverse(nullptr, parentWorld);
-			selectedObject->GetTransform() = MakeTransformFromMatrix(local);
+			selectedObject->SetTransform(MakeTransformFromMatrix(local));
 		}
 		else
 		{
-			selectedObject->GetTransform() = MakeTransformFromMatrix(matrix);
+			selectedObject->SetTransform(MakeTransformFromMatrix(matrix));
 		}
 	}
 }

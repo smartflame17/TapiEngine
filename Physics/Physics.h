@@ -29,6 +29,8 @@ public:
 private:
 	friend class App;
 	friend class PhysicsTestAccess;
+	friend class Rigidbody;
+	friend class Collider;
 	Physics();
 	static b3WorldId CreateWorld();
 

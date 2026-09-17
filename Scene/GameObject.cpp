@@ -11,6 +11,7 @@ GameObject::GameObject(Scene& ownerScene, std::string objectName) :
 
 GameObject::~GameObject()
 {
+	ReleasePhysics();
 	for (auto& component : components)
 	{
 		if (component->isType<DrawableComponent>())
@@ -80,25 +81,24 @@ void GameObject::Destroy() noexcept
 void GameObject::SetPosition(float x, float y, float z) noexcept
 {
 	transform.position = { x, y, z };
+	NotifyPhysicsTransformChanged();
 }
 
 void GameObject::SetRotation(float x, float y, float z) noexcept
 {
 	transform.rotation = { x, y, z };
+	NotifyPhysicsTransformChanged();
 }
 void GameObject::SetScale(float x, float y, float z) noexcept
 {
 	transform.scale = { x, y, z };
+	NotifyPhysicsTransformChanged();
 }
 
 void GameObject::SetTransform(const Transform& newTransform) noexcept
 {
 	transform = newTransform;
-}
-
-Transform& GameObject::GetTransform() noexcept
-{
-	return transform;
+	NotifyPhysicsTransformChanged();
 }
 
 const Transform& GameObject::GetTransform() const noexcept
@@ -168,11 +168,13 @@ void GameObject::Update(float dt, bool isSimulationRunning) noexcept
 void GameObject::MarkPendingKill() noexcept
 {
 	isPendingKill = true;
+	ReleasePhysics();
 }
 
 void GameObject::SetParent(GameObject* newParent) noexcept
 {
 	parent = newParent;
+	NotifyPhysicsTransformChanged();
 }
 
 CustomBehaviour* GameObject::AddScript(const std::string& scriptName)

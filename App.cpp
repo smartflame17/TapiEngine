@@ -1,5 +1,6 @@
 #include "App.h"
 
+
 App::Config::Config()
 {
 	width = GetPrivateProfileIntA("Settings", "Width", 1920, ".\\config.ini");
@@ -135,6 +136,22 @@ void App::ResetSimulation()
 			switch (type)
 			{
 			case ComponentType::Drawable:         break; // later
+			case ComponentType::Rigidbody:
+			{
+				ImGui::BeginDisabled(go.GetComponent<Rigidbody>() != nullptr);
+				const bool add = ImGui::Button("Add Rigidbody");
+				if (add) { go.AddComponent<Rigidbody>(); ImGui::CloseCurrentPopup(); }
+				ImGui::EndDisabled();
+				if (add) return true;
+			} break;
+			case ComponentType::Collider:
+			{
+				ImGui::BeginDisabled(go.GetComponent<Collider>() != nullptr);
+				const bool add = ImGui::Button("Add Collider");
+				if (add) { go.AddComponent<Collider>(); ImGui::CloseCurrentPopup(); }
+				ImGui::EndDisabled();
+				if (add) return true;
+			} break;
 			case ComponentType::Animator:
 			{
 				const auto* existing = go.GetComponent<Animator>();
@@ -311,6 +328,7 @@ void App::Update(float frameDelta)
 		if (isSimulationRunning)
 		{
 			physics.Step();
+			scene.SynchronizePhysicsTransforms();
 		}
 		scene.Update(dt, isSimulationRunning);
 		scene.LateUpdate(dt, isSimulationRunning);

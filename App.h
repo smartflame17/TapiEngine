@@ -25,6 +25,8 @@
 #include "Components/Component.h"
 #include "Components/DrawableComponent.h"
 #include "Components/Animator.h"
+#include "Components/Rigidbody.h"
+#include "Components/Collider.h"
 
 // error logging macros (can be redefined by user to redirect to file or other logging system if desired)
 #ifndef TE_LOG

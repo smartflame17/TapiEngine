@@ -741,6 +741,12 @@
   <ItemGroup>
     <ClCompile Include="Components\Animator.cpp" />
     <ClCompile Include="Physics\Physics.cpp" />
+    <ClCompile Include="Components\Rigidbody.cpp" />
+    <ClCompile Include="Components\Collider.cpp" />
+    <ClCompile Include="Scene\GameObjectPhysics.cpp" />
+    <ClInclude Include="Components\Rigidbody.h" />
+    <ClInclude Include="Components\Collider.h" />
+    <ClInclude Include="Physics\PhysicsMath.h" />
     <ClInclude Include="Physics\Physics.h" />
     <ClInclude Include="Tools\FixedStepClock.h" />
     <ClCompile Include="Graphics\Animation\Animation.cpp" />

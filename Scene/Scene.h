@@ -35,6 +35,7 @@ public:
 	void Clear() noexcept;
 	void ProcessScriptAwakeAndStart(bool isSimulationRunning) noexcept;
 	void FixedUpdate(bool isSimulationRunning) noexcept;
+	void SynchronizePhysicsTransforms() noexcept;
 	void Update(float dt, bool isSimulationRunning) noexcept;
 	void UpdateAnimations(float frameDelta, bool isPlayMode, bool isPaused) noexcept;
 	void Submit(RenderQueueBuilder& queueBuilder, const RenderView& view) noexcept(!IS_DEBUG);
@@ -68,6 +69,7 @@ public:
 	using AddComponentHandler = std::function<bool(GameObject&, ComponentType)>; // enum class needs declaration
 	void SetAddComponentHandler(AddComponentHandler handler) noexcept;
 private:
+	friend class PhysicsComponentTestAccess;
 	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	std::unique_ptr<Drawable> skybox;

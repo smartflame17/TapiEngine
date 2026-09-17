@@ -1173,6 +1173,12 @@
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Components\Rigidbody.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Components\Collider.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Scene\GameObjectPhysics.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClInclude Include="Components\Rigidbody.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Components\Collider.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Physics\PhysicsMath.h"><Filter>헤더 파일</Filter></ClInclude>
     <ClInclude Include="Physics\Physics.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
