@@ -1,5 +1,6 @@
 #include "../App.h"
 #include "PhysicsTestAccess.h"
+#include "PhysicsComponentTestAccess.h"
 #include <box3d/box3d.h>
 #include <cmath>
 #include <iostream>
@@ -57,7 +58,7 @@ private:
 class OrderProbe : public CustomBehaviour
 {
 public:
-	explicit OrderProbe(b3BodyId body) : body(body) {}
+	explicit OrderProbe(b3BodyId body, GameObject* object = nullptr) : body(body), object(object) {}
 	void Awake() override { awake = true; }
 	void Start() override { startedAfterAwake = awake; }
 	void FixedUpdate() override
@@ -71,14 +72,23 @@ public:
 	{
 		const float velocity = b3Body_GetLinearVelocity(body).y;
 		updateAfterPhysics = updateAfterPhysics && velocity < 10 && velocity > 9;
+		if (object) transformAfterPhysics = transformAfterPhysics &&
+			std::abs(object->GetTransform().position.y - b3Body_GetPosition(body).y) < 0.0001f;
 		updated = true;
 	}
-	void LateUpdate(float) override { lateAfterUpdate = lateAfterUpdate && updated; }
+	void LateUpdate(float) override
+	{
+		lateAfterUpdate = lateAfterUpdate && updated;
+		if (object) transformAfterPhysics = transformAfterPhysics &&
+			std::abs(object->GetTransform().position.y - b3Body_GetPosition(body).y) < 0.0001f;
+	}
 	int ticks = 0;
 	bool awake = false, startedAfterAwake = false;
 	bool fixedAfterStart = true, updateAfterPhysics = true, lateAfterUpdate = true;
+	bool transformAfterPhysics = true;
 private:
 	b3BodyId body;
+	GameObject* object;
 	bool updated = false;
 };
 
@@ -125,6 +135,13 @@ void TestApp()
 		auto& owner = object.AddComponent<BodyOwner>(resetDestroyedWithWorld);
 		const auto body = owner.body;
 		auto& probe = object.AddComponent<OrderProbe>(body);
+		auto& simulated = scene.CreateGameObject("Component synchronization fixture");
+		simulated.SetPosition(5, 10, 0);
+		auto& rigidbody = simulated.AddComponent<Rigidbody>();
+		simulated.AddComponent<Collider>();
+		rigidbody.SetType(Rigidbody::Type::Dynamic);
+		const auto simulatedBody = PhysicsComponentTestAccess::Body(rigidbody);
+		auto& componentProbe = simulated.AddComponent<OrderProbe>(simulatedBody, &simulated);
 		AppPhysicsTestAccess::Frame(app, 5.0f);
 		Check(b3Body_GetPosition(body).y == 10 && probe.ticks == 0, "Edit mode does not simulate physics or scripts");
 
@@ -135,15 +152,20 @@ void TestApp()
 		Check(probe.ticks == 2, "A 30 Hz render interval produces two fixed ticks");
 		Check(probe.fixedAfterStart && probe.updateAfterPhysics && probe.lateAfterUpdate,
 			"Lifecycle order is Awake/Start, FixedUpdate, physics, Update, LateUpdate");
+		Check(componentProbe.ticks == 2 && componentProbe.transformAfterPhysics,
+			"Current physics pose reaches script Update and LateUpdate in the same fixed tick");
 		AppPhysicsTestAccess::Frame(app, 1.0f / 240.0f);
 		Check(AppPhysicsTestAccess::Alpha(app) > 0, "Running mode retains fractional time");
 		AppPhysicsTestAccess::Mode(app, true, true);
 		AppPhysicsTestAccess::Frame(app, 1.0f);
 		Check(AppPhysicsTestAccess::Alpha(app) == 0, "Pause clears the previous partial tick");
 		const auto pausedPosition = b3Body_GetPosition(body);
+		const auto pausedTransform = simulated.GetTransform();
 		AppPhysicsTestAccess::Frame(app, 5.0f);
 		AppPhysicsTestAccess::Render(app);
 		Check(b3Body_GetPosition(body).y == pausedPosition.y && probe.ticks == 2, "Paused world stays fixed while rendering continues");
+		Check(simulated.GetTransform().position.y == pausedTransform.position.y && componentProbe.ticks == 2,
+			"Component transforms and script ticks stay stable while paused");
 		AppPhysicsTestAccess::Mode(app, true, false);
 		AppPhysicsTestAccess::Frame(app, 5.0f);
 		Check(probe.ticks == 2 && AppPhysicsTestAccess::Alpha(app) == 0, "Resume discards paused-time debt");
@@ -157,6 +179,7 @@ void TestApp()
 		AppPhysicsTestAccess::Stop(app);
 		AppPhysicsTestAccess::Frame(app, 10.0f);
 		Check(resetDestroyedWithWorld && !b3World_IsValid(stoppedWorld), "Stop clears components before replacing their world");
+		Check(!b3Body_IsValid(simulatedBody), "Stop releases real Rigidbody and Collider resources");
 		Check(AppPhysicsTestAccess::IsEditing(app) && AppPhysicsTestAccess::Alpha(app) == 0,
 			"Stop returns to Edit mode with no loading-time debt");
 		Check(b3GetWorldCount() == baseline + 1 && b3World_GetCounters(World()).bodyCount == 0, "Stop restores an empty world without leaks");
@@ -176,6 +199,8 @@ void TestApp()
 			"Escape uses the same safe reset as Stop");
 		Check(AppPhysicsTestAccess::Alpha(app) == 0, "Escape discards pre-reset frame time");
 		scene.CreateGameObject("Shutdown fixture").AddComponent<BodyOwner>(shutdownDestroyedWithWorld);
+		auto& shutdownObject = scene.CreateGameObject("Component shutdown fixture");
+		shutdownObject.AddComponent<Collider>(); shutdownObject.AddComponent<Rigidbody>();
 	}
 	Check(shutdownDestroyedWithWorld, "Scene components can access Physics during App shutdown");
 	Check(b3GetWorldCount() == baseline, "App shutdown releases its world");

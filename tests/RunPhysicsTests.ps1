@@ -1,5 +1,5 @@
 param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug',
-    [ValidateSet('Core','App','All')][string]$Suite = 'Core')
+    [ValidateSet('Core','Components','App','All')][string]$Suite = 'Core')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -27,22 +27,24 @@ try {
         & "$out/PhysicsTests.exe"
         if ($LASTEXITCODE) { throw 'Physics tests failed.' }
     }
-    if ($Suite -in @('App','All')) {
+    foreach ($engineSuite in @('Components','App')) {
+        if ($Suite -notin @($engineSuite,'All')) { continue }
+        $testName = if ($engineSuite -eq 'App') { 'PhysicsAppTests' } else { 'PhysicsComponentTests' }
         $tk = Join-Path $repo 'packages/directxtk_desktop_win10.2025.7.10.1'
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
-            if ($name -ne 'WinMain') { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+            if ($name -ne 'WinMain' -and ($engineSuite -eq 'App' -or $name -ne 'App')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
         })
         foreach ($object in $objects) {
-            if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running App tests (missing $object)." }
+            if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running $engineSuite tests (missing $object)." }
         }
-        & $cl @common "/I$repo/assimp/include" "/I$repo/spdlog/include" "/I$tk/include" tests/PhysicsAppTests.cpp "/Fo$out/PhysicsAppTests.obj" "/Fe$out/PhysicsAppTests.exe" /link @libraries "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" @objects DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
-        if ($LASTEXITCODE) { throw 'Physics App test compilation failed.' }
+        & $cl @common "/I$repo/assimp/include" "/I$repo/spdlog/include" "/I$tk/include" "tests/$testName.cpp" "/Fo$out/$testName.obj" "/Fe$out/$testName.exe" /link @libraries "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" @objects DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+        if ($LASTEXITCODE) { throw "$testName compilation failed." }
         Copy-Item -LiteralPath "$repo/assimp/bin/assimp-vc143-mtd.dll" -Destination $out -Force
-        $process = Start-Process -FilePath "$out/PhysicsAppTests.exe" -WorkingDirectory $repo -WindowStyle Hidden -PassThru -Wait -RedirectStandardOutput "$out/app-stdout.log" -RedirectStandardError "$out/app-stderr.log"
-        Get-Content -LiteralPath "$out/app-stdout.log"
-        Get-Content -LiteralPath "$out/app-stderr.log"
-        if ($process.ExitCode) { throw "Physics App tests failed (exit $($process.ExitCode))." }
+        $process = Start-Process -FilePath "$out/$testName.exe" -WorkingDirectory $repo -WindowStyle Hidden -PassThru -Wait -RedirectStandardOutput "$out/$testName-stdout.log" -RedirectStandardError "$out/$testName-stderr.log"
+        Get-Content -LiteralPath "$out/$testName-stdout.log"
+        Get-Content -LiteralPath "$out/$testName-stderr.log"
+        if ($process.ExitCode) { throw "$testName failed (exit $($process.ExitCode))." }
     }
 } finally { Pop-Location }
