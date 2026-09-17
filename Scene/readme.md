@@ -105,6 +105,7 @@ The following is the execution order of the ```CustomBehaviour``` class in the e
  |
  v
  Engine steps the physics simulation [1/60 second with 4 internal substeps]
+ Engine snapshots body world poses and updates GameObject transforms parent-first
  |
  v
  CustomBehaviour.Update() [Use for regular updates, such as handling input or non-physics related logic]

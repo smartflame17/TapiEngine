@@ -7,10 +7,17 @@ These headless tests exercise real Box3D worlds, singleton cleanup/reset,
 falling-body motion, and fixed timing at different rendering rates and stalls.
 No engine build or scene assets are required for this default Core suite.
 
-After building the corresponding x64 engine configuration, add `-Suite App`
-for the hidden-window App smoke tests, or `-Suite All` for both. App tests need
+After building the corresponding x64 engine configuration, add `-Suite Components`
+for the headless component tests, `-Suite App` for the hidden-window App smoke
+tests, or `-Suite All` for all three suites. App tests need
 the default scene assets and D3D11. They cover Play/Pause/Resume/Stop, Escape,
-script ordering, and world lifetime during reset and shutdown.
+script ordering and same-tick transform readback, pause stability, and world
+lifetime during reset and shutdown. Component tests exercise both attachment
+orders, pending removal/re-addition, subtree destruction, all three collider
+shapes contacting a standalone floor, geometry/material/mass edits, immediate
+setters, quaternion round trips, sleeping independent children, parent edits,
+reparenting, scale suspension/recovery, inspector warnings and text edits, and
+the gizmo transform entry point. They do not simulate a mouse drag in ImGuizmo.
 See `Physics/README.md` for the service contract and timing behavior.
 
 ## Skeletal animation tests
