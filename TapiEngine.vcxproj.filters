@@ -1085,7 +1085,6 @@
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="Graphics\README.md" />
-    <None Include="packages.config" />
     <None Include="assimp\include\color4.inl">
       <Filter>헤더 파일</Filter>
     </None>
@@ -1125,6 +1124,7 @@
     <None Include="Graphics\Animation\README.md" />
     <None Include="Physics\box3d\Debug\box3dd.dll" />
     <None Include="Physics\box3d\Release\box3d.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />
@@ -1148,7 +1148,6 @@
   <ItemGroup>
     <Library Include="assimp\lib\assimp-vc143-mtd.lib" />
     <Library Include="Physics\box3d\Debug\box3dd.lib" />
-    <Library Include="Physics\box3d\Release\box3d.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TapiEngine.rc">
@@ -1173,12 +1172,24 @@
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Components\Rigidbody.cpp"><Filter>소스 파일</Filter></ClCompile>
-    <ClCompile Include="Components\Collider.cpp"><Filter>소스 파일</Filter></ClCompile>
-    <ClCompile Include="Scene\GameObjectPhysics.cpp"><Filter>소스 파일</Filter></ClCompile>
-    <ClInclude Include="Components\Rigidbody.h"><Filter>헤더 파일</Filter></ClInclude>
-    <ClInclude Include="Components\Collider.h"><Filter>헤더 파일</Filter></ClInclude>
-    <ClInclude Include="Physics\PhysicsMath.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClCompile Include="Components\Rigidbody.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Collider.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\GameObjectPhysics.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClInclude Include="Components\Rigidbody.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Collider.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysicsMath.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="Physics\Physics.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
