@@ -28,6 +28,8 @@
 #include "Components/Rigidbody.h"
 #include "Components/Collider.h"
 
+#include <Audio.h>
+
 // error logging macros (can be redefined by user to redirect to file or other logging system if desired)
 #ifndef TE_LOG
 #define TE_LOG(...) SPDLOG_INFO(__VA_ARGS__)
@@ -73,6 +75,7 @@ private:
 	Window wnd;
 	Timer timer;
 	Scene scene;
+	std::unique_ptr<DirectX::AudioEngine> audioEngine;
 
 	// Cameras for different modes
 	Camera editorCam;
