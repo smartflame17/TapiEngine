@@ -1,8 +1,8 @@
 ﻿# TapiEngine <img width="48" height="48" alt="tapiengine_logo" src="https://github.com/user-attachments/assets/a454d340-ef25-4178-b578-b205978240da" />
 
-<img src="./repo/Images/overview.png" alt="Sponza scene loaded in TapiEngine" width="60%" height="auto"/>
+<img src="./repo/Images/overview.png" alt="Sponza scene loaded in TapiEngine" width="70%" height="auto"/>
 
-TapiEngine is a basic 3D engine written in C++ with minimal external dependencies. It leverages the WinAPI and Direct3D 11 to provide a lightweight yet functional environment for 3D graphics development on Windows.
+TapiEngine is a basic 3D engine written in C++ with minimal external dependencies. It leverages WinAPI and Direct3D 11 to provide a lightweight yet functional environment for 3D graphics development on Windows.
 
 ## Features
 
@@ -46,9 +46,10 @@ After building, run the executable from your build output directory. You should 
 
 ## Acknowledgements
 
-- Microsoft for WinAPI and Direct3D 11
+- Microsoft for WinAPI, DirectXTK and Direct3D 11
 - The [imgui](https://github.com/ocornut/imgui) library for providing a simple and effective GUI solution
 - The [assimp](https://github.com/assimp/assimp) library for model loading capabilities
+- The [box3d](https://github.com/erincatto/box3d) library for collision detection and physics simulation
 - The open-source community for inspiration and guidance
 
 ---
