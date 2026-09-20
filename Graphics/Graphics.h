@@ -82,6 +82,7 @@ public:
 	void UnbindPixelShader() noexcept;
 	void DrawWireframeBoundingBox(const DirectX::BoundingBox& bounds) noexcept(!IS_DEBUG);
 	void DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox>& bounds) noexcept(!IS_DEBUG);
+	void DrawWireframeLines(const std::vector<DirectX::XMFLOAT3>& vertices, const DirectX::XMFLOAT3& color, bool depthTest = true);
 
 	ID3D11DepthStencilState* GetDepthStencilState();
 	WireframeDebugSettings& GetWireframeDebugSettings() noexcept;

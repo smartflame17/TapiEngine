@@ -736,6 +736,7 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <ClCompile Include="Components\Animator.cpp" />
     <ClCompile Include="Physics\Physics.cpp" />
+    <ClCompile Include="Physics\PhysicsDebugDraw.cpp" />
     <ClCompile Include="Components\Rigidbody.cpp" />
     <ClCompile Include="Components\Collider.cpp" />
     <ClCompile Include="Scene\GameObjectPhysics.cpp" />
@@ -743,6 +744,7 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
     <ClInclude Include="Components\Collider.h" />
     <ClInclude Include="Physics\PhysicsMath.h" />
     <ClInclude Include="Physics\Physics.h" />
+    <ClInclude Include="Physics\PhysicsDebugDraw.h" />
     <ClInclude Include="Tools\FixedStepClock.h" />
     <ClCompile Include="Graphics\Animation\Animation.cpp" />
     <ClCompile Include="Graphics\Assets\AssimpImporter.cpp" />

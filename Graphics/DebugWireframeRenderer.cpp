@@ -2,6 +2,9 @@
 #include "Graphics.h"
 #include "../ErrorHandling/GraphicsExceptionMacros.h"
 #include <array>
+#include <algorithm>
+#include <limits>
+#include <stdexcept>
 
 using namespace DirectX;
 
@@ -100,6 +103,8 @@ DebugWireframeRenderer::DebugWireframeRenderer(Graphics& gfx)
 	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	GFX_THROW_FAILED(gfx.pDevice->CreateDepthStencilState(&depthDesc, &pDepthState));
+	depthDesc.DepthEnable = FALSE;
+	GFX_THROW_FAILED(gfx.pDevice->CreateDepthStencilState(&depthDesc, &pOverlayDepthState));
 
 	D3D11_RASTERIZER_DESC rasterDesc = {};
 	rasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -151,5 +156,54 @@ void DebugWireframeRenderer::DrawBoundingBoxes(Graphics& gfx, const std::vector<
 	{
 		DrawBoundingBox(gfx, box, color);
 	}
+	gfx.RestoreDefaultStates();
+}
+
+void DebugWireframeRenderer::DrawLines(Graphics& gfx, const std::vector<XMFLOAT3>& vertices, const XMFLOAT3& color, bool depthTest)
+{
+	if (vertices.empty()) return;
+	HRESULT hr;
+	const std::size_t maxVertices = (std::numeric_limits<UINT>::max)() / sizeof(XMFLOAT3);
+	if (vertices.size() % 2 != 0 || vertices.size() > maxVertices)
+		throw std::length_error("Wireframe lines require a supported, even number of endpoints.");
+	if (vertices.size() > lineVertexCapacity)
+	{
+		const auto capacity = (std::max)(vertices.size(), (std::min)(maxVertices, (std::max)(std::size_t{256}, lineVertexCapacity * 2)));
+		D3D11_BUFFER_DESC desc = {};
+		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		desc.ByteWidth = static_cast<UINT>(capacity * sizeof(XMFLOAT3));
+		Microsoft::WRL::ComPtr<ID3D11Buffer> replacement;
+		GFX_THROW_FAILED(gfx.pDevice->CreateBuffer(&desc, nullptr, &replacement));
+		pLineVertexBuffer = std::move(replacement);
+		lineVertexCapacity = capacity;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	GFX_THROW_FAILED(gfx.pContext->Map(pLineVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
+	memcpy(mapped.pData, vertices.data(), vertices.size() * sizeof(XMFLOAT3));
+	gfx.pContext->Unmap(pLineVertexBuffer.Get(), 0);
+	const TransformCbuf transform{ XMMatrixTranspose(gfx.GetCamera() * gfx.GetProjection()) };
+	GFX_THROW_FAILED(gfx.pContext->Map(pTransformBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
+	memcpy(mapped.pData, &transform, sizeof(transform));
+	gfx.pContext->Unmap(pTransformBuffer.Get(), 0);
+	const ColorCbuf colorData{ color, 1.0f };
+	GFX_THROW_FAILED(gfx.pContext->Map(pColorBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
+	memcpy(mapped.pData, &colorData, sizeof(colorData));
+	gfx.pContext->Unmap(pColorBuffer.Get(), 0);
+
+	gfx.RestoreDefaultStates();
+	const UINT stride = sizeof(XMFLOAT3), offset = 0;
+	gfx.pContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+	gfx.pContext->IASetInputLayout(pInputLayout.Get());
+	gfx.pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	gfx.pContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+	gfx.pContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
+	gfx.pContext->VSSetConstantBuffers(0, 1, pTransformBuffer.GetAddressOf());
+	gfx.pContext->PSSetConstantBuffers(0, 1, pColorBuffer.GetAddressOf());
+	gfx.pContext->OMSetDepthStencilState(depthTest ? pDepthState.Get() : pOverlayDepthState.Get(), 1);
+	gfx.pContext->RSSetState(pRasterizerState.Get());
+	gfx.pContext->Draw(static_cast<UINT>(vertices.size()), 0);
 	gfx.RestoreDefaultStates();
 }

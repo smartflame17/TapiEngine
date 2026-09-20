@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+int RunPhysicsDebugDrawTests();
+
 static_assert(!std::is_copy_constructible_v<Physics> && !std::is_move_constructible_v<Physics>);
 static_assert(!std::is_copy_assignable_v<Physics> && !std::is_move_assignable_v<Physics>);
 static_assert(!std::is_default_constructible_v<Physics>);
@@ -165,6 +167,7 @@ int main()
 		TestLifetime();
 		TestClock();
 		TestFallingBody();
+		checks += RunPhysicsDebugDrawTests();
 		std::cout << "PASS " << checks << " physics and timing checks\n";
 		return 0;
 	}

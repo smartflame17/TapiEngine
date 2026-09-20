@@ -21,6 +21,8 @@
 #include "../Graphics/Lighting/SpotLight.h"
 #include "../Input/Mouse.h"
 
+struct PhysicsDebugDrawSettings;
+
 class ImguiManager
 {
 public:
@@ -42,6 +44,7 @@ public:
 		bool* isPlayMode = nullptr;
 		bool* isPaused = nullptr;
 		std::function<void()> resetSimulation;
+		PhysicsDebugDrawSettings* physicsDebugSettings = nullptr;
 	};
 
 public:
@@ -55,6 +58,7 @@ public:
 	inline void SettingsWindow();
 
 private:
+	friend class ImguiSettingsTestAccess;
 	void DrawGizmo() noexcept;
 
 private:

@@ -1,4 +1,5 @@
 #include "ImguiManager.h"
+#include "../Physics/PhysicsDebugDraw.h"
 
 ImguiManager::ImguiManager()
 {
@@ -286,28 +287,43 @@ inline void ImguiManager::SettingsWindow()
 		return;
 	}
 
+	ImGui::SetNextWindowSize(ImVec2(560, 220), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(width * 0.5f, height * 0.5f), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
 	ImGui::Begin("Settings", &settingsWindowOpen);
-	if (context.graphics != nullptr)
+	if (ImGui::BeginTabBar("SettingsTabs"))
 	{
-		auto& wireframeSettings = context.graphics->GetWireframeDebugSettings();
-		ImGui::Checkbox("Draw BVH Wireframes", &wireframeSettings.enabled);
-		ImGui::ColorEdit3("Wireframe Color", &wireframeSettings.color.x);
-		ImGui::Separator();
-	}
-	if (context.mouse != nullptr)
-	{
-		bool rawEnabled = context.mouse->RawEnabled();
-		if (ImGui::Checkbox("Enable Raw Mouse Input", &rawEnabled))
+		if (ImGui::BeginTabItem("General"))
 		{
-			if (rawEnabled)
+			if (context.graphics != nullptr)
 			{
-				context.mouse->EnableRaw();
+				auto& wireframeSettings = context.graphics->GetWireframeDebugSettings();
+				ImGui::Checkbox("Draw BVH Wireframes", &wireframeSettings.enabled);
+				ImGui::ColorEdit3("Wireframe Color", &wireframeSettings.color.x);
+				ImGui::Separator();
 			}
-			else
+			if (context.mouse != nullptr)
 			{
-				context.mouse->DisableRaw();
+				bool rawEnabled = context.mouse->RawEnabled();
+				if (ImGui::Checkbox("Enable Raw Mouse Input", &rawEnabled))
+				{
+					if (rawEnabled) context.mouse->EnableRaw();
+					else context.mouse->DisableRaw();
+				}
 			}
+			ImGui::EndTabItem();
 		}
+		if (ImGui::BeginTabItem("Physics"))
+		{
+			if (context.physicsDebugSettings != nullptr)
+			{
+				auto& settings = *context.physicsDebugSettings;
+				ImGui::Checkbox("Draw Colliders During Play", &settings.drawDuringPlay);
+				ImGui::ColorEdit3("Idle Collider Color", &settings.idleColor.x);
+				ImGui::ColorEdit3("Colliding Collider Color", &settings.collisionColor.x);
+			}
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
 	}
 	ImGui::End();
 }

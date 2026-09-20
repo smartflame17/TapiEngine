@@ -36,6 +36,7 @@ b3WorldId Physics::CreateWorld()
 	b3WorldDef definition = b3DefaultWorldDef();
 	definition.gravity = { 0.0f, -9.8f, 0.0f };
 	definition.workerCount = 1;
+	debugDraw.Attach(definition);
 	const b3WorldId world = b3CreateWorld(&definition);
 	if (!b3World_IsValid(world))
 	{
@@ -55,6 +56,12 @@ void Physics::Reset()
 	const b3WorldId replacement = CreateWorld();
 	b3DestroyWorld(worldId);
 	worldId = replacement;
+	debugDraw.Clear();
+}
+
+const PhysicsDebugDrawFrame& Physics::CollectDebugDraw(bool isPlayMode, const b3AABB& drawingBounds)
+{
+	return debugDraw.Collect(worldId, isPlayMode, drawingBounds);
 }
 
 b3Vec3 Physics::GetGravity() const noexcept

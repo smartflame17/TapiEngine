@@ -545,6 +545,11 @@ void Graphics::DrawWireframeBoundingBoxes(const std::vector<DirectX::BoundingBox
 	}
 }
 
+void Graphics::DrawWireframeLines(const std::vector<DirectX::XMFLOAT3>& vertices, const DirectX::XMFLOAT3& color, bool depthTest)
+{
+	if (pDebugWireframeRenderer != nullptr) pDebugWireframeRenderer->DrawLines(*this, vertices, color, depthTest);
+}
+
 //////////////// Exception handling ////////////////
 Graphics::HrException::HrException(int line, const char* file, HRESULT hr) noexcept :
 	SmflmException(line, file),

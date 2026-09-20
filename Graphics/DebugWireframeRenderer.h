@@ -16,6 +16,7 @@ public:
 
 	void DrawBoundingBox(Graphics& gfx, const DirectX::BoundingBox& bounds, const DirectX::XMFLOAT3& color) noexcept(!IS_DEBUG);
 	void DrawBoundingBoxes(Graphics& gfx, const std::vector<DirectX::BoundingBox>& bounds, const DirectX::XMFLOAT3& color) noexcept(!IS_DEBUG);
+	void DrawLines(Graphics& gfx, const std::vector<DirectX::XMFLOAT3>& vertices, const DirectX::XMFLOAT3& color, bool depthTest);
 
 private:
 	struct TransformCbuf
@@ -31,6 +32,8 @@ private:
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pLineVertexBuffer;
+	std::size_t lineVertexCapacity = 0;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
@@ -38,5 +41,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pColorBuffer;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDepthState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pOverlayDepthState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerState;
 };

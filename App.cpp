@@ -379,6 +379,7 @@ void App::RenderFrame(float alpha)
 
 	// --- Simulation Draw ---
 	renderer.Render(scene, activeCam);
+	DrawPhysicsDebug();
 
 	// --- UI Logic ---
 	imgui.SetContext({
@@ -391,11 +392,37 @@ void App::RenderFrame(float alpha)
 		&wnd.mouse,
 		&isPlayMode,
 		&isPaused,
-		[this]() { needsReset = true; }
+		[this]() { needsReset = true; },
+		&physics.GetDebugDrawSettings()
 	});
 	imgui.EditorWindow();
 
 	wnd.Gfx().Endframe();
+}
+
+void App::DrawPhysicsDebug()
+{
+	if (!activeCam) return;
+	const auto& settings = physics.GetDebugDrawSettings();
+	if (isPlayMode && !settings.drawDuringPlay) return;
+	activeCam->UpdateFrustum(wnd.Gfx().GetProjection());
+	DirectX::XMFLOAT3 corners[DirectX::BoundingFrustum::CORNER_COUNT];
+	activeCam->GetFrustum().GetCorners(corners);
+	DirectX::BoundingBox bounds;
+	DirectX::BoundingBox::CreateFromPoints(bounds, DirectX::BoundingFrustum::CORNER_COUNT, corners, sizeof(corners[0]));
+	const b3AABB drawingBounds{
+		{ bounds.Center.x - bounds.Extents.x, bounds.Center.y - bounds.Extents.y, bounds.Center.z - bounds.Extents.z },
+		{ bounds.Center.x + bounds.Extents.x, bounds.Center.y + bounds.Extents.y, bounds.Center.z + bounds.Extents.z }
+	};
+	const auto& frame = physics.CollectDebugDraw(isPlayMode, drawingBounds);
+	const auto draw = [&](const std::vector<b3Vec3>& vertices, b3Vec3 color) {
+		physicsDebugVertices.clear();
+		physicsDebugVertices.reserve(vertices.size());
+		for (const auto vertex : vertices) physicsDebugVertices.push_back({ vertex.x, vertex.y, vertex.z });
+		wnd.Gfx().DrawWireframeLines(physicsDebugVertices, { color.x, color.y, color.z }, false);
+	};
+	draw(frame.idleVertices, settings.idleColor);
+	draw(frame.collisionVertices, settings.collisionColor);
 }
 
 DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept

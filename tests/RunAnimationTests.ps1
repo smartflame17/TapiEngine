@@ -38,7 +38,9 @@ try {
     if ($Suite -in @('All','Integration')) {
         $box3dName = if ($Configuration -eq 'Debug') { 'box3dd' } else { 'box3d' }
         $box3dDir = Join-Path $repo "Physics/box3d/$Configuration"
-        $tk = Join-Path $repo 'packages/directxtk_desktop_win10.2025.7.10.1'
+        [xml]$packages = Get-Content -LiteralPath "$repo/packages.config"
+        $tkVersion = ($packages.packages.package | Where-Object { $_.id -eq 'directxtk_desktop_win10' }).version
+        $tk = Join-Path $repo "packages/directxtk_desktop_win10.$tkVersion"
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)

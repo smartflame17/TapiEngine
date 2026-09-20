@@ -20,6 +20,17 @@ reparenting, scale suspension/recovery, inspector warnings and text edits, and
 the gizmo transform entry point. They do not simulate a mouse drag in ImGuizmo.
 See `Physics/README.md` for the service contract and timing behavior.
 
+The Core suite also verifies debug wireframe geometry, all collider overlap
+pairs, native contacts while resting/asleep/paused, draw bounds, visibility,
+and cached-shape lifetime. Components checks cover debug geometry under scaled
+and rotated parents, capsule-to-sphere clamping, suspension, and component
+replacement. App checks read back the D3D11 render target for idle/collision
+and custom colors, draw-through visibility, BVH depth behavior, Play/Pause
+visibility, camera positions beyond Box3D's default drawing bounds, and line
+buffer growth. App also activates the Physics and General settings tabs and
+their visibility checkboxes. PNG captures are saved in
+`x64/PhysicsTests/<configuration>/`.
+
 ## Skeletal animation tests
 
 After building the engine in the corresponding x64 configuration, run:

@@ -62,6 +62,7 @@ private:
 	void Update(float frameDelta); // advances fixed ticks and per-frame animation
 	void ResetFrameTiming() noexcept;
 	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
+	void DrawPhysicsDebug();
 	void ResetSimulation();	// resets camera, light, and all drawables to initial state
 	void CacheSceneComponents() noexcept;
 	DirectX::SimpleMath::Ray BuildMouseRay(int mouseX, int mouseY) noexcept;
@@ -87,6 +88,7 @@ private:
 	std::vector<SpotLight*> spotLights;
 	std::vector<DirectionalLight*> directionalLights;
 	Renderer renderer;
+	std::vector<DirectX::XMFLOAT3> physicsDebugVertices;
 
 	// Persistent game objects for inter-scene use (e.g. player character)
 	std::vector<GameObject*> persistentObjects;

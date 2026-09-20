@@ -95,8 +95,41 @@ show inspector warnings. Correcting the transform rebuilds geometry as needed
 and enables the body at the current GameObject pose. Euler/quaternion conversion
 uses DirectX's existing rotation convention.
 
-Kinematic bodies, sensors, multiple colliders, collision events/queries, public
-force/velocity controls, debug drawing, and interpolation remain deferred.
+Kinematic bodies, sensors, multiple colliders, public collision events/queries,
+force/velocity controls, and interpolation remain deferred.
+
+## Collider debug drawing
+
+All active collider shapes draw as wireframes in Edit mode, including objects
+without meshes and unselected objects. Shapes are blue when idle and red when
+colliding. Lines draw through scene geometry without writing depth. BVH debug
+wireframes retain their separate toggle, color, and depth-tested behavior.
+
+Settings > Physics provides **Draw Colliders During Play** (off by default),
+**Idle Collider Color**, and **Colliding Collider Color**. Play's visibility
+setting also applies while paused. Changes appear on the next frame, survive
+Stop/Escape and world reset, and last for the current application session.
+Existing BVH and raw-input controls are under Settings > General.
+
+Edit mode uses Box3D overlap queries against the real native collider geometry,
+including static/static pairs, without stepping or waking the simulation.
+Play uses Box3D's stored touching contacts, including speculative contacts;
+paused Play keeps the last simulation contact state until stepping resumes.
+Replacing or removing a shape discards its old contacts. Invalid transforms
+suspend physics and omit the affected collider until corrected.
+
+`Physics::CollectDebugDraw(isPlayMode, drawingBounds)` returns CPU endpoint lists
+for idle and colliding shapes, valid until the next collection or reset. The
+App supplies the current camera frustum's world AABB and submits two line batches
+after scene rendering. `GetDebugDrawSettings()` exposes the session preferences.
+Native IDs stay internal. Box3D shape callbacks lazily cache copied hull edges,
+sphere circles, and capsule rings/meridians, and release them on shape changes,
+removal, and world destruction. The adapter owns no graphics resources.
+
+This follows the official [debug draw interface](https://box2d.org/documentation3d/group__debug__draw.html)
+and the Box3D samples' `samples/gfx/debug_adapter.c` and `samples/gfx/draw.c`.
+The bundled headers determine callback signatures; published documentation may
+describe a different revision.
 
 The x64 project links and copies `box3dd.lib/.dll` in Debug and `box3d.lib/.dll`
 in Release. Use the existing matching headers and binaries under `box3d`.

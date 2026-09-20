@@ -2,6 +2,7 @@
 
 #include <box3d/id.h>
 #include <box3d/math_functions.h>
+#include "PhysicsDebugDraw.h"
 
 class App;
 class PhysicsTestAccess;
@@ -25,6 +26,10 @@ public:
 	void Reset();
 	b3Vec3 GetGravity() const noexcept;
 	void SetGravity(const b3Vec3& newGravity) noexcept;
+	PhysicsDebugDrawSettings& GetDebugDrawSettings() noexcept { return debugDraw.settings; }
+	const PhysicsDebugDrawSettings& GetDebugDrawSettings() const noexcept { return debugDraw.settings; }
+	// Returned endpoint lists are valid until the next collection or world reset.
+	const PhysicsDebugDrawFrame& CollectDebugDraw(bool isPlayMode, const b3AABB& drawingBounds);
 
 private:
 	friend class App;
@@ -32,8 +37,9 @@ private:
 	friend class Rigidbody;
 	friend class Collider;
 	Physics();
-	static b3WorldId CreateWorld();
+	b3WorldId CreateWorld();
 
 	static Physics* instance;
+	PhysicsDebugDraw debugDraw;
 	b3WorldId worldId = b3_nullWorldId;
 };

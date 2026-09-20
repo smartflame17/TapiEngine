@@ -97,12 +97,19 @@ void Rigidbody::DrawInspectorContents() noexcept
 	if (ImGui::DragFloat("Linear damping", &linear, 0.05f, 0, 100, "%.3f", ImGuiSliderFlags_AlwaysClamp)) SetLinearDamping(linear);
 	if (ImGui::DragFloat("Angular damping", &angular, 0.05f, 0, 100, "%.3f", ImGuiSliderFlags_AlwaysClamp)) SetAngularDamping(angular);
 	auto locks = motionLocks;
-	bool changed = ImGui::Checkbox("Lock translation X", &locks.linearX);
-	changed |= ImGui::Checkbox("Lock translation Y", &locks.linearY);
-	changed |= ImGui::Checkbox("Lock translation Z", &locks.linearZ);
-	changed |= ImGui::Checkbox("Lock rotation X", &locks.angularX);
-	changed |= ImGui::Checkbox("Lock rotation Y", &locks.angularY);
-	changed |= ImGui::Checkbox("Lock rotation Z", &locks.angularZ);
+	ImGui::Text("Lock Translation");
+	bool changed = ImGui::Checkbox("X", &locks.linearX);
+	ImGui::SameLine();
+	changed |= ImGui::Checkbox("Y", &locks.linearY);
+	ImGui::SameLine();
+	changed |= ImGui::Checkbox("Z", &locks.linearZ);
+
+	ImGui::Text("Lock Rotation");
+	changed |= ImGui::Checkbox("X##xx", &locks.angularX);
+	ImGui::SameLine();
+	changed |= ImGui::Checkbox("Y##xx", &locks.angularY);
+	ImGui::SameLine();
+	changed |= ImGui::Checkbox("Z##xx", &locks.angularZ);
 	if (changed) SetMotionLocks(locks);
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0.75f, 0.25f, 1));
 	if (!HasCollider()) ImGui::TextWrapped("Warning: no active Collider. This body has no collision geometry or shape-derived mass.");

@@ -22,7 +22,7 @@ Push-Location $repo
 try {
     Copy-Item -LiteralPath "$box3dDir/$box3dName.dll" -Destination $out -Force
     if ($Suite -in @('Core','All')) {
-        & $cl @common tests/PhysicsTests.cpp Physics/Physics.cpp "/Fo$out\" "/Fe$out/PhysicsTests.exe" /link @libraries
+        & $cl @common tests/PhysicsTests.cpp tests/PhysicsDebugDrawTests.cpp Physics/Physics.cpp Physics/PhysicsDebugDraw.cpp "/Fo$out\" "/Fe$out/PhysicsTests.exe" /link @libraries
         if ($LASTEXITCODE) { throw 'Physics test compilation failed.' }
         & "$out/PhysicsTests.exe"
         if ($LASTEXITCODE) { throw 'Physics tests failed.' }
@@ -30,7 +30,9 @@ try {
     foreach ($engineSuite in @('Components','App')) {
         if ($Suite -notin @($engineSuite,'All')) { continue }
         $testName = if ($engineSuite -eq 'App') { 'PhysicsAppTests' } else { 'PhysicsComponentTests' }
-        $tk = Join-Path $repo 'packages/directxtk_desktop_win10.2025.7.10.1'
+        [xml]$packages = Get-Content -LiteralPath "$repo/packages.config"
+        $tkVersion = ($packages.packages.package | Where-Object { $_.id -eq 'directxtk_desktop_win10' }).version
+        $tk = Join-Path $repo "packages/directxtk_desktop_win10.$tkVersion"
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)

@@ -37,6 +37,65 @@ void CheckPose(GameObject& object, b3BodyId body)
 	Check(Near(axis.x, dxAxis.x) && Near(axis.y, dxAxis.y) && Near(axis.z, dxAxis.z), "Box3D rotates vectors in the same convention as DirectX");
 }
 
+void TestDebugDrawingComponents()
+{
+	Scene scene;
+	auto& physics = Physics::GetInstance();
+	const b3AABB bounds{ { -100, -100, -100 }, { 100, 100, 100 } };
+	auto& parent = scene.CreateGameObject("debug parent");
+	parent.SetPosition(10, 2, 5);
+	parent.SetScale(2, 2, 2);
+	parent.SetRotation(0.2f, 0.3f, -0.1f);
+	auto& child = scene.CreateChildGameObject(parent, "debug collider");
+	child.SetPosition(1, 2, 3);
+	child.SetRotation(-0.1f, 0.5f, 0.4f);
+	child.SetScale(2, 3, 4);
+	auto& collider = child.AddComponent<Collider>();
+	for (const auto kind : { Collider::Shape::Box, Collider::Shape::Sphere, Collider::Shape::Capsule })
+	{
+		auto geometry = collider.GetGeometry();
+		geometry.shape = kind;
+		geometry.center = { 0.25f, 0.5f, -0.5f };
+		geometry.size = { 1, 2, 3 };
+		geometry.radius = 0.75f;
+		geometry.height = 5;
+		collider.SetGeometry(geometry);
+		const auto& frame = physics.CollectDebugDraw(false, bounds);
+		Check(!frame.idleVertices.empty() && frame.collisionVertices.empty(), "Collider-only child renders independently of meshes");
+		const auto body = Access::Body(collider);
+		const b3Transform pose = b3ToRelativeTransform(b3Body_GetTransform(body), b3Pos_zero);
+		const b3Vec3 center{ 1, 3, -4 }; // Local center times object and uniform parent scale.
+		for (const auto point : frame.idleVertices)
+		{
+			const auto local = b3Sub(b3InvTransformPoint(pose, point), center);
+			if (kind == Collider::Shape::Box)
+				Check(Near(std::abs(local.x), 2) && Near(std::abs(local.y), 6) && Near(std::abs(local.z), 12), "Debug hull uses effective scaled box dimensions");
+			else
+			{
+				const float y = kind == Collider::Shape::Sphere ? local.y : local.y - std::clamp(local.y, -9.0f, 9.0f);
+				Check(Near(local.x * local.x + y * y + local.z * local.z, 36, 0.002f), "Debug curves preserve native radius and capsule height scaling");
+			}
+		}
+	}
+	auto geometry = collider.GetGeometry();
+	geometry.height = 0.1f;
+	collider.SetGeometry(geometry);
+	Check(physics.CollectDebugDraw(false, bounds).idleVertices.size() == 192, "Clamped capsule draws the actual sphere primitive");
+	parent.SetScale(2, 3, 2);
+	Check(collider.IsPhysicsSuspended() && physics.CollectDebugDraw(false, bounds).idleVertices.empty(), "Unsupported ancestor scale suspends debug drawing");
+	parent.SetScale(2, 2, 2);
+	Check(physics.CollectDebugDraw(false, bounds).idleVertices.size() == 192, "Correcting scale restores debug drawing");
+	child.AddComponent<Rigidbody>();
+	Check(PhysicsTestAccess::DebugShapeCount(physics) == 0, "Body replacement releases old debug geometry");
+	Check(physics.CollectDebugDraw(false, bounds).idleVertices.size() == 192, "Rigidbody attachment preserves collider drawing");
+	child.RemoveComponent<Collider>();
+	Check(physics.CollectDebugDraw(false, bounds).idleVertices.empty(), "Pending collider removal immediately removes debug lines");
+	child.AddComponent<Collider>();
+	Check(physics.CollectDebugDraw(false, bounds).idleVertices.size() == 24, "Same-frame replacement draws only new geometry");
+	parent.Destroy();
+	Check(PhysicsTestAccess::DebugShapeCount(physics) == 0 && physics.CollectDebugDraw(false, bounds).idleVertices.empty(), "Subtree destruction releases debug resources immediately");
+}
+
 void TestOwnership()
 {
 	Scene scene;
@@ -317,7 +376,7 @@ int main()
 		const int worlds = b3GetWorldCount();
 		{
 			auto physics = PhysicsTestAccess::Create();
-			TestOwnership(); TestGeometryAndContacts(); TestTransforms(); TestInspector();
+			TestOwnership(); TestGeometryAndContacts(); TestTransforms(); TestInspector(); TestDebugDrawingComponents();
 			Check(b3World_GetCounters(World()).bodyCount == 0, "All scene destructors release physics resources");
 		}
 		Check(b3GetWorldCount() == worlds, "Shutdown releases world");
