@@ -16,17 +16,7 @@ App::App():
 	wnd (config.width, config.height, config.title.c_str()),
 	renderer(wnd.Gfx())
 {
-	// Initialize Audio Engine
-	DirectX::AUDIO_ENGINE_FLAGS eflags = DirectX::AudioEngine_Default;
-#ifdef IS_DEBUG
-	eflags |= DirectX::AudioEngine_Debug;
-#endif
-	audioEngine = std::make_unique<DirectX::AudioEngine>(eflags);
-	if (!audioEngine->IsAudioDevicePresent())
-	{
-		TE_LOGWARNING("No audio device detected. Audio will be disabled.");
-	}
-	else TE_LOG("Audio engine initialized successfully.");
+	audio.Suspend();
 
 	// Initialize scene objects
 	ResetSimulation();
@@ -60,18 +50,13 @@ App::App():
 	wnd.DisableCursor();	// disable OS cursor, we'll handle it ourselves for better control in 3D space
 }
 
-App::~App()
-{
-	if (audioEngine)
-	{
-		audioEngine->Suspend();
-	}
-};
+App::~App() = default;
 
 // TODO: In the future, this method will be replaced with scene file deserialization and handle initialization of scene-dependent systems and resources
 void App::ResetSimulation()
 {
 	scene.Clear();
+	audio.StopAll();
 	physics.Reset();
 	gameCams.clear();
 	pointLights.clear();
@@ -334,6 +319,11 @@ void App::Update(float frameDelta)
 		ResetFrameTiming();
 		frameDelta = 0.0f;
 	}
+	if ((isPlayMode && !isPaused) != (previousPlayMode && !previousPaused))
+	{
+		if (isPlayMode && !isPaused) audio.Resume();
+		else audio.Suspend();
+	}
 	previousPlayMode = isPlayMode;
 	previousPaused = isPaused;
 
@@ -347,19 +337,6 @@ void App::Update(float frameDelta)
 		{
 			physics.Step();
 			scene.SynchronizePhysicsTransforms();
-
-			//TODO: Update audio engine here if needed, also a dedicated audio thread might be better later.
-			if (!audioEngine->Update())
-			{
-				if (audioEngine->IsCriticalError())
-				{
-					TE_LOGWARNING("Audio Device Lost!");
-				}
-			}
-		}
-		else 
-		{
-			audioEngine->Suspend();
 		}
 		scene.Update(dt, isSimulationRunning);
 		scene.LateUpdate(dt, isSimulationRunning);

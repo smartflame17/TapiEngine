@@ -28,7 +28,7 @@
 #include "Components/Rigidbody.h"
 #include "Components/Collider.h"
 
-#include <Audio.h>
+#include "Audio/Audio.h"
 
 // error logging macros (can be redefined by user to redirect to file or other logging system if desired)
 #ifndef TE_LOG
@@ -72,11 +72,11 @@ private:
 	Config config;
 
 	Physics physics; // Outlives Scene; reject a second App before initializing UI/window state.
+	Audio audio; // Outlives Scene so component destructors may still submit audio commands.
 	ImguiManager imgui;		// initializes imgui
 	Window wnd;
 	Timer timer;
 	Scene scene;
-	std::unique_ptr<DirectX::AudioEngine> audioEngine;
 
 	// Cameras for different modes
 	Camera editorCam;

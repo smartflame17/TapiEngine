@@ -1,5 +1,16 @@
 # Transform regression tests
 
+## Audio tests
+
+For the audio service, run `./tests/RunAudioTests.ps1 -Configuration Debug` and
+repeat with `Release`. The Commands suite checks FIFO ordering, worker/COM
+ownership, loading outside the queue lock, idle updates, completion cleanup,
+stale handles, device recovery, startup/worker failures, and shutdown using an
+instrumented backend. The Native suite links real DirectXTK and exercises three
+service lifetimes with a generated silent Unicode-named WAV, checking for
+asynchronous errors without asserting audible output. Neither needs scene assets
+or an engine build. Use `-Suite Commands` or `-Suite Native` to select one suite.
+
 ## Physics tests
 
 Run `./tests/RunPhysicsTests.ps1 -Configuration Debug` and repeat with `Release`.

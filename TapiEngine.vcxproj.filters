@@ -234,6 +234,9 @@
     <ClCompile Include="Scene\ScriptRegistry.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Audio\Audio.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmflmWin.h">
@@ -1073,6 +1076,12 @@
     <ClInclude Include="Physics\box3d\include\box3d\types.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Audio\Audio.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioCommand.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ErrorHandling\DXGetErrorDescription.inl">
@@ -1125,6 +1134,7 @@
     <None Include="Physics\box3d\Debug\box3dd.dll" />
     <None Include="Physics\box3d\Release\box3d.dll" />
     <None Include="packages.config" />
+    <None Include="Audio\README.md" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ColorBlendPS.hlsl" />

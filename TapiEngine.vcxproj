@@ -184,6 +184,7 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Audio\Audio.cpp" />
     <ClCompile Include="Components\Component.cpp" />
     <ClCompile Include="Components\CustomBehaviour.cpp" />
     <ClCompile Include="Components\DrawableComponent.cpp" />
@@ -252,6 +253,8 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="Audio\Audio.h" />
+    <ClInclude Include="Audio\AudioCommand.h" />
     <ClInclude Include="Components\Component.h" />
     <ClInclude Include="Components\CustomBehaviour.h" />
     <ClInclude Include="Components\DrawableComponent.h" />
@@ -544,6 +547,10 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
     <None Include="assimp\include\SmoothingGroups.inl" />
     <None Include="assimp\include\vector2.inl" />
     <None Include="assimp\include\vector3.inl" />
+    <None Include="Audio\README.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="Components\readme.md" />
     <None Include="config.ini" />
     <None Include="ErrorHandling\DXGetErrorDescription.inl" />
