@@ -19,6 +19,7 @@ enum class ComponentType : std::uint8_t
 	Animator,
 	Rigidbody,
 	Collider,
+	AudioClip,
 	Count
 };
 
@@ -46,6 +47,8 @@ constexpr std::string_view ComponentTypeToString(ComponentType type) noexcept
 		return "Rigidbody";
 	case ComponentType::Collider:
 		return "Collider";
+	case ComponentType::AudioClip:
+		return "Audio Clip";
 	default:
 		assert(false && "Invalid ComponentType");
 		return "Unknown";
