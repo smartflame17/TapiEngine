@@ -1,5 +1,5 @@
 param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug',
-    [ValidateSet('All','Commands','Native')][string]$Suite = 'All')
+    [ValidateSet('All','Commands','Native','Components')][string]$Suite = 'All')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -39,12 +39,32 @@ try {
         if ($LASTEXITCODE) { throw 'Audio command test compilation failed.' }
         Run-Test 'AudioTests'
     }
-    if ($Suite -in @('All','Native')) {
+    if ($Suite -in @('All','Native','Components')) {
         [xml]$packages = Get-Content -LiteralPath "$repo/packages.config"
         $tkVersion = ($packages.packages.package | Where-Object { $_.id -eq 'directxtk_desktop_win10' }).version
         $tk = Join-Path $repo "packages/directxtk_desktop_win10.$tkVersion"
+    }
+    if ($Suite -in @('All','Native')) {
         & $cl @common "/I$tk/include" tests/AudioSmokeTests.cpp Audio/Audio.cpp "/Fo$out/" "/Fe$out/AudioSmokeTests.exe" /link @libraries "/LIBPATH:$tk/native/lib/x64/$Configuration" DirectXTK.lib ole32.lib uuid.lib
         if ($LASTEXITCODE) { throw 'Native audio smoke compilation failed.' }
         Run-Test 'AudioSmokeTests' ('"' + $out + '"')
+    }
+    if ($Suite -in @('All','Components')) {
+        [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
+        $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
+            $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
+            if ($name -notin @('App','WinMain','Audio')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+        })
+        foreach ($object in $objects) {
+            if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running Components tests (missing $object)." }
+        }
+        $box3dName = if ($Configuration -eq 'Debug') { 'box3dd' } else { 'box3d' }
+        $box3dDir = Join-Path $repo "Physics/box3d/$Configuration"
+        $defines = if ($Configuration -eq 'Debug') { '/DIS_DEBUG=true' } else { '/DIS_DEBUG=false' }
+        & $cl @common /std:c++20 $defines "/I$repo/tests/AudioFake" "/I$repo/spdlog/include" "/I$repo/assimp/include" "/I$tk/include" tests/AudioClipTests.cpp Audio/Audio.cpp "/Fo$out/" "/Fe$out/AudioClipTests.exe" /link @libraries @objects "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" "$box3dDir/$box3dName.lib" DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+        if ($LASTEXITCODE) { throw 'AudioClip test compilation failed.' }
+        Copy-Item -LiteralPath "$repo/assimp/bin/assimp-vc143-mtd.dll" -Destination $out -Force
+        Copy-Item -LiteralPath "$box3dDir/$box3dName.dll" -Destination $out -Force
+        Run-Test 'AudioClipTests'
     }
 } finally { Pop-Location }

@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Components/AudioClip.h"
 
 
 App::Config::Config()
@@ -139,6 +140,15 @@ void App::ResetSimulation()
 			switch (type)
 			{
 			case ComponentType::Drawable:         break; // later
+			case ComponentType::AudioClip:
+			{
+				if (ImGui::Button("Add Audio Clip"))
+				{
+					go.AddComponent<AudioClip>();
+					ImGui::CloseCurrentPopup();
+					return true;
+				}
+			} break;
 			case ComponentType::Rigidbody:
 			{
 				ImGui::BeginDisabled(go.GetComponent<Rigidbody>() != nullptr);

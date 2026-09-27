@@ -66,8 +66,67 @@ still in the shared queue; an already detached batch finishes first. The engine
 is suspended before instances and source data are destroyed, and COM is released
 last. Audio outlives the scene so component destructors may still submit commands.
 
-Run `./tests/RunAudioTests.ps1 -Configuration Debug` and repeat with `Release`.
+### AudioClip component
+
+Add **Audio Clip** from the inspector's **Add Component** menu, or create it from
+a script. Each component stores one WAV path and owns at most one controllable
+instance. Multiple AudioClip components may be attached to the same GameObject.
+
+```cpp
+#include "Components/AudioClip.h"
+#include "Scene/GameObject.h"
+
+auto& music = GetGameObject().AddComponent<AudioClip>("Audio/Sounds/music.wav");
+music.SetLooping(true);
+music.SetVolume(0.6f);
+if (!music.Play())
+    spdlog::warn("Music: {}", music.GetLastError());
+
+// Other components/scripts can find it through GetComponent<AudioClip>().
+if (auto* clip = GetComponent<AudioClip>())
+{
+    clip->Pause();
+    clip->SetPitch(-0.2f);
+    clip->SetPan(0.25f);
+    clip->Resume();
+    clip->Stop();
+}
+```
+
+`Play()` starts from the beginning and replaces the component's previous
+instance. `Resume()` continues a paused instance. `SetSound()` stops the owned
+instance when the path changes; an empty path clears the clip. Loop changes
+apply on the next `Play()`. Volume, pitch and pan update both the saved settings
+and the current instance. Invalid values are rejected without changing settings.
+Playback is explicit: attaching or configuring the component does not start it.
+
+`PlayOneShot()` uses the configured path, volume, pitch and pan, ignores looping,
+and allows overlapping playback. These voices finish independently; component
+controls and destruction affect only its owned instance. Global `Audio::StopAll()`
+also stops one-shots. Removing a component, destroying its GameObject, or clearing
+the scene stops its owned instance during cleanup.
+
+Methods returning `bool` catch synchronous submission errors and expose them via
+`GetLastError()`. Success only acknowledges a queued request. `GetHandle()` is
+the last owned request handle, not a playback-state query: natural completion,
+file loading failures and global stops can make it stale. `Play()` always obtains
+a new handle. AudioClip does not expose a guessed `IsPlaying()` state.
+
+The inspector provides an editable path, a WAV file picker, Clear, Loop, volume,
+pitch and pan sliders, Play, Play One Shot, Pause, Resume, and Stop. Controls use
+the same public API as scripts. Audio follows the App's global Play/Pause/Stop
+state; Edit mode remains suspended. No global audio settings are changed by an
+individual component.
+
+### Tests
+
+Build the engine in x64 Debug, then run
+`./tests/RunAudioTests.ps1 -Configuration Debug` and repeat with `Release`.
 Command tests use an instrumented backend; native smoke tests link the installed
 DirectXTK package and generate a silent WAV, requiring no game assets or audible
-output. See the [DirectXTK setup guide](https://github.com/microsoft/DirectXTK/wiki/Adding-audio-to-your-project)
+output. The Components suite links the engine objects and checks AudioClip
+playback, validation, cleanup, failures and ImGui controls against the instrumented
+backend. Use `-Suite Commands` or `-Suite Native` to run the service tests without
+an engine build, or `-Suite Components` to run only component tests.
+See the [DirectXTK setup guide](https://github.com/microsoft/DirectXTK/wiki/Adding-audio-to-your-project)
 and [threading contract](https://github.com/microsoft/DirectXTK/wiki/Audio#threading-model).

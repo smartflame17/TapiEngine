@@ -1,5 +1,6 @@
 #pragma once
 #include "../CustomBehaviour.h"
+#include "../../Audio/Audio.h"
 #include <string>
 
 class ScriptTest : public CustomBehaviour

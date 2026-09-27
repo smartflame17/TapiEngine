@@ -11,6 +11,16 @@ service lifetimes with a generated silent Unicode-named WAV, checking for
 asynchronous errors without asserting audible output. Neither needs scene assets
 or an engine build. Use `-Suite Commands` or `-Suite Native` to select one suite.
 
+The default `All` suite also runs AudioClip component tests and requires the
+corresponding x64 engine build. Use `-Suite Components` to run these alone. They
+link the engine's component/scene objects with the instrumented audio backend,
+checking script lookup, UTF-8 paths, live controls, overlapping one-shots, restart,
+natural completion, global stops, component removal, subtree destruction, scene
+reset, invalid settings, missing services and worker failures. Headless ImGui
+frames exercise path input, sliders, transport buttons, multiple component IDs,
+file browser opening, clearing and persistent error text. No audio device, scene
+assets or visible editor window are required.
+
 ## Physics tests
 
 Run `./tests/RunPhysicsTests.ps1 -Configuration Debug` and repeat with `Release`.

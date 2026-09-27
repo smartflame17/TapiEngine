@@ -185,6 +185,7 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Audio\Audio.cpp" />
+    <ClCompile Include="Components\AudioClip.cpp" />
     <ClCompile Include="Components\Component.cpp" />
     <ClCompile Include="Components\CustomBehaviour.cpp" />
     <ClCompile Include="Components\DrawableComponent.cpp" />

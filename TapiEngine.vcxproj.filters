@@ -1182,6 +1182,9 @@
     <ClCompile Include="Components\Animator.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Components\AudioClip.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
