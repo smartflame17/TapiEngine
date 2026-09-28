@@ -3,6 +3,7 @@
 #include "Tools/Timer.h"
 #include "Tools/FixedStepClock.h"
 #include "Tools/DungeonGenerator.h"
+#include "Tools/json.hpp"
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
