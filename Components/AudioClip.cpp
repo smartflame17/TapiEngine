@@ -147,7 +147,7 @@ void AudioClip::DrawInspectorContents() noexcept
 			if (!fileBrowser)
 			{
 				fileBrowser = std::make_unique<ImGui::FileBrowser>(ImGuiFileBrowserFlags_EditPathString);
-				fileBrowser->SetTitle("Select WAV##" + std::to_string(GetId()));
+				fileBrowser->SetTitle("Select WAV##" + GetId().ToString());
 				fileBrowser->SetTypeFilters({ ".wav" });
 			}
 			fileBrowser->Open();

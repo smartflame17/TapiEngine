@@ -1,10 +1,7 @@
 #include "GameObject.h"
 #include "../Components/CustomBehaviour.h"
 
-std::uint64_t GameObject::nextId = 1;
-
 GameObject::GameObject(Scene& ownerScene, std::string objectName) :
-	id(nextId++),
 	scene(ownerScene),
 	name(std::move(objectName))
 {}
@@ -23,9 +20,15 @@ GameObject::~GameObject()
 	}
 }
 
-std::uint64_t GameObject::GetId() const noexcept
+const Guid& GameObject::GetId() const noexcept
 {
 	return id;
+}
+
+void GameObject::SetId(const Guid& savedId)
+{
+	if (savedId.IsNull()) throw std::invalid_argument("GameObject identity cannot be a null UUID.");
+	id = savedId;
 }
 
 const std::string& GameObject::GetName() const noexcept

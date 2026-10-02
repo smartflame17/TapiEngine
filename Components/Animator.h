@@ -39,7 +39,7 @@ public:
 private:
 	const char* GetInspectorTitle() const noexcept override { return "Animator"; }
 	void DrawInspectorContents() noexcept override;
-	Model* ResolveTarget(std::uint64_t& drawableId) noexcept;
+	Model* ResolveTarget(Guid& drawableId) noexcept;
 	Model* ValidateTarget() noexcept;
 	bool AddClips(const std::vector<std::shared_ptr<const Animation::AnimationClip>>& added, bool loop) noexcept;
 	void ReportError(const std::string& error) noexcept;
@@ -48,7 +48,7 @@ private:
 	Animation::PlaybackClock clock;
 	Animation::SkeletonPose evaluatedPose;
 	std::shared_ptr<const ModelAsset> boundAsset;
-	std::uint64_t boundDrawableId = 0;
+	Guid boundDrawableId;
 	std::string status = "Load an animation file to begin.";
 	std::string targetError;
 	bool dirty = true;

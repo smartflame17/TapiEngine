@@ -22,6 +22,16 @@ Scene::Scene(const std::string& sceneName) : name(sceneName) {}
 
 Scene::~Scene() { Clear(); }	// fix: explicitly clear the scene to ensure proper destruction order of GameObjects and their components
 
+const std::string& Scene::GetName() const noexcept
+{
+	return name;
+}
+
+void Scene::SetName(std::string sceneName) noexcept
+{
+	name = std::move(sceneName);
+}
+
 GameObject& Scene::CreateGameObject(const std::string& name)
 {
 	auto object = std::make_unique<GameObject>(*this, name);
@@ -427,7 +437,6 @@ void Scene::DrawHierarchyWindow() noexcept
 	if (selectedObject != nullptr)
 	{
 		ImGui::Text("Selected: %s", selectedObject->GetName().c_str());
-		//ImGui::Text("GameObject ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
 	}
 	else
 	{
@@ -481,7 +490,7 @@ void Scene::DrawInspectorWindow() noexcept
 	}
 
 	ImGui::Text("GameObject: %s", selectedObject->GetName().c_str());
-	ImGui::Text("ID: %llu", static_cast<unsigned long long>(selectedObject->GetId()));
+	ImGui::Text("ID: %s", selectedObject->GetId().ToString().c_str());
 	ImGui::Separator();
 	bool isStatic = selectedObject->IsStatic();
 	if (ImGui::Checkbox("Static", &isStatic))
@@ -694,7 +703,7 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 	if (selectedObject == &object)
 		flags |= ImGuiTreeNodeFlags_Selected;
 
-	const bool opened = ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(object.GetId())), flags, "%s", object.GetName().c_str());
+	const bool opened = ImGui::TreeNodeEx(object.GetId().ToString().c_str(), flags, "%s", object.GetName().c_str());
 	if (ImGui::IsItemClicked())
 	{
 		selectedObject = &object;
@@ -709,10 +718,10 @@ void Scene::DrawHierarchyNode(GameObject& object) noexcept
 				continue;
 			}
 			ImGui::TreeNodeEx(
-				reinterpret_cast<void*>(static_cast<uintptr_t>(component->GetId())),
+				component->GetId().ToString().c_str(),
 				ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen,
-				"Component (%llu)",
-				static_cast<unsigned long long>(component->GetId())
+				"Component (%s)",
+				component->GetId().ToString().c_str()
 			);
 			if (ImGui::IsItemClicked())
 			{

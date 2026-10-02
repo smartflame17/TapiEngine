@@ -10,6 +10,7 @@
 #include <DirectXMath.h>
 #include "Scene.h"
 #include "Transform.h"
+#include "../Serialization/Guid.h"
 #include "../Components/Component.h"
 #include "../Components/CustomBehaviour.h"
 #include "../Components/DrawableComponent.h"
@@ -29,7 +30,9 @@ public:
 	~GameObject();
 	GameObject& operator=(const GameObject&) = delete;
 
-	std::uint64_t GetId() const noexcept;
+	const Guid& GetId() const noexcept;
+	// Used to restore saved identities; scene-wide uniqueness is checked by the loader.
+	void SetId(const Guid& savedId);
 	const std::string& GetName() const noexcept;
 	void SetName(std::string newName) noexcept;
 	bool IsStatic() const noexcept;
@@ -179,8 +182,7 @@ private:
 	void SetParent(GameObject* newParent) noexcept;
 
 private:
-	static std::uint64_t nextId;
-	std::uint64_t id = 0;
+	Guid id = Guid::Generate();
 	Scene& scene;
 	std::string name;
 	bool isStatic = false;

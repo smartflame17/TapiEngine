@@ -15,7 +15,7 @@ public:
 		bool angularX = false, angularY = false, angularZ = false;
 	};
 
-	Rigidbody() noexcept;
+	Rigidbody();
 	~Rigidbody() override;
 	Rigidbody(const Rigidbody&) = delete;
 	Rigidbody& operator=(const Rigidbody&) = delete;

@@ -7,7 +7,7 @@
 #include <cstring>
 #include <typeinfo>
 
-CustomBehaviour::CustomBehaviour() noexcept :
+CustomBehaviour::CustomBehaviour() :
 	Component(StaticType)
 {}
 

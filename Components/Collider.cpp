@@ -6,7 +6,7 @@
 #include <box3d/box3d.h>
 #include <algorithm>
 
-Collider::Collider() noexcept : Component(StaticType)
+Collider::Collider() : Component(StaticType)
 {
 	const auto defaults = b3DefaultShapeDef();
 	density = defaults.density;

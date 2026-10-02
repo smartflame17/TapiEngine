@@ -28,6 +28,8 @@ public:
 	Scene();
 	Scene(const std::string& sceneName);
 	~Scene();
+	const std::string& GetName() const noexcept;
+	void SetName(std::string sceneName) noexcept;
 
 	GameObject& CreateGameObject(const std::string& name);
 	GameObject& CreateChildGameObject(GameObject& parent, const std::string& name);

@@ -10,7 +10,7 @@ class Camera : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::Camera;
-	Camera() noexcept;
+	Camera();
 
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
 	const DirectX::BoundingFrustum& GetFrustum() const noexcept;

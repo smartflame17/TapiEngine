@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cassert>
 #include <string_view>
+#include "../Serialization/Guid.h"
 
 class GameObject;
 class Graphics;
@@ -59,13 +60,17 @@ constexpr std::string_view ComponentTypeToString(ComponentType type) noexcept
 class Component
 {
 public:
-	explicit Component(ComponentType type = ComponentType::Other) noexcept;
+	explicit Component(ComponentType type = ComponentType::Other);
+	Component(const Component&) = delete;
+	Component& operator=(const Component&) = delete;
 	virtual ~Component() = default;
 
 	void SetOwner(GameObject* gameObject) noexcept;
 	GameObject& GetGameObject() const noexcept;
 	GameObject* TryGetGameObject() const noexcept;
-	std::uint64_t GetId() const noexcept;
+	const Guid& GetId() const noexcept;
+	// Used to restore saved identities; scene-wide uniqueness is checked by the loader.
+	void SetId(const Guid& savedId);
 
 	ComponentType GetType() const noexcept { return type; }
 	bool IsType(ComponentType componentType) const noexcept { return type == componentType; }
@@ -94,8 +99,7 @@ private:
 public:
 	
 private:
-	static std::uint64_t nextId;
-	std::uint64_t id = 0;
+	Guid id = Guid::Generate();
 	GameObject* owner = nullptr;
 	bool pendingInspectorRemoval = false;
 	ComponentType type = ComponentType::Other;

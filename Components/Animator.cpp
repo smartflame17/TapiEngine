@@ -8,7 +8,7 @@
 
 Animator::Animator() : Component(StaticType)
 {
-	fileBrowser.SetTitle("Load Animation##" + std::to_string(GetId()));
+	fileBrowser.SetTitle("Load Animation##" + GetId().ToString());
 	fileBrowser.SetTypeFilters({ ".fbx", ".gltf", ".glb", ".dae" });
 }
 
@@ -18,7 +18,7 @@ void Animator::ReportError(const std::string& error) noexcept
 	status = error;
 }
 
-Model* Animator::ResolveTarget(std::uint64_t& drawableId) noexcept
+Model* Animator::ResolveTarget(Guid& drawableId) noexcept
 {
 	auto* owner = TryGetGameObject();
 	if (!owner || owner->IsPendingKill()) { targetError = "Animator needs a live GameObject."; return nullptr; }
@@ -48,9 +48,9 @@ Model* Animator::ResolveTarget(std::uint64_t& drawableId) noexcept
 
 Model* Animator::ValidateTarget() noexcept
 {
-	std::uint64_t drawableId = 0;
+	Guid drawableId;
 	auto* target = ResolveTarget(drawableId);
-	if (!target) { boundAsset.reset(); boundDrawableId = 0; dirty = true; return nullptr; }
+	if (!target) { boundAsset.reset(); boundDrawableId = {}; dirty = true; return nullptr; }
 	if (target->GetAsset() == boundAsset && drawableId == boundDrawableId) return target;
 	try
 	{
@@ -63,7 +63,7 @@ Model* Animator::ValidateTarget() noexcept
 	catch (const std::exception& e)
 	{
 		targetError = std::string("Target rig is incompatible: ") + e.what();
-		ReportError(targetError); boundAsset.reset(); boundDrawableId = 0;
+		ReportError(targetError); boundAsset.reset(); boundDrawableId = {};
 		return nullptr;
 	}
 }

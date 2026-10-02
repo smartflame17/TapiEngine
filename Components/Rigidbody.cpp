@@ -6,7 +6,7 @@
 #include "../imgui/imgui.h"
 #include <box3d/box3d.h>
 
-Rigidbody::Rigidbody() noexcept : Component(StaticType)
+Rigidbody::Rigidbody() : Component(StaticType)
 {
 	const auto defaults = b3DefaultBodyDef();
 	gravityScale = defaults.gravityScale;

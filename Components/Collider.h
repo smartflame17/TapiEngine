@@ -18,7 +18,7 @@ public:
 		float height = 2.0f; // Capsule total height, including both caps; local Y axis.
 	};
 
-	Collider() noexcept;
+	Collider();
 	~Collider() override;
 	Collider(const Collider&) = delete;
 	Collider& operator=(const Collider&) = delete;

@@ -2,11 +2,9 @@
 #include "../Scene/GameObject.h"
 #include "../Scene/Scene.h"
 #include "../imgui/imgui.h"
+#include <stdexcept>
 
-std::uint64_t Component::nextId = 1;
-
-Component::Component(ComponentType type) noexcept:
-	id(nextId++),
+Component::Component(ComponentType type):
 	type(type)
 {}
 
@@ -26,9 +24,15 @@ GameObject* Component::TryGetGameObject() const noexcept
 	return owner;
 }
 
-std::uint64_t Component::GetId() const noexcept
+const Guid& Component::GetId() const noexcept
 {
 	return id;
+}
+
+void Component::SetId(const Guid& savedId)
+{
+	if (savedId.IsNull()) throw std::invalid_argument("Component identity cannot be a null UUID.");
+	id = savedId;
 }
 
 void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
@@ -49,7 +53,7 @@ void Component::OnInspector() noexcept
 	}
 
 	// Keep the header and its contents scoped to this component's lifetime ID.
-	ImGui::PushID(reinterpret_cast<void*>(static_cast<uintptr_t>(id)));
+	ImGui::PushID(id.ToString().c_str());
 	bool visible = true;
 	const bool expanded = ImGui::CollapsingHeader(GetInspectorTitle(), &visible, ImGuiTreeNodeFlags_DefaultOpen);
 	if (!visible)

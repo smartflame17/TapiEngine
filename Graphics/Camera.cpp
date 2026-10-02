@@ -3,7 +3,7 @@
 #define PI 3.14159265359f
 #define MAX_DISTANCE 1000.0f		// max distance camera can move in any direction <-- wtf change this to something else later if needed
 
-Camera::Camera() noexcept :
+Camera::Camera() :
 	Component(StaticType)
 { }
 
