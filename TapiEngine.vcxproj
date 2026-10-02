@@ -530,6 +530,7 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
     <ClInclude Include="spdlog\include\spdlog\stopwatch.h" />
     <ClInclude Include="spdlog\include\spdlog\tweakme.h" />
     <ClInclude Include="spdlog\include\spdlog\version.h" />
+    <ClInclude Include="Tools\json.hpp" />
     <ClInclude Include="Tools\TapiMath.h" />
     <ClInclude Include="Tools\BVH.h" />
     <ClInclude Include="Tools\Timer.h" />

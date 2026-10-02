@@ -28,6 +28,7 @@
 #include "Components/Animator.h"
 #include "Components/Rigidbody.h"
 #include "Components/Collider.h"
+#include "Components/AudioClip.h"
 
 #include "Audio/Audio.h"
 
