@@ -171,8 +171,7 @@ void TestInspector(Audio& audio)
 	};
 	frame(); frame();
 	const auto window = ImGui::FindWindowByName("Audio controls")->ID;
-	const void* identity = reinterpret_cast<void*>(static_cast<uintptr_t>(clip.GetId()));
-	const auto scope = ImHashData(&identity, sizeof(identity), window);
+	const auto scope = ImHashStr(clip.GetId().ToString().c_str(), 0, window);
 	auto id = [&](const char* label) { return ImHashStr(label, 0, scope); };
 	auto click = [&](const char* label) { frame(id(label)); frame(); };
 	auto enter = [&](const char* label, const char* value)

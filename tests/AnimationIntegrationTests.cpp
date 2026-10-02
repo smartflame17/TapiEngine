@@ -132,7 +132,7 @@ void TestComponentInspector()
 		"Cleanup removes the closed component from its GameObject");
 	auto& replacement = object.AddComponent<InspectorComponent>();
 	frame();
-	Check(replacement.GetId() > removedId && replacement.GetId() != second.GetId() && replacement.draws > 0,
+	Check(replacement.GetId() != removedId && replacement.GetId() != second.GetId() && replacement.draws > 0,
 		"Replacement component receives a fresh ID and starts expanded");
 	Check(replacement.headerId != second.headerId && replacement.sliderId != second.sliderId,
 		"Replacement inspector does not conflict with surviving components");
