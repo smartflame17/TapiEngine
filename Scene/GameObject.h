@@ -196,6 +196,7 @@ private:
 	bool hasPhysicsPose = false;
 
 	friend class Scene;
+	friend class SceneSerializer;
 	friend class Rigidbody;
 	friend class Collider;
 };

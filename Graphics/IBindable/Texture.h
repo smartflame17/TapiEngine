@@ -1,6 +1,7 @@
 #pragma once
 #include "IBindable.h"
 #include <filesystem>
+#include "../Assets/AssetLoader.h"
 
 class Texture : public IBindable
 {
@@ -17,6 +18,8 @@ public:
 	bool SetPath(Graphics& gfx, const std::filesystem::path& path) noexcept;
 	const std::filesystem::path& GetRequestedPath() const noexcept;
 	bool IsUsingFallback() const noexcept;
+	// Reconstruction accepts resolved resource data, with no path-based I/O here.
+	void SetAsset(Graphics& gfx, std::shared_ptr<const TextureAsset> data, const std::filesystem::path& source = {});
 protected:
 	void LoadFromFile(Graphics& gfx, const std::wstring& path);
 	void LoadFallback(Graphics& gfx);
@@ -26,4 +29,5 @@ protected:
 	FallbackKind fallbackKind = FallbackKind::Checkerboard;
 	std::filesystem::path requestedPath;
 	bool usingFallback = false;
+	std::shared_ptr<const TextureAsset> asset;
 };

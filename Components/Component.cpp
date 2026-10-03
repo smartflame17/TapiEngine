@@ -35,6 +35,18 @@ void Component::SetId(const Guid& savedId)
 	id = savedId;
 }
 
+std::string_view Component::GetSerializationType() const noexcept { return {}; }
+
+void Component::SerializeData(nlohmann::json&, const SerializationContext&) const
+{
+	throw std::logic_error("This component does not support scene serialization.");
+}
+
+void Component::DeserializeData(const nlohmann::json&, LoadContext&)
+{
+	throw std::logic_error("This component does not support scene reconstruction.");
+}
+
 void Component::OnUpdate(float dt, bool isSimulationRunning) noexcept
 {
 }

@@ -1,6 +1,27 @@
 #include "Texture.h"
 #include "../../ErrorHandling/GraphicsExceptionMacros.h"
 #include <WICTextureLoader.h>
+#include <stdexcept>
+
+void Texture::SetAsset(Graphics& gfx, std::shared_ptr<const TextureAsset> data, const std::filesystem::path& source)
+{
+	requestedPath = source;
+	if (!data)
+	{
+		if (!source.empty()) throw std::invalid_argument("Texture loader returned no data for a referenced texture.");
+		LoadFallback(gfx);
+		asset.reset(); usingFallback = true;
+		return;
+	}
+	if (data->encodedImage.empty()) throw std::invalid_argument("Texture resource has no image bytes.");
+	HRESULT hr;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> view;
+	GFX_THROW_FAILED(DirectX::CreateWICTextureFromMemoryEx(GetDevice(gfx), GetContext(gfx),
+		data->encodedImage.data(), data->encodedImage.size(), 0u, D3D11_USAGE_DEFAULT,
+		D3D11_BIND_SHADER_RESOURCE, 0u, 0u, DirectX::WIC_LOADER_FORCE_RGBA32, nullptr, &view));
+	pTextureView = std::move(view);
+	asset = std::move(data); usingFallback = false;
+}
 
 Texture::Texture(Graphics& gfx, const std::wstring& path, UINT slot, FallbackKind fallbackKind)
 	:
@@ -84,6 +105,7 @@ void Texture::LoadFallback(Graphics& gfx)
 bool Texture::SetPath(Graphics& gfx, const std::filesystem::path& path) noexcept
 {
 	requestedPath = path;
+	asset.reset();
 	try
 	{
 		if (path.empty())

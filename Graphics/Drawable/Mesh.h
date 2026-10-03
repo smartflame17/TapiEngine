@@ -34,6 +34,15 @@ public:
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void DrawInspector(Graphics& gfx, const char* label = nullptr) noexcept;
 	void SetTransform(const Transform& transform) noexcept = delete;
+	const PhongMaterial& GetMaterial() const noexcept { return material; }
+	const std::string& GetTexturePath() const noexcept { return baseColorTexturePath; }
+	const std::string& GetNormalMapPath() const noexcept { return normalMapPath; }
+	bool IsNormalMapEnabled() const noexcept { return normalMapEnabled; }
+	Sampler::Type GetSamplerType() const noexcept { return pSampler ? pSampler->GetType() : Sampler::Type::LinearWrap; }
+	void SetMaterial(const PhongMaterial& value) noexcept { material = value; RefreshMaterialState(); }
+	void SetSamplerType(Graphics& gfx, Sampler::Type value) { if (pSampler) pSampler->SetType(gfx, value); }
+	void SetResources(Graphics& gfx, std::string textureReference, std::shared_ptr<const TextureAsset> texture,
+		std::string normalReference, std::shared_ptr<const TextureAsset> normal, bool normalEnabled);
 
 private:
 	SkinningCbuf* skinning = nullptr;

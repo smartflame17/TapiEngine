@@ -72,6 +72,7 @@ public:
 	void SetAddComponentHandler(AddComponentHandler handler) noexcept;
 private:
 	friend class PhysicsComponentTestAccess;
+	friend class SceneSerializer;
 	std::string name;
 	std::vector<std::unique_ptr<GameObject>> rootObjects;
 	std::unique_ptr<Drawable> skybox;

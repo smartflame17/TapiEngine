@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Serialization/ComponentRegistry.h"
 
 
 
@@ -135,106 +136,11 @@ void App::ResetSimulation()
 	//gen.Generate(80, 40);
 	//gen.SaveToFile("dungeon2.txt");
 
-	scene.SetAddComponentHandler([this](GameObject& go, ComponentType type) -> bool
-		{
-			switch (type)
-			{
-			case ComponentType::Drawable:         break; // later
-			case ComponentType::AudioClip:
-			{
-				if (ImGui::Button("Add Audio Clip"))
-				{
-					go.AddComponent<AudioClip>();
-					ImGui::CloseCurrentPopup();
-					return true;
-				}
-			} break;
-			case ComponentType::Rigidbody:
-			{
-				ImGui::BeginDisabled(go.GetComponent<Rigidbody>() != nullptr);
-				const bool add = ImGui::Button("Add Rigidbody");
-				if (add) { go.AddComponent<Rigidbody>(); ImGui::CloseCurrentPopup(); }
-				ImGui::EndDisabled();
-				if (add) return true;
-			} break;
-			case ComponentType::Collider:
-			{
-				ImGui::BeginDisabled(go.GetComponent<Collider>() != nullptr);
-				const bool add = ImGui::Button("Add Collider");
-				if (add) { go.AddComponent<Collider>(); ImGui::CloseCurrentPopup(); }
-				ImGui::EndDisabled();
-				if (add) return true;
-			} break;
-			case ComponentType::Animator:
-			{
-				const auto* existing = go.GetComponent<Animator>();
-				ImGui::BeginDisabled(existing != nullptr && !existing->IsPendingInspectorRemoval());
-				if (ImGui::Button("Add Animator"))
-				{
-					go.AddComponent<Animator>();
-					ImGui::CloseCurrentPopup();
-					ImGui::EndDisabled();
-					return true;
-				}
-				ImGui::EndDisabled();
-			} break;
-			case ComponentType::CustomBehaviour: 
-			{
-				auto scriptNames = ScriptRegistry::GetInstance().GetRegisteredScriptNames(); // get list of registered scripts for dropdown
-				for (auto& scriptName : scriptNames)
-				{
-					if (ImGui::Button(("Add " + scriptName).c_str())){
-						if (ScriptRegistry::GetInstance().IsRegistered(scriptName))
-						{
-							go.AddScript(scriptName);
-							TE_LOG("Added script '%s' to GameObject '%s'", scriptName.c_str(), go.GetName().c_str());
-							ImGui::CloseCurrentPopup();
-							return true;
-						}
-					}
-				}
-			} break;
-			case ComponentType::SpotLight:
-			{
-				if (ImGui::Button("Add Spot Light"))
-				{
-					go.AddComponent<SpotLight>(wnd.Gfx());
-					ImGui::CloseCurrentPopup();
-					return true;
-				}
-			} break;
-			case ComponentType::PointLight:
-			{
-				if (ImGui::Button("Add Point Light"))
-				{
-					go.AddComponent<PointLight>(wnd.Gfx());
-					ImGui::CloseCurrentPopup();
-					return true;
-				}
-			} break;
-			case ComponentType::DirectionalLight:
-			{
-				if (ImGui::Button("Add Directional Light"))
-				{
-					go.AddComponent<DirectionalLight>(wnd.Gfx());
-					ImGui::CloseCurrentPopup();
-					return true;
-				}
-			} break;
-			case ComponentType::Camera:
-			{
-				if (ImGui::Button("Add Camera"))
-				{
-					go.AddComponent<Camera>();
-					ImGui::CloseCurrentPopup();
-					return true;
-				}
-			} break;
-			default: return false;
-			}
-			return false;
-		});
-
+	scene.SetAddComponentHandler([this](GameObject& object, ComponentType type) -> bool
+	{
+		LoadContext context{ wnd.Gfx() };
+		return ComponentRegistry::Builtins().DrawEditorControls(object, type, context);
+	});
 	spdlog::info("Simulation reset to initial state.");
 	ResetFrameTiming();
 }

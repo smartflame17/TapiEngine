@@ -26,6 +26,17 @@ public:
 	};
 
 	Primitive(Graphics& gfx, Shape shape, SurfaceMode surfaceMode, std::string texturePath = {}, std::string normalMapPath = {});
+	Shape GetShape() const noexcept { return shape; }
+	SurfaceMode GetSurfaceMode() const noexcept { return surfaceMode; }
+	const PhongMaterial& GetMaterial() const noexcept { return material; }
+	const std::string& GetTexturePath() const noexcept { return texturePath; }
+	const std::string& GetNormalMapPath() const noexcept { return normalMapPath; }
+	bool IsNormalMapEnabled() const noexcept { return normalMapEnabled; }
+	Sampler::Type GetSamplerType() const noexcept;
+	void SetSamplerType(Sampler::Type type);
+	void SetMaterial(const PhongMaterial& value) noexcept;
+	void SetResources(std::string textureReference, std::shared_ptr<const TextureAsset> texture,
+		std::string normalReference, std::shared_ptr<const TextureAsset> normal, bool normalEnabled);
 
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void Draw(Graphics& gfx) const noexcept(!IS_DEBUG) override;

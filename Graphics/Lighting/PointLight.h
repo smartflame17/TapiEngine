@@ -12,6 +12,10 @@ class PointLight : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::PointLight;
+	static constexpr std::string_view SerializationType = "tapi.point_light";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 
 	PointLight(Graphics& gfx, float radius = 0.5f) ;
 	void SpawnControlWindow() noexcept;	// ImGui window for editing light properties
@@ -35,4 +39,5 @@ private:
 	float attLinear = 0.045f;
 	float attQuad = 0.0075f;
 	mutable SolidSphere mesh;
+	float gizmoRadius = 0.5f;
 };

@@ -173,7 +173,7 @@ void Mesh::ApplyBaseColorTexturePath(Graphics& gfx) noexcept
 		return;
 	}
 
-	const bool loadedFromFile = pBaseColorTexture->SetPath(gfx, std::filesystem::path(baseColorTexturePath));
+	const bool loadedFromFile = pBaseColorTexture->SetPath(gfx, std::filesystem::path(std::u8string(baseColorTexturePath.begin(), baseColorTexturePath.end())));
 	UpdateBaseColorStatus(loadedFromFile);
 }
 
@@ -184,7 +184,7 @@ void Mesh::ApplyNormalMapPath(Graphics& gfx) noexcept
 		return;
 	}
 
-	const bool loadedFromFile = pNormalTexture->SetPath(gfx, std::filesystem::path(normalMapPath));
+	const bool loadedFromFile = pNormalTexture->SetPath(gfx, std::filesystem::path(std::u8string(normalMapPath.begin(), normalMapPath.end())));
 	UpdateNormalMapStatus(loadedFromFile);
 	RefreshMaterialState();
 }
@@ -192,6 +192,18 @@ void Mesh::ApplyNormalMapPath(Graphics& gfx) noexcept
 void Mesh::RefreshMaterialState() noexcept
 {
 	material.useNormalMap = normalMapEnabled && pNormalTexture != nullptr && !pNormalTexture->IsUsingFallback() && !normalMapPath.empty() ? 1u : 0u;
+}
+
+void Mesh::SetResources(Graphics& gfx, std::string textureReference, std::shared_ptr<const TextureAsset> texture,
+	std::string normalReference, std::shared_ptr<const TextureAsset> normal, bool normalEnabled)
+{
+	if (pBaseColorTexture) pBaseColorTexture->SetAsset(gfx, std::move(texture), std::filesystem::path(std::u8string(textureReference.begin(), textureReference.end())));
+	if (pNormalTexture) pNormalTexture->SetAsset(gfx, std::move(normal), std::filesystem::path(std::u8string(normalReference.begin(), normalReference.end())));
+	baseColorTexturePath = std::move(textureReference); normalMapPath = std::move(normalReference);
+	normalMapEnabled = normalEnabled;
+	UpdateBaseColorStatus(pBaseColorTexture && !pBaseColorTexture->IsUsingFallback());
+	UpdateNormalMapStatus(pNormalTexture && !pNormalTexture->IsUsingFallback());
+	RefreshMaterialState();
 }
 
 void Mesh::UpdateBaseColorStatus(bool loadedFromFile) noexcept

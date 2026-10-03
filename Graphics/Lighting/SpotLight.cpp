@@ -18,7 +18,7 @@ namespace
 SpotLight::SpotLight(Graphics& gfx, float radius)
 	:
 	Component(StaticType),
-	gizmo(gfx, radius)
+	gizmo(gfx, radius), gizmoRadius(radius)
 {
 }
 

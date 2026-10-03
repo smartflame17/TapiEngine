@@ -68,18 +68,20 @@ Model* Animator::ValidateTarget() noexcept
 	}
 }
 
-bool Animator::AddClips(const std::vector<std::shared_ptr<const Animation::AnimationClip>>& added, bool loop) noexcept
+bool Animator::AddClips(const std::vector<std::shared_ptr<const Animation::AnimationClip>>& added, bool loop,
+	const std::filesystem::path& source, std::size_t firstClip) noexcept
 {
 	if (!ValidateTarget()) { ReportError(targetError); return false; }
 	try
 	{
 		std::vector<ClipEntry> staged;
-		for (const auto& clip : added)
+		for (std::size_t i = 0; i < added.size(); ++i)
 		{
+			const auto& clip = added[i];
 			if (!clip) throw std::runtime_error("Cannot add a null animation clip.");
 			const auto same = [&](const ClipEntry& entry) { return entry.clip->id == clip->id; };
 			if (std::any_of(clips.begin(), clips.end(), same) || std::any_of(staged.begin(), staged.end(), same)) continue;
-			staged.push_back({ clip, Animation::BindClip(boundAsset->skeleton, *clip), loop });
+			staged.push_back({ clip, Animation::BindClip(boundAsset->skeleton, *clip), loop, source, firstClip + i });
 		}
 		const auto count = staged.size();
 		clips.reserve(clips.size() + staged.size());
@@ -91,10 +93,12 @@ bool Animator::AddClips(const std::vector<std::shared_ptr<const Animation::Anima
 }
 bool Animator::LoadAnimations(const std::filesystem::path& path, bool loop) noexcept
 {
-	try { return AddClips(ImportAnimations(path), loop); }
+	try { return AddClips(ImportAnimations(path), loop, std::filesystem::weakly_canonical(path)); }
 	catch (const std::exception& e) { ReportError(e.what()); return false; }
 }
 bool Animator::AddClip(std::shared_ptr<const Animation::AnimationClip> clip, bool loop) noexcept { return AddClips({ std::move(clip) }, loop); }
+bool Animator::AddClip(std::shared_ptr<const Animation::AnimationClip> clip, const std::filesystem::path& source,
+	std::size_t sourceClip, bool loop) noexcept { return AddClips({ std::move(clip) }, loop, source, sourceClip); }
 void Animator::RemoveClip(std::size_t index) noexcept
 {
 	if (index >= clips.size()) return;

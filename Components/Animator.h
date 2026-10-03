@@ -10,15 +10,24 @@ class Animator : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::Animator;
+	static constexpr std::string_view SerializationType = "tapi.animator";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 	struct ClipEntry
 	{
 		std::shared_ptr<const Animation::AnimationClip> clip;
 		Animation::ClipBinding binding;
 		bool loop = true;
+		std::filesystem::path sourcePath;
+		std::size_t sourceClip = 0;
 	};
 	Animator();
 	bool LoadAnimations(const std::filesystem::path& path, bool loop = true) noexcept;
 	bool AddClip(std::shared_ptr<const Animation::AnimationClip> clip, bool loop = true) noexcept;
+	// Explicit resource-data entry point used by reconstruction and future asset loaders.
+	bool AddClip(std::shared_ptr<const Animation::AnimationClip> clip, const std::filesystem::path& source,
+		std::size_t sourceClip, bool loop = true) noexcept;
 	void RemoveClip(std::size_t index) noexcept;
 	void SelectClip(std::size_t index) noexcept;
 	void Play() noexcept;
@@ -41,7 +50,8 @@ private:
 	void DrawInspectorContents() noexcept override;
 	Model* ResolveTarget(Guid& drawableId) noexcept;
 	Model* ValidateTarget() noexcept;
-	bool AddClips(const std::vector<std::shared_ptr<const Animation::AnimationClip>>& added, bool loop) noexcept;
+	bool AddClips(const std::vector<std::shared_ptr<const Animation::AnimationClip>>& added, bool loop,
+		const std::filesystem::path& source = {}, std::size_t firstClip = 0) noexcept;
 	void ReportError(const std::string& error) noexcept;
 	std::vector<ClipEntry> clips;
 	std::size_t selected = 0;

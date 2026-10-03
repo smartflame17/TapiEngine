@@ -10,6 +10,10 @@ class Camera : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::Camera;
+	static constexpr std::string_view SerializationType = "tapi.camera";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 	Camera();
 
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;

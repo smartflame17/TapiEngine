@@ -12,6 +12,10 @@ class SpotLight : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::SpotLight;
+	static constexpr std::string_view SerializationType = "tapi.spot_light";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 
 	SpotLight(Graphics& gfx, float radius = 0.4f);
 	void SpawnControlWindow() noexcept;
@@ -38,4 +42,5 @@ private:
 	float innerAngle = 20.0f * DirectX::XM_PI / 180.0f;
 	float outerAngle = 30.0f * DirectX::XM_PI / 180.0f;
 	mutable SolidSphere gizmo;
+	float gizmoRadius = 0.4f;
 };

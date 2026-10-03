@@ -5,7 +5,7 @@
 PointLight::PointLight(Graphics& gfx, float radius)
 	:
 	Component(StaticType),
-	mesh(gfx, radius)
+	mesh(gfx, radius), gizmoRadius(radius)
 {
 }
 

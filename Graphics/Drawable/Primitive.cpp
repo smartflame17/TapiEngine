@@ -305,6 +305,34 @@ DirectX::XMMATRIX Primitive::GetTransformXM() const noexcept
 	return GetAppliedTransformXM();
 }
 
+Sampler::Type Primitive::GetSamplerType() const noexcept
+{
+	return pSampler ? pSampler->GetType() : Sampler::Type::LinearWrap;
+}
+
+void Primitive::SetSamplerType(Sampler::Type type)
+{
+	if (pSampler) pSampler->SetType(gfx, type);
+}
+
+void Primitive::SetMaterial(const PhongMaterial& value) noexcept
+{
+	material = value;
+	RefreshMaterialState();
+}
+
+void Primitive::SetResources(std::string textureReference, std::shared_ptr<const TextureAsset> texture,
+	std::string normalReference, std::shared_ptr<const TextureAsset> normal, bool normalEnabled)
+{
+	if (pTexture) pTexture->SetAsset(gfx, std::move(texture), std::filesystem::path(std::u8string(textureReference.begin(), textureReference.end())));
+	if (pNormalTexture) pNormalTexture->SetAsset(gfx, std::move(normal), std::filesystem::path(std::u8string(normalReference.begin(), normalReference.end())));
+	texturePath = std::move(textureReference); normalMapPath = std::move(normalReference);
+	normalMapEnabled = normalEnabled;
+	UpdateTextureStatus(pTexture && !pTexture->IsUsingFallback());
+	UpdateNormalMapStatus(pNormalTexture && !pNormalTexture->IsUsingFallback());
+	RefreshMaterialState();
+}
+
 void Primitive::Draw(Graphics& gfx) const noexcept(!IS_DEBUG)
 {
 	if (pMaterialCbuf != nullptr)
@@ -475,7 +503,7 @@ void Primitive::ApplyTexturePath()
 		return;
 	}
 
-	const bool loadedFromFile = pTexture->SetPath(gfx, std::filesystem::path(texturePath));
+	const bool loadedFromFile = pTexture->SetPath(gfx, std::filesystem::path(std::u8string(texturePath.begin(), texturePath.end())));
 	UpdateTextureStatus(loadedFromFile);
 }
 
@@ -486,7 +514,7 @@ void Primitive::ApplyNormalMapPath()
 		return;
 	}
 
-	const bool loadedFromFile = pNormalTexture->SetPath(gfx, std::filesystem::path(normalMapPath));
+	const bool loadedFromFile = pNormalTexture->SetPath(gfx, std::filesystem::path(std::u8string(normalMapPath.begin(), normalMapPath.end())));
 	UpdateNormalMapStatus(loadedFromFile);
 	RefreshMaterialState();
 }

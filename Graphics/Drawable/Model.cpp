@@ -10,11 +10,19 @@
 #include <stdexcept>
 
 namespace dx = DirectX;
+namespace
+{
+std::string TextureReference(const std::filesystem::path& path)
+{
+    const auto text = path.generic_u8string();
+    return std::string(text.begin(), text.end());
+}
+}
 
-Model::Model(Graphics& gfx, const std::string& fileName) : Model(gfx, ImportModel(fileName)) {}
+Model::Model(Graphics& gfx, const std::string& fileName) : Model(gfx, ImportModel(fileName), std::filesystem::weakly_canonical(fileName)) {}
 
-Model::Model(Graphics& gfx, std::shared_ptr<const ModelAsset> modelAsset)
-    : gfx(gfx), asset(std::move(modelAsset))
+Model::Model(Graphics& gfx, std::shared_ptr<const ModelAsset> modelAsset, std::filesystem::path sourcePath, AssetLoader* assets)
+    : gfx(gfx), asset(std::move(modelAsset)), sourcePath(std::move(sourcePath))
 {
     if (!asset) throw std::runtime_error("Model asset is null.");
     Animation::ValidateSkeleton(asset->skeleton);
@@ -25,7 +33,7 @@ Model::Model(Graphics& gfx, std::shared_ptr<const ModelAsset> modelAsset)
     {
         if (nodes[n].parent != Animation::NoNode) children[nodes[n].parent].push_back(n);
         for (auto m : nodes[n].meshes)
-            instances.push_back({ n, m, CreateMesh(gfx, asset->meshes.at(m)) });
+            instances.push_back({ n, m, CreateMesh(gfx, asset->meshes.at(m), assets) });
     }
     Animation::MakeBindPose(asset->skeleton, pose);
     UpdateGeometry();
@@ -67,6 +75,13 @@ void Model::RebuildStaticPose()
     Animation::AccumulatePose(asset->skeleton, pose);
     UpdateGeometry();
 }
+
+void Model::SetNodeTransform(std::size_t index, const Transform& transform)
+{
+    if (HasSkin()) throw std::invalid_argument("Skinned node poses are controlled by Animator.");
+    relativeTransforms.at(index) = transform;
+    RebuildStaticPose();
+}
 void Model::UpdateGeometry()
 {
     dx::BoundingBox modelBounds = {};
@@ -98,7 +113,7 @@ void Model::UpdateGeometry()
     if (hasBounds) SetLocalBounds(modelBounds);
 }
 
-std::unique_ptr<Mesh> Model::CreateMesh(Graphics& gfx, const MeshAsset& mesh)
+std::unique_ptr<Mesh> Model::CreateMesh(Graphics& gfx, const MeshAsset& mesh, AssetLoader* assets)
 {
     using Dvtx::VertexLayout;
     auto layout = VertexLayout{}.Append(VertexLayout::Position3D).Append(VertexLayout::Normal);
@@ -144,12 +159,14 @@ std::unique_ptr<Mesh> Model::CreateMesh(Graphics& gfx, const MeshAsset& mesh)
 	{
 		auto pBaseColorBindable = std::make_unique<Texture>(gfx, 0u);
 		pBaseColorTexture = pBaseColorBindable.get();
-		pBaseColorTexture->SetPath(gfx, baseColorTexturePath);
+		if (assets) pBaseColorTexture->SetAsset(gfx, baseColorTexturePath.empty() ? nullptr : assets->LoadTexture(baseColorTexturePath), baseColorTexturePath);
+		else pBaseColorTexture->SetPath(gfx, baseColorTexturePath);
 		bindablePtrs.push_back(std::move(pBaseColorBindable));
 
 		auto pNormalBindable = std::make_unique<Texture>(gfx, 1u, Texture::FallbackKind::NeutralNormal);
 		pNormalTexture = pNormalBindable.get();
-		pNormalTexture->SetPath(gfx, normalTexturePath);
+		if (assets) pNormalTexture->SetAsset(gfx, normalTexturePath.empty() ? nullptr : assets->LoadTexture(normalTexturePath), normalTexturePath);
+		else pNormalTexture->SetPath(gfx, normalTexturePath);
 		bindablePtrs.push_back(std::move(pNormalBindable));
 
 		auto pSamplerBindable = std::make_unique<Sampler>(gfx);
@@ -171,8 +188,8 @@ std::unique_ptr<Mesh> Model::CreateMesh(Graphics& gfx, const MeshAsset& mesh)
 		pBaseColorTexture,
 		pNormalTexture,
 		pSampler,
-		baseColorTexturePath.string(),
-		normalTexturePath.string(),
+		TextureReference(baseColorTexturePath),
+		TextureReference(normalTexturePath),
 		useTexture,
 		!normalTexturePath.empty()
 	);

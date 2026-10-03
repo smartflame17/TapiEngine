@@ -8,6 +8,10 @@ class Collider final : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::Collider;
+	static constexpr std::string_view SerializationType = "tapi.collider";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 	enum class Shape { Box, Sphere, Capsule };
 	struct Geometry
 	{

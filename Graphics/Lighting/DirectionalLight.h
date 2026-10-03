@@ -13,6 +13,10 @@ class DirectionalLight : public Component
 {
 public:
 	static constexpr ComponentType StaticType = ComponentType::DirectionalLight;
+	static constexpr std::string_view SerializationType = "tapi.directional_light";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
 
 	DirectionalLight(Graphics& gfx);
 	void SpawnControlWindow() noexcept;

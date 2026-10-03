@@ -4,6 +4,10 @@
 #include <cassert>
 #include <string_view>
 #include "../Serialization/Guid.h"
+#include "../Serialization/Json.h"
+
+struct LoadContext;
+struct SerializationContext;
 
 class GameObject;
 class Graphics;
@@ -71,6 +75,9 @@ public:
 	const Guid& GetId() const noexcept;
 	// Used to restore saved identities; scene-wide uniqueness is checked by the loader.
 	void SetId(const Guid& savedId);
+	virtual std::string_view GetSerializationType() const noexcept;
+	virtual void SerializeData(nlohmann::json& out, const SerializationContext& context) const;
+	virtual void DeserializeData(const nlohmann::json& data, LoadContext& context);
 
 	ComponentType GetType() const noexcept { return type; }
 	bool IsType(ComponentType componentType) const noexcept { return type == componentType; }
