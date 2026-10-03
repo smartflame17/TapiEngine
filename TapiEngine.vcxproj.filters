@@ -1281,4 +1281,19 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Graphics\Assets\AssetLoader.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\AssetPath.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\BuiltinComponents.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\ComponentRegistry.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\ComponentEditor.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\ResourceComponents.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\SceneSerializer.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\SerializationContext.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClInclude Include="Graphics\Assets\AssetLoader.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Serialization\AssetPath.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Serialization\ComponentRegistry.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Serialization\JsonRead.h"><Filter>헤더 파일</Filter></ClInclude>
+    <ClInclude Include="Serialization\SceneSerializer.h"><Filter>헤더 파일</Filter></ClInclude>
+  </ItemGroup>
 </Project>

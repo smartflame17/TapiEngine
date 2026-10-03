@@ -64,6 +64,15 @@ namespace JsonDetail
 			{ LightType::Point, "point" }, { LightType::Spot, "spot" }
 		};
 	};
+	template<> struct EnumMapping<Sampler::Type>
+	{
+		inline static constexpr std::pair<Sampler::Type, std::string_view> values[] = {
+			{ Sampler::Type::LinearWrap, "linear_wrap" }, { Sampler::Type::PointWrap, "point_wrap" },
+			{ Sampler::Type::LinearClamp, "linear_clamp" }, { Sampler::Type::PointClamp, "point_clamp" },
+			{ Sampler::Type::AnisotropicWrap, "anisotropic_wrap" }, { Sampler::Type::AnisotropicClamp, "anisotropic_clamp" },
+			{ Sampler::Type::ComparisonLinearClamp, "comparison_linear_clamp" }
+		};
+	};
 	template<> struct EnumMapping<Animation::PlaybackState>
 	{
 		inline static constexpr std::pair<Animation::PlaybackState, std::string_view> values[] = {
@@ -105,6 +114,8 @@ inline void to_json(nlohmann::json& out, Primitive::SurfaceMode value) { JsonDet
 inline void from_json(const nlohmann::json& in, Primitive::SurfaceMode& value) { JsonDetail::EnumFromJson(in, value); }
 inline void to_json(nlohmann::json& out, LightType value) { JsonDetail::EnumToJson(out, value); }
 inline void from_json(const nlohmann::json& in, LightType& value) { JsonDetail::EnumFromJson(in, value); }
+inline void to_json(nlohmann::json& out, Sampler::Type value) { JsonDetail::EnumToJson(out, value); }
+inline void from_json(const nlohmann::json& in, Sampler::Type& value) { JsonDetail::EnumFromJson(in, value); }
 namespace Animation
 {
 	inline void to_json(nlohmann::json& out, PlaybackState value) { JsonDetail::EnumToJson(out, value); }

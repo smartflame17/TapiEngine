@@ -1,5 +1,5 @@
 param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug',
-    [ValidateSet('All','Utilities','Scene')][string]$Suite = 'All')
+    [ValidateSet('All','Utilities','Scene','RoundTrip')][string]$Suite = 'All')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -28,7 +28,7 @@ try {
         & "$out/SerializationTests.exe"
         if ($LASTEXITCODE) { throw 'Serialization utility tests failed.' }
     }
-    if ($Suite -in @('All','Scene')) {
+    if ($Suite -in @('All','Scene','RoundTrip')) {
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
@@ -39,11 +39,16 @@ try {
         }
         $box3dName = if ($Configuration -eq 'Debug') { 'box3dd' } else { 'box3d' }
         $box3dDir = Join-Path $repo "Physics/box3d/$Configuration"
-        & $cl @common tests/SerializationSceneTests.cpp "/Fo$out/SerializationSceneTests.obj" "/Fe$out/SerializationSceneTests.exe" /link @libraries @objects "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" "$box3dDir/$box3dName.lib" DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
-        if ($LASTEXITCODE) { throw 'Serialization scene test compilation failed.' }
         Copy-Item -LiteralPath "$repo/assimp/bin/assimp-vc143-mtd.dll" -Destination $out -Force
         Copy-Item -LiteralPath "$box3dDir/$box3dName.dll" -Destination $out -Force
-        & "$out/SerializationSceneTests.exe"
-        if ($LASTEXITCODE) { throw 'Serialization scene tests failed.' }
+        $names = if ($Suite -eq 'Scene') { @('SerializationSceneTests') } elseif ($Suite -eq 'RoundTrip') { @('SerializationRoundTripTests') } else { @('SerializationSceneTests','SerializationRoundTripTests') }
+        foreach ($name in $names) {
+            & $cl @common "tests/$name.cpp" "/Fo$out/$name.obj" "/Fe$out/$name.exe" /link @libraries @objects "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" "$box3dDir/$box3dName.lib" DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+            if ($LASTEXITCODE) { throw "$name compilation failed." }
+            $process = Start-Process -FilePath "$out/$name.exe" -ArgumentList ('"' + $out + '"') -WorkingDirectory $repo -WindowStyle Hidden -PassThru -Wait -RedirectStandardOutput "$out/$name-stdout.log" -RedirectStandardError "$out/$name-stderr.log"
+            Get-Content -LiteralPath "$out/$name-stdout.log"
+            Get-Content -LiteralPath "$out/$name-stderr.log"
+            if ($process.ExitCode) { throw "$name failed (exit $($process.ExitCode))." }
+        }
     }
 } finally { Pop-Location }

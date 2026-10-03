@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 struct SerializationError
 {
@@ -21,4 +22,12 @@ struct LoadResult
 	std::vector<SerializationError> warnings;
 	bool Succeeded() const noexcept { return errors.empty(); }
 	explicit operator bool() const noexcept { return Succeeded(); }
+};
+
+class SerializationException : public std::runtime_error
+{
+public:
+	explicit SerializationException(SerializationError diagnostic)
+		: std::runtime_error(diagnostic.jsonPath + ": " + diagnostic.message), diagnostic(std::move(diagnostic)) {}
+	SerializationError diagnostic;
 };
