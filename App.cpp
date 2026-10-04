@@ -21,7 +21,7 @@ App::App():
 	audio.Suspend();
 
 	// Initialize scene objects
-	ResetSimulation();
+	InitializeDefaultScene();
 
 	// set projection matrix from config
 	float aspectRatio = static_cast<float>(config.height) / static_cast<float>(config.width);
@@ -32,18 +32,7 @@ App::App():
 	activeCam = &editorCam;
 	
 	// send state to imgui for display and interaction
-	imgui.SetContext({
-		&scene,
-		activeCam,
-		&wnd.Gfx(),
-		&pointLights,
-		&spotLights,
-		&directionalLights,
-		&wnd.mouse,
-		&isPlayMode,
-		&isPaused,
-		[this]() { needsReset = true; }
-	});
+	UpdateUiContext();
 
 	// Mouse cursor start position
 	lastMouseX = wnd.mouse.GetPosX();
@@ -54,8 +43,8 @@ App::App():
 
 App::~App() = default;
 
-// TODO: In the future, this method will be replaced with scene file deserialization and handle initialization of scene-dependent systems and resources
-void App::ResetSimulation()
+// Startup fixture; simulation resets restore the saved scene instead.
+void App::InitializeDefaultScene()
 {
 	scene.Clear();
 	audio.StopAll();
@@ -141,7 +130,7 @@ void App::ResetSimulation()
 		LoadContext context{ wnd.Gfx() };
 		return ComponentRegistry::Builtins().DrawEditorControls(object, type, context);
 	});
-	spdlog::info("Simulation reset to initial state.");
+	spdlog::info("Default editor scene initialized.");
 	ResetFrameTiming();
 }
 
@@ -162,6 +151,7 @@ void App::CacheSceneComponents() noexcept
 
 		for (const auto& component : gameObject.GetComponents())
 		{
+			if (component->IsPendingInspectorRemoval()) continue;
 			if (component->isType<Camera>())
 			{
 				gameCams.push_back(static_cast<Camera*>(component.get()));
@@ -202,6 +192,8 @@ int App::Begin()
 			return *ecode;
 
 		const float frameDelta = timer.Mark();
+		if (isPlayMode && wnd.kbd.IsKeyPressed(VK_ESCAPE)) RequestSceneCommand(SceneCommand::Stop);
+		ProcessSceneCommands();
 
 		if (isPlayMode) wnd.DisableCursor();
 		else wnd.EnableCursor();
@@ -223,13 +215,9 @@ void App::ResetFrameTiming() noexcept
 
 void App::Update(float frameDelta)
 {
-	if (needsReset)
-	{
-		ResetSimulation();
-		needsReset = false;
-		frameDelta = 0.0f;
-	}
-	else if (isPlayMode != previousPlayMode || isPaused != previousPaused)
+	ProcessSceneCommands();
+	if (sceneTimingReset) { frameDelta = 0.0f; sceneTimingReset = false; }
+	if (isPlayMode != previousPlayMode || isPaused != previousPaused)
 	{
 		// The elapsed interval crossed a Play/Pause/Resume boundary.
 		ResetFrameTiming();
@@ -275,19 +263,7 @@ void App::RenderFrame(float alpha)
 	DrawPhysicsDebug();
 
 	// --- UI Logic ---
-	imgui.SetContext({
-		&scene,
-		activeCam,
-		&wnd.Gfx(),
-		&pointLights,
-		&spotLights,
-		&directionalLights,
-		&wnd.mouse,
-		&isPlayMode,
-		&isPaused,
-		[this]() { needsReset = true; },
-		&physics.GetDebugDrawSettings()
-	});
+	UpdateUiContext();
 	imgui.EditorWindow();
 
 	wnd.Gfx().Endframe();
@@ -360,6 +336,12 @@ DirectX::SimpleMath::Ray App::BuildMouseRay(int mouseX, int mouseY) noexcept
 
 void App::HandleInput(float dt)
 {
+	if (isPlayMode && wnd.kbd.IsKeyPressed(VK_ESCAPE))
+	{
+		RequestSceneCommand(SceneCommand::Stop);
+		return;
+	}
+	if (sceneEditor.dialog != SceneDialog::None || wnd.kbd.IsKeyPressed(VK_CONTROL)) return;
 	// --- Input Handling & Camera Control ---
 	activeCam = &editorCam;
 	if (isPlayMode && !gameCams.empty())
@@ -480,13 +462,4 @@ void App::HandleInput(float dt)
 	}
 	activeCam->Translate(translation);
 
-	if (wnd.kbd.IsKeyPressed(VK_ESCAPE))
-	{
-		if (isPlayMode)
-		{
-			isPlayMode = false;
-			isPaused = false;
-			needsReset = true;
-		}
-	}
 }

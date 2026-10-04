@@ -1289,6 +1289,9 @@
     <ClCompile Include="Serialization\ComponentEditor.cpp"><Filter>소스 파일</Filter></ClCompile>
     <ClCompile Include="Serialization\ResourceComponents.cpp"><Filter>소스 파일</Filter></ClCompile>
     <ClCompile Include="Serialization\SceneSerializer.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Serialization\ScriptComponents.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClCompile Include="Scene\SceneCommands.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClInclude Include="Scene\SceneCommands.h"><Filter>헤더 파일</Filter></ClInclude>
     <ClCompile Include="Serialization\SerializationContext.cpp"><Filter>소스 파일</Filter></ClCompile>
     <ClInclude Include="Graphics\Assets\AssetLoader.h"><Filter>헤더 파일</Filter></ClInclude>
     <ClInclude Include="Serialization\AssetPath.h"><Filter>헤더 파일</Filter></ClInclude>

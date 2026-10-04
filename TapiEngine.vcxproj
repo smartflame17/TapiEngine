@@ -809,6 +809,9 @@ xcopy /y /d "$(ProjectDir)\assimp\bin\box3dd.dll" "$(OutDir)"</Command>
     <ClCompile Include="Serialization\ComponentEditor.cpp" />
     <ClCompile Include="Serialization\ResourceComponents.cpp" />
     <ClCompile Include="Serialization\SceneSerializer.cpp" />
+    <ClCompile Include="Serialization\ScriptComponents.cpp" />
+    <ClCompile Include="Scene\SceneCommands.cpp" />
+    <ClInclude Include="Scene\SceneCommands.h" />
     <ClCompile Include="Serialization\SerializationContext.cpp" />
     <ClInclude Include="Graphics\Assets\AssetLoader.h" />
     <ClInclude Include="Serialization\AssetPath.h" />
