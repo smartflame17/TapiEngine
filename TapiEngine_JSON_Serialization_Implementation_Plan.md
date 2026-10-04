@@ -2,6 +2,12 @@
 
 ## Goal
 
+**Implementation status:** Stages 1–6 are implemented. Editor scenes use `.scene`
+files containing version 1 JSON. Play saves the current scene file before
+simulation; Stop/Escape reload it, using an in-memory backup if file loading
+fails. Stage 7 remains follow-up work. See `Serialization/README.md` for the
+implemented API, editor workflow and validation commands.
+
 Implement versioned JSON scene serialization and deserialization for TapiEngine using `nlohmann/json`. The system should save and reconstruct the complete editable scene hierarchy while rebuilding transient rendering, physics, scripting, and editor state at load time.
 
 The initial scope is **scene assets**, not runtime save games. Runtime-only data such as current physics poses, animation playback time, lifecycle queues, and editor selection should not be persisted yet.
@@ -396,8 +402,9 @@ Build a `UUID -> Component*` lookup table as components are created.
 - Add editor Save Scene and Open Scene commands.
 - Rebuild App camera/light caches after load.
 - Ensure loading occurs outside active simulation updates.
-- Replace the hard-coded default scene in `ResetSimulation()` with scene loading, retaining a fallback scene for load failure.
-- Optionally serialize an in-memory editor snapshot when entering Play mode and reload it on exit.
+- Save to the current `.scene` file before entering Play; untitled scenes require Save As.
+- Replace hard-coded scene creation in `ResetSimulation()` with saved-file loading; use the pre-play in-memory document if file loading fails.
+- Keep file commands in Edit mode, prompt for unsaved Open changes, and refresh caches after scene replacement.
 
 **Exit criterion:** Scenes can be opened repeatedly without duplicate registrations, stale pointers, or premature script lifecycle calls.
 

@@ -24,15 +24,19 @@ Reset restarts the timer after scene loading, so loading time is not simulated.
 
 Physics is declared before the UI, window, and Scene in App and is therefore
 destroyed after them. A second App is rejected before touching shared UI state.
-On Stop or Escape, App clears scene components while their world is still valid,
-resets the world, then rebuilds the scene. `Physics::Reset()` preserves the old
-world if replacement creation fails. World creation failure throws
+On Stop or Escape, App reloads the scene saved before Play. Candidate bodies and
+shapes are reconstructed transactionally in the existing world; successful
+replacement releases the simulated scene while its world remains valid. App
+restores pre-play gravity and clears debug caches, retaining session preferences.
+`Physics::Reset()` is still available for explicit world replacement and preserves
+the old world if replacement creation fails. World creation failure throws
 `std::runtime_error`; no singleton is registered if initial creation fails.
 
 The default demonstration scene still starts with an empty world. Add Rigidbody
 and Collider through the inspector's Add Component menu or `AddComponent<T>()`.
-Reset restores the existing demonstration scene; it does not restore a snapshot
-of editor changes.
+Play saves editor changes to a `.scene` file before starting. Reset restores that
+file, with an in-memory pre-play backup if file loading fails. See
+`Serialization/README.md` for the complete editor workflow.
 
 ## Components and ownership
 

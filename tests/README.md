@@ -1,5 +1,23 @@
 # Transform regression tests
 
+## Serialization and editor workflow tests
+
+Build Debug/Release x64, then run `./tests/RunSerializationTests.ps1 -Suite All
+-Configuration Debug` and repeat with Release. The All suite covers utilities,
+hierarchy/resources, all six exposed script types, field compatibility and
+warnings, constructor failures, lifecycle registration, and editor commands.
+Use `-Suite Scripts` or `-Suite App` for the new suites alone.
+
+App checks use the production command handler and hidden D3D editor window.
+They verify save-before-Play, Stop/Escape restoration, fresh physics resources,
+camera/light caches, unsaved Open choices, overwrite/cancellation, disabled file
+commands during Play, and file/backup recovery failures.
+
+`-Suite Walkthrough` builds an interactive editor harness without starting it.
+Launch its printed path to inspect ScriptTest on Material Cube, save/reopen a
+`.scene`, enter Play, and verify Escape restores the cube's authored pose and
+script values. It uses the real App UI and avoids modifying `imgui.ini`.
+
 ## Audio tests
 
 For the audio service, run `./tests/RunAudioTests.ps1 -Configuration Debug` and

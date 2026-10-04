@@ -1,4 +1,4 @@
-# Scene serialization (stages 1–4)
+# Scene serialization (stages 1–6)
 
 `SceneSerializer` reads and writes version 1 `TapiScene` JSON. It preserves the
 scene name, root/child order, object names, static flags, local transforms,
@@ -40,6 +40,8 @@ UTF-8 project-relative paths, independent of the scene file's directory. Empty
 texture references select a fallback; model and animation references are required.
 Absolute references and paths that escape the project are rejected. Path
 normalization does not require physical files, allowing virtual resource loaders.
+Windows project containment compares directory names case-insensitively while
+preserving the original spelling of project-relative asset references.
 
 In-memory serialization throws `SerializationException` with an attached
 diagnostic. File operations and deserialization return `LoadResult`, whose
@@ -57,9 +59,10 @@ scene is replaced, drawables are registered, physics bodies/shapes are recreated
 and `loadContext.gameObjects`/`components` contain the restored UUID lookups.
 Component construction order does not change authored inspector order.
 
-Loading is synchronous and must run between updates/rendering. App camera/light
-cache refresh, editor Save/Open commands and play-mode reset integration remain
-stage 6 work; this layer does not update App's cached component pointers.
+Loading is synchronous and must run between updates/rendering. App processes
+editor commands before input and simulation, refreshes camera/light caches after
+replacement, and discards time spent saving/loading. The serializer retains the
+fixed skybox across replacement; skybox configuration is not scene metadata.
 
 ## Resource reconstruction and the future AssetManager
 
@@ -117,17 +120,71 @@ Resources must remain compatible with their saved node/mesh/clip indices.
 | `tapi.collider` | Shape, center, dimensions, density, friction and restitution |
 | `tapi.drawable` | Model asset reference or primitive shape/surface, material properties, texture/normal-map references, normal-map enabled state, sampler and drawable-local transform |
 | `tapi.animator` | Source references and clip indices, loop flags, selected clip and playback speed |
+| `tapi.script` | Registered class name, enabled state, and typed exposed fields |
 
 Models save authored static-node and mesh material/texture/sampler overrides;
 imported geometry, bind poses and animated node poses are rebuilt. Animator loads
 after its Drawable and resumes in the stopped state at time zero. Rigidbody loads
 before Collider through the engine's existing `AddComponent` physics path.
 
-Script field serialization (stage 5), runtime integration (stage 6), schema
-migrations and the broader robustness suite (stage 7) are outside this delivery.
-Scripts and AudioClip keep their editor factories but cause a clear serialization
-error until their payloads are supported; they are never silently omitted.
-Scene-level skybox settings are reserved for future scene metadata.
+AudioClip remains unsupported for scene persistence and blocks saving/entering
+Play with a visible diagnostic. Schema migrations and the broader stage 7 suite
+remain future work. Scene-level skybox settings are reserved for future metadata.
+
+## Scripts
+
+Register each script with `REGISTER_SCRIPT`. Both `AddScript(name)` and
+`AddComponent<T>()` resolve the registered class identity. Serialization refreshes
+exposure metadata by clearing `properties` before calling `ExposeVariables()`;
+the existing non-const hook must only expose pointers, not mutate authored state.
+
+Script payloads have this form:
+
+```json
+{
+  "className": "ScriptTest",
+  "enabled": false,
+  "fields": {
+    "Test Int": { "type": "int", "value": 23 },
+    "Test Color": { "type": "color", "value": [1.0, 1.0, 1.0] }
+  }
+}
+```
+
+Supported type names are `int`, `float`, `string`, `vector3`, `color`, and `bool`.
+Vector3 and Color have three finite numeric entries. Duplicate exposed names,
+null pointers, incompatible types, int overflow and nonfinite/out-of-range float
+values fail with field context. Missing fields retain compiled defaults; unknown
+saved fields are ignored with `LoadResult::warnings` diagnostics.
+
+Candidate scripts are not registered until scene replacement succeeds. Saved
+enabled state does not invoke callbacks. Enable changes are processed only on
+running simulation ticks; disabled scripts retain their pending initial lifecycle
+until enabled. Constructor failures discard candidate resources and registrations.
+
+## Editor workflow
+
+- **Open Scene** (`Ctrl+O`) selects a `.scene` file. Unsaved changes prompt
+  **Save / Discard / Cancel**; failed saving or cancellation cancels the Open.
+- **Save Scene** (`Ctrl+S`) writes the current path. Untitled scenes use
+  **Save Scene As** (`Ctrl+Shift+S`), which normalizes the `.scene` extension and
+  confirms replacing an existing file. Content remains version 1 JSON.
+- **Play** saves current edits to the scene file before simulation starts.
+  Untitled Play waits for Save As; failure or cancellation leaves Edit mode.
+- **Stop / Escape** reload that saved file. If it cannot load, App reports the
+  error and tries the in-memory pre-play document. Recovery marks the scene
+  unsaved so Save repairs the file. If both attempts fail, the current scene
+  remains in Edit mode with both errors visible.
+- File commands are disabled during running or paused Play. Pause/Resume retain
+  the original restore point. The project root is captured at App startup;
+  scene file location does not change asset resolution.
+
+The dirty baseline compares authored serialized data with the last successful
+save/load. Selection and editor camera pose are transient; camera/light caches,
+physics bodies/shapes and script registrations are rebuilt after replacement.
+The physics world remains alive, and Stop restores pre-play gravity and clears
+debug caches while preserving session preferences. The hardcoded scene is used
+only to initialize a new editor session.
 
 ## Registry and component hooks
 
@@ -162,8 +219,15 @@ powershell -File tests/RunSerializationTests.ps1 -Suite All -Configuration Debug
 ```
 
 Use `-Suite Utilities` for standalone UUID/math/enum checks, `-Suite Scene` for
-foundation object checks, or `-Suite RoundTrip` for stages 2–4. `-Configuration Release`
-is also supported after building Release. The round-trip suite covers hierarchy/file
+foundation object checks, `-Suite RoundTrip` for stages 2–4, `-Suite Scripts` for
+field/lifecycle/error checks, and `-Suite App` for editor command integration.
+`-Configuration Release` is also supported after building Release. The round-trip suite covers hierarchy/file
 output, basic component reconstruction, the existing humanoid and animations,
 primitive materials/textures, resource injection using virtual model and UTF-8
 texture references, and failures required by this file format.
+
+For an interactive walkthrough, build `-Suite Walkthrough` and launch the printed
+executable. It runs the production editor with a disabled ScriptTest and dynamic
+Rigidbody/Collider attached to Material Cube. Edit exposed values, save a `.scene`,
+reopen it, enter Play, and use Escape to verify authored values and pose return.
+The harness disables ImGui ini writes and locates the project root automatically.
