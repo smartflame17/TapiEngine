@@ -244,10 +244,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		// stifle keyboard message when imgui is using keyboard input
-		if (imio.WantCaptureKeyboard)
-			break;
-
+		// A dialog may acquire capture after key-down; always release held keys.
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 

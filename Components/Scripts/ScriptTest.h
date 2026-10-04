@@ -15,9 +15,15 @@ public:
 		ExposeInt("Test Int", &testInt);
 		ExposeFloat("Test Float", &testFloat);
 		ExposeString("Exposed String", &exposedString);
+		ExposeVector3("Test Vector", testVector);
+		ExposeColor("Test Color", testColor);
+		ExposeBool("Test Bool", &testBool);
 	}
 
 	int testInt = 0;
 	float testFloat = 0.0f;
 	std::string exposedString = "Hello World!";
+	float testVector[3] = { 0, 0, 0 };
+	float testColor[3] = { 1, 1, 1 };
+	bool testBool = true;
 };

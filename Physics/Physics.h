@@ -24,6 +24,7 @@ public:
 	void Step() noexcept;
 	// The owner must destroy scene components before resetting their world.
 	void Reset();
+	void ClearDebugDrawCache() noexcept { debugDraw.Clear(); }
 	b3Vec3 GetGravity() const noexcept;
 	void SetGravity(const b3Vec3& newGravity) noexcept;
 	PhysicsDebugDrawSettings& GetDebugDrawSettings() noexcept { return debugDraw.settings; }

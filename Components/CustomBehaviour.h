@@ -45,6 +45,11 @@ public:
 
 public:
 	static constexpr ComponentType StaticType = ComponentType::CustomBehaviour;
+	static constexpr std::string_view SerializationType = "tapi.script";
+	std::string_view GetSerializationType() const noexcept override { return SerializationType; }
+	void SerializeData(nlohmann::json& out, const SerializationContext& context) const override;
+	void DeserializeData(const nlohmann::json& data, LoadContext& context) override;
+	static void ValidateSerializedData(const nlohmann::json& data, const SerializationContext& context);
 	CustomBehaviour();
 	virtual ~CustomBehaviour() = default;
 	explicit CustomBehaviour(GameObject* owner) : CustomBehaviour()
@@ -111,7 +116,7 @@ protected:
 		properties.push_back({ name, PropertyType::Bool, value });
 	}
 public:
-	std::vector<ExposedProperty> properties; // List of exposed properties for inspector and serialization
+	mutable std::vector<ExposedProperty> properties; // Metadata refreshed by inspector and serialization.
 private:
 	const char* GetInspectorTitle() const noexcept override;
 	void DrawInspectorContents() noexcept override;

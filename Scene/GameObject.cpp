@@ -180,8 +180,9 @@ void GameObject::SetParent(GameObject* newParent) noexcept
 	NotifyPhysicsTransformChanged();
 }
 
-CustomBehaviour* GameObject::AddScript(const std::string& scriptName)
+CustomBehaviour* GameObject::AddScript(const std::string& scriptName, bool registerWithScene)
 {
+	if (isPendingKill) throw std::logic_error("Cannot add scripts to a destroyed GameObject.");
 	CustomBehaviour* script = ScriptRegistry::GetInstance().Create(scriptName, this);
 	if (script)
 	{
@@ -189,7 +190,7 @@ CustomBehaviour* GameObject::AddScript(const std::string& scriptName)
 
 		std::unique_ptr<Component> componentPtr(script);
 		components.push_back(std::move(componentPtr));
-		scene.RegisterScript(*script);		// Lifecycle mask is already configured in the registry, so no need to configure again here
+		if (registerWithScene) scene.RegisterScript(*script);
 
 		return script;
 	}

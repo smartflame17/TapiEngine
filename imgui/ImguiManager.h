@@ -20,6 +20,7 @@
 #include "../Graphics/Lighting/PointLight.h"
 #include "../Graphics/Lighting/SpotLight.h"
 #include "../Input/Mouse.h"
+#include "../Scene/SceneCommands.h"
 
 struct PhysicsDebugDrawSettings;
 
@@ -45,6 +46,8 @@ public:
 		bool* isPaused = nullptr;
 		std::function<void()> resetSimulation;
 		PhysicsDebugDrawSettings* physicsDebugSettings = nullptr;
+		SceneEditorState* sceneEditor = nullptr;
+		std::function<void(SceneCommand, const std::filesystem::path&)> sceneCommand;
 	};
 
 public:
@@ -60,14 +63,18 @@ public:
 private:
 	friend class ImguiSettingsTestAccess;
 	void DrawGizmo() noexcept;
+	void DrawSceneDialogs();
 
 private:
 	UiContext context;
 	ImGui::FileBrowser fileDialog;
+	ImGui::FileBrowser openSceneDialog{ ImGuiFileBrowserFlags_EditPathString | ImGuiFileBrowserFlags_CloseOnEsc };
+	ImGui::FileBrowser saveSceneDialog{ ImGuiFileBrowserFlags_EditPathString | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_EnterNewFilename | ImGuiFileBrowserFlags_CreateNewDir };
+	std::uint64_t sceneDialogRevision = 0;
 	bool settingsWindowOpen = false;
 	// cache size of window for dynamic resizing
-	int width;
-	int height;
+	int width = 1920;
+	int height = 1080;
 	ImGuizmo::OPERATION currentOperation = ImGuizmo::TRANSLATE;
 	ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
 

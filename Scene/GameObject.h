@@ -57,7 +57,7 @@ public:
 	GameObject& AddChild(std::unique_ptr<GameObject> child) noexcept;
 	std::unique_ptr<GameObject> DetachChild(GameObject& child) noexcept;
 
-	CustomBehaviour* AddScript(const std::string& scriptName);
+	CustomBehaviour* AddScript(const std::string& scriptName, bool registerWithScene = true);
 
 	template<typename Fn>
 	void ForEachScript(Fn&& fn) noexcept
@@ -103,6 +103,7 @@ public:
 		}
 		if constexpr (std::is_base_of_v<CustomBehaviour, T>)
 		{
+			componentRef.SetScriptName(ScriptRegistry::GetInstance().GetRegisteredName(componentRef));
 			componentRef.ConfigureLifecycle(BuildScriptLifecycleMask<T>());
 			scene.RegisterScript(componentRef);
 		}

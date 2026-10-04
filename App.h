@@ -4,6 +4,8 @@
 #include "Tools/FixedStepClock.h"
 #include "Tools/DungeonGenerator.h"
 #include "Tools/json.hpp"
+#include "Serialization/SceneSerializer.h"
+#include "Scene/SceneCommands.h"
 
 #include "Graphics/Camera.h"
 #include "Graphics/Drawable/Box.h"
@@ -61,11 +63,23 @@ public:
 	int Begin();	// handles message pump between windows and the app
 private:
 	friend class AppPhysicsTestAccess;
+	friend class AppSceneTestAccess;
 	void Update(float frameDelta); // advances fixed ticks and per-frame animation
 	void ResetFrameTiming() noexcept;
 	void RenderFrame(float alpha); // renders the frame, alpha for physics interpolation
 	void DrawPhysicsDebug();
-	void ResetSimulation();	// resets camera, light, and all drawables to initial state
+	void ResetSimulation(); // restores the scene saved before Play
+	void InitializeDefaultScene();
+	void UpdateUiContext();
+	void RequestSceneCommand(SceneCommand command, const std::filesystem::path& path = {});
+	void ProcessSceneCommands();
+	void ShowSceneDialog(SceneDialog dialog, const std::filesystem::path& path = {}, std::string message = {});
+	void ReportSceneResult(const LoadResult& result, const std::string& operation);
+	bool SaveSceneFile(const std::filesystem::path& path);
+	bool OpenSceneFile(const std::filesystem::path& path);
+	bool HasUnsavedSceneChanges() const;
+	void CompleteSceneSave();
+	void FinishSceneReplacement();
 	void CacheSceneComponents() noexcept;
 	DirectX::SimpleMath::Ray BuildMouseRay(int mouseX, int mouseY) noexcept;
 
@@ -98,9 +112,22 @@ private:
 	// Simulation state
 	bool isPlayMode = false; // false = Edit Mode, true = Play Mode
 	bool isPaused = false;   // true = Simulation Paused (while in Play Mode)
-	bool needsReset = false;  // flag to indicate if simulation needs reset (used to defer reset until end of frame)
 	bool previousPlayMode = false;
 	bool previousPaused = false;
+	enum class AfterSceneSave { None, Play, Open };
+	AfterSceneSave afterSceneSave = AfterSceneSave::None;
+	SceneEditorState sceneEditor;
+	SceneCommand pendingSceneCommand = SceneCommand::None;
+	std::filesystem::path pendingCommandPath;
+	std::filesystem::path pendingOpenPath;
+	std::filesystem::path pendingSavePath;
+	std::filesystem::path projectRoot = std::filesystem::absolute(std::filesystem::current_path());
+	nlohmann::json savedSceneDocument;
+	nlohmann::json prePlayDocument;
+	std::filesystem::path prePlayPath;
+	b3Vec3 prePlayGravity{};
+	bool recoveryUnsaved = false;
+	bool sceneTimingReset = false;
 
 	// Input state
 	int lastMouseX = 0;

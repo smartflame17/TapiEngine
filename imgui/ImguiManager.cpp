@@ -6,6 +6,8 @@ ImguiManager::ImguiManager()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	fileDialog.SetTitle("Select Model File");
+	openSceneDialog.SetTitle("Open Scene"); openSceneDialog.SetTypeFilters({ ".scene" });
+	saveSceneDialog.SetTitle("Save Scene As"); saveSceneDialog.SetTypeFilters({ ".scene" });
 
 	logTerminalHelper = std::make_shared<LogTerminalHelper>();
 	logTerminalSink = logTerminalHelper;
@@ -73,6 +75,7 @@ void ImguiManager::DrawGizmo() noexcept
 	{
 		return;
 	}
+	if ((context.sceneEditor && context.sceneEditor->dialog != SceneDialog::None) || ImGui::GetIO().KeyCtrl) return;
 	if (context.scene->GetSelectedObject() == nullptr)
 	{
 		return;
@@ -199,15 +202,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 
 			if (ImGui::Button(playBtnLabel))
 			{
-				if (!*context.isPlayMode)
-				{
-					*context.isPlayMode = true;
-					*context.isPaused = false;
-				}
-				else
-				{
-					*context.isPaused = !*context.isPaused;
-				}
+				if (context.sceneCommand) context.sceneCommand(*context.isPlayMode ? SceneCommand::TogglePause : SceneCommand::Play, {});
 			}
 
 			ImGui::SameLine();
@@ -216,8 +211,6 @@ void ImguiManager::EditorWindow(bool* p_open)
 			{
 				if (*context.isPlayMode)
 				{
-					*context.isPlayMode = false;
-					*context.isPaused = false;
 					if (context.resetSimulation)
 					{
 						context.resetSimulation();
@@ -277,6 +270,7 @@ void ImguiManager::EditorWindow(bool* p_open)
 	//	}
 	//}
 	MainMenuBar();
+	DrawSceneDialogs();
 }
 
 
@@ -370,6 +364,14 @@ inline void ImguiManager::MultipurposeWindow()
 
 inline void ImguiManager::MainMenuBar()
 {
+	const bool canUseFiles = context.sceneCommand && context.isPlayMode && !*context.isPlayMode &&
+		context.sceneEditor && context.sceneEditor->dialog == SceneDialog::None;
+	if (canUseFiles)
+	{
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal)) context.sceneCommand(SceneCommand::Open, {});
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_RouteGlobal)) context.sceneCommand(SceneCommand::Save, {});
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_S, ImGuiInputFlags_RouteGlobal)) context.sceneCommand(SceneCommand::SaveAs, {});
+	}
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -402,8 +404,11 @@ inline void ImguiManager::MainMenuBar()
 				}
 				ImGui::EndMenu();
 			}
-			ImGui::MenuItem("Open Scene", "Ctrl+O");
-			ImGui::MenuItem("Save Scene", "Ctrl+S");
+			if (ImGui::MenuItem("Open Scene", "Ctrl+O", false, canUseFiles)) context.sceneCommand(SceneCommand::Open, {});
+			if (ImGui::MenuItem("Save Scene", "Ctrl+S", false, canUseFiles)) context.sceneCommand(SceneCommand::Save, {});
+			if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", false, canUseFiles)) context.sceneCommand(SceneCommand::SaveAs, {});
+			if (context.sceneEditor && !context.sceneEditor->currentPath.empty())
+				ImGui::TextUnformatted(reinterpret_cast<const char*>(context.sceneEditor->currentPath.filename().u8string().c_str()));
 			ImGui::MenuItem("Open Settings", nullptr, &settingsWindowOpen);
 			ImGui::EndMenu();
 		}
@@ -423,5 +428,69 @@ inline void ImguiManager::MainMenuBar()
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
+	}
+}
+
+void ImguiManager::DrawSceneDialogs()
+{
+	if (!context.sceneEditor || !context.sceneCommand) return;
+	const auto& state = *context.sceneEditor;
+	const char* popup = state.dialog == SceneDialog::UnsavedChanges ? "Unsaved Scene Changes" :
+		state.dialog == SceneDialog::Overwrite ? "Overwrite Scene" : state.dialog == SceneDialog::Error ? "Scene Operation Failed" : nullptr;
+	if (sceneDialogRevision != state.dialogRevision)
+	{
+		sceneDialogRevision = state.dialogRevision;
+		openSceneDialog.Close(); saveSceneDialog.Close();
+		if (state.dialog == SceneDialog::Open || state.dialog == SceneDialog::SaveAs)
+		{
+			auto& browser = state.dialog == SceneDialog::Open ? openSceneDialog : saveSceneDialog;
+			const auto directory = std::filesystem::is_directory(state.dialogPath) ? state.dialogPath : state.dialogPath.parent_path();
+			browser.SetDirectory(directory);
+			if (state.dialog == SceneDialog::SaveAs)
+			{
+				const auto filename = state.dialogPath.filename().u8string();
+				browser.SetInputName(std::string(reinterpret_cast<const char*>(filename.data()), filename.size()));
+			}
+			browser.Open();
+		}
+		else if (popup) ImGui::OpenPopup(popup);
+	}
+	if (state.dialog == SceneDialog::Open || state.dialog == SceneDialog::SaveAs)
+	{
+		auto& browser = state.dialog == SceneDialog::Open ? openSceneDialog : saveSceneDialog;
+		browser.Display();
+		if (browser.HasSelected())
+		{
+			const auto path = browser.GetSelected(); browser.ClearSelected();
+			context.sceneCommand(SceneCommand::ChoosePath, path);
+		}
+		else if (!browser.IsOpened()) context.sceneCommand(SceneCommand::Cancel, {});
+	}
+	if (popup && ImGui::BeginPopupModal(popup, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		if (state.dialog == SceneDialog::UnsavedChanges)
+		{
+			ImGui::TextUnformatted("Save changes before opening another scene?");
+			if (ImGui::Button("Save")) { context.sceneCommand(SceneCommand::SaveChanges, {}); ImGui::CloseCurrentPopup(); }
+			ImGui::SameLine();
+			if (ImGui::Button("Discard")) { context.sceneCommand(SceneCommand::DiscardChanges, {}); ImGui::CloseCurrentPopup(); }
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel")) { context.sceneCommand(SceneCommand::Cancel, {}); ImGui::CloseCurrentPopup(); }
+		}
+		else if (state.dialog == SceneDialog::Overwrite)
+		{
+			ImGui::TextUnformatted("Replace the existing scene file?");
+			ImGui::TextUnformatted(reinterpret_cast<const char*>(state.dialogPath.u8string().c_str()));
+			if (ImGui::Button("Overwrite")) { context.sceneCommand(SceneCommand::ConfirmOverwrite, {}); ImGui::CloseCurrentPopup(); }
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel")) { context.sceneCommand(SceneCommand::Cancel, {}); ImGui::CloseCurrentPopup(); }
+		}
+		else
+		{
+			ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + 600);
+			ImGui::TextUnformatted(state.message.c_str()); ImGui::PopTextWrapPos();
+			if (ImGui::Button("OK")) { context.sceneCommand(SceneCommand::DismissError, {}); ImGui::CloseCurrentPopup(); }
+		}
+		ImGui::EndPopup();
 	}
 }
