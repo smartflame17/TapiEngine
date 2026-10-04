@@ -53,7 +53,7 @@ try {
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
-            if ($name -notin @('App','WinMain','Audio')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+            if ($name -notin @('App','SceneCommands','WinMain','Audio')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
         })
         foreach ($object in $objects) {
             if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running Components tests (missing $object)." }

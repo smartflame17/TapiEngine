@@ -1,5 +1,5 @@
 param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug',
-    [ValidateSet('All','Utilities','Scene','RoundTrip')][string]$Suite = 'All')
+    [ValidateSet('All','Utilities','Scene','RoundTrip','Scripts','App','Walkthrough')][string]$Suite = 'All')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -28,11 +28,11 @@ try {
         & "$out/SerializationTests.exe"
         if ($LASTEXITCODE) { throw 'Serialization utility tests failed.' }
     }
-    if ($Suite -in @('All','Scene','RoundTrip')) {
+    if ($Suite -in @('All','Scene','RoundTrip','Scripts','App','Walkthrough')) {
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
-            if ($name -notin @('App','WinMain')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+            if ($name -ne 'WinMain' -and ($Suite -in @('All','App','Walkthrough') -or $name -notin @('App','SceneCommands'))) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
         })
         foreach ($object in $objects) {
             if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running Scene tests (missing $object)." }
@@ -41,10 +41,11 @@ try {
         $box3dDir = Join-Path $repo "Physics/box3d/$Configuration"
         Copy-Item -LiteralPath "$repo/assimp/bin/assimp-vc143-mtd.dll" -Destination $out -Force
         Copy-Item -LiteralPath "$box3dDir/$box3dName.dll" -Destination $out -Force
-        $names = if ($Suite -eq 'Scene') { @('SerializationSceneTests') } elseif ($Suite -eq 'RoundTrip') { @('SerializationRoundTripTests') } else { @('SerializationSceneTests','SerializationRoundTripTests') }
+        $names = if ($Suite -eq 'Scene') { @('SerializationSceneTests') } elseif ($Suite -eq 'RoundTrip') { @('SerializationRoundTripTests') } elseif ($Suite -eq 'Scripts') { @('SerializationScriptTests') } elseif ($Suite -eq 'App') { @('SerializationAppTests') } elseif ($Suite -eq 'Walkthrough') { @('SerializationEditorWalkthrough') } else { @('SerializationSceneTests','SerializationRoundTripTests','SerializationScriptTests','SerializationAppTests') }
         foreach ($name in $names) {
             & $cl @common "tests/$name.cpp" "/Fo$out/$name.obj" "/Fe$out/$name.exe" /link @libraries @objects "/LIBPATH:$repo/assimp/lib" "/LIBPATH:$tk/native/lib/x64/$Configuration" "$box3dDir/$box3dName.lib" DirectXTK.lib assimp-vc143-mtd.lib user32.lib gdi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
             if ($LASTEXITCODE) { throw "$name compilation failed." }
+            if ($Suite -eq 'Walkthrough') { Write-Output "Interactive editor: $out/$name.exe"; continue }
             $process = Start-Process -FilePath "$out/$name.exe" -ArgumentList ('"' + $out + '"') -WorkingDirectory $repo -WindowStyle Hidden -PassThru -Wait -RedirectStandardOutput "$out/$name-stdout.log" -RedirectStandardError "$out/$name-stderr.log"
             Get-Content -LiteralPath "$out/$name-stdout.log"
             Get-Content -LiteralPath "$out/$name-stderr.log"

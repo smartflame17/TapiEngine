@@ -75,7 +75,7 @@ void TestHierarchy(Graphics& graphics, const std::filesystem::path& out)
 	Check(MatrixError(grandchild.GetWorldTransformMatrix(), context.gameObjects.at(grandchild.GetId())->GetWorldTransformMatrix()) < 1e-5f,
 		"Nested local and world transforms are preserved");
 	Check(context.gameObjects.at(child.GetId())->GetParent() == context.gameObjects.at(root.GetId()), "Parents are restored independently of saved pointers");
-	const auto sceneFile = out / "stage2.tapi.json";
+	const auto sceneFile = out / "stage2.scene";
 	CheckResult(SceneSerializer::SaveToFile(scene, sceneFile));
 	CheckResult(SceneSerializer::LoadFromFile(sceneFile, restored, context));
 	scene.SetName("Replacement");
@@ -255,7 +255,7 @@ void TestResourceSwap(Graphics& graphics)
 void TestScope(Graphics& graphics, const std::filesystem::path& out)
 {
 	Scene scene("supported"); scene.CreateGameObject("root");
-	const auto path = out / "supported.tapi.json";
+	const auto path = out / "supported.scene";
 	CheckResult(SceneSerializer::SaveToFile(scene, path));
 	std::ifstream beforeFile(path); const std::string before((std::istreambuf_iterator<char>(beforeFile)), {}); beforeFile.close();
 	scene.GetRootObjects()[0]->AddComponent<AudioClip>();
@@ -264,7 +264,7 @@ void TestScope(Graphics& graphics, const std::filesystem::path& out)
 	Check(before == after, "Serialization failure preserves the previous scene file");
 	auto object = Object("script"); object["components"].push_back(ComponentRecord("tapi.script", json::object()));
 	Scene restored; LoadContext context{ graphics };
-	Check(!SceneSerializer::Deserialize(Document(json::array({ object })), restored, context), "Stage 5 script serialization remains unsupported");
+	Check(!SceneSerializer::Deserialize(Document(json::array({ object })), restored, context), "Script metadata requires a registered class name");
 }
 }
 

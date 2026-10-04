@@ -1,0 +1,373 @@
+{
+  "format": "TapiScene",
+  "scene": {
+    "name": "Scene",
+    "objects": [
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "sensitivity": 0.004000000189989805,
+              "speed": 0.10000000149011612
+            },
+            "id": "d3abc10e-bb55-415c-abbe-0fd5691a8a43",
+            "type": "tapi.camera"
+          }
+        ],
+        "id": "58584b63-4d30-48d7-847e-0a0e9e2aa993",
+        "name": "Camera",
+        "static": false,
+        "transform": {
+          "position": [
+            0.0,
+            2.0,
+            -5.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "attConstant": 1.0,
+              "attLinear": 0.04500000178813934,
+              "attQuadratic": 0.007499999832361937,
+              "color": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "gizmoRadius": 0.5,
+              "intensity": 1.0
+            },
+            "id": "cbf19413-5d68-48f9-94a1-f773eee8c045",
+            "type": "tapi.point_light"
+          }
+        ],
+        "id": "a27af7d9-503c-4af3-8217-68164d30642f",
+        "name": "PointLight",
+        "static": false,
+        "transform": {
+          "position": [
+            0.0,
+            4.0,
+            -2.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "attConstant": 1.0,
+              "attLinear": 0.04500000178813934,
+              "attQuadratic": 0.007499999832361937,
+              "color": [
+                1.0,
+                0.8999999761581421,
+                0.699999988079071
+              ],
+              "gizmoRadius": 0.4000000059604645,
+              "innerAngle": 0.3490658700466156,
+              "intensity": 1.2000000476837158,
+              "outerAngle": 0.5235987901687622
+            },
+            "id": "cff64693-57cd-4b9a-98a2-d6a44ce21824",
+            "type": "tapi.spot_light"
+          }
+        ],
+        "id": "145e5b40-4d34-4e26-a553-47a2256aed75",
+        "name": "SpotLight",
+        "static": false,
+        "transform": {
+          "position": [
+            -3.0,
+            5.0,
+            -3.0
+          ],
+          "rotation": [
+            0.8999999761581421,
+            0.75,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "color": [
+                1.0,
+                0.9700000286102295,
+                0.75
+              ],
+              "intensity": 0.4000000059604645
+            },
+            "id": "91fbfd79-6529-40b5-b542-ed1ed135dac5",
+            "type": "tapi.directional_light"
+          }
+        ],
+        "id": "3c0a2941-92a0-441c-a7f1-3e1d15b688bf",
+        "name": "DirectionalLight",
+        "static": false,
+        "transform": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.4000000059604645,
+            -0.699999988079071,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "kind": "primitive",
+              "localTransform": {
+                "position": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "rotation": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              "material": {
+                "color": [
+                  0.800000011920929,
+                  0.800000011920929,
+                  0.800000011920929
+                ],
+                "specularColor": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "specularIntensity": 0.5,
+                "specularPower": 32.0
+              },
+              "normalMap": "",
+              "normalMapEnabled": false,
+              "sampler": "linear_wrap",
+              "shape": "cube",
+              "surface": "textured",
+              "texture": "Graphics/Textures/obama.jpg"
+            },
+            "id": "27012987-f886-4f8d-8025-dc9b7781935c",
+            "type": "tapi.drawable"
+          }
+        ],
+        "id": "8e722f27-9506-44eb-9c9c-2da1e55618a0",
+        "name": "Textured Cube",
+        "static": false,
+        "transform": {
+          "position": [
+            -1.5,
+            1.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "kind": "primitive",
+              "localTransform": {
+                "position": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "rotation": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              "material": {
+                "color": [
+                  0.800000011920929,
+                  0.800000011920929,
+                  0.800000011920929
+                ],
+                "specularColor": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "specularIntensity": 0.5,
+                "specularPower": 32.0
+              },
+              "normalMap": "",
+              "normalMapEnabled": false,
+              "sampler": "linear_wrap",
+              "shape": "cube",
+              "surface": "material",
+              "texture": ""
+            },
+            "id": "28d7c90f-17cb-4c17-8e69-dd9f2c3b6898",
+            "type": "tapi.drawable"
+          }
+        ],
+        "id": "46ebd76b-6274-48f4-a9d4-51b11371b39b",
+        "name": "Material Cube",
+        "static": false,
+        "transform": {
+          "position": [
+            1.5,
+            1.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "children": [],
+        "components": [
+          {
+            "data": {
+              "asset": "Graphics/Models/Humanoid/Body.fbx",
+              "kind": "model",
+              "localTransform": {
+                "position": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "rotation": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              "meshOverrides": [],
+              "nodeOverrides": []
+            },
+            "id": "098969b7-9d69-4afe-8cda-7103c11c26fa",
+            "type": "tapi.drawable"
+          },
+          {
+            "data": {
+              "clips": [
+                {
+                  "clip": 0,
+                  "loop": true,
+                  "source": "Graphics/Models/Humanoid/Animations/Walking.fbx"
+                },
+                {
+                  "clip": 0,
+                  "loop": false,
+                  "source": "Graphics/Models/Humanoid/Animations/Jump.fbx"
+                }
+              ],
+              "selectedClip": 0,
+              "speed": 1.0
+            },
+            "id": "350a116c-cf5b-403e-a7bf-49ebf014c1ac",
+            "type": "tapi.animator"
+          }
+        ],
+        "id": "c761afe6-1518-4893-b4f9-70ad188cb3e2",
+        "name": "riggedfigure",
+        "static": false,
+        "transform": {
+          "position": [
+            0.0,
+            2.45312237739563,
+            0.0
+          ],
+          "rotation": [
+            -0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            0.007000000216066837,
+            0.007000000216066837,
+            0.007000000216066837
+          ]
+        }
+      }
+    ]
+  },
+  "version": 1
+}

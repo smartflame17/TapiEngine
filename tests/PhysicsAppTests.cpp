@@ -24,8 +24,23 @@ public:
 	static void Frame(App& app, float delta) { app.Update(delta); }
 	static void Render(App& app) { app.RenderFrame(static_cast<float>(app.fixedClock.GetAlpha())); }
 	static void Mode(App& app, bool play, bool paused) { app.isPlayMode = play; app.isPaused = paused; }
-	static void Stop(App& app) { Mode(app, false, false); app.needsReset = true; }
-	static bool IsEditing(const App& app) { return !app.isPlayMode && !app.isPaused && !app.needsReset; }
+	static void Stop(App& app) { app.RequestSceneCommand(SceneCommand::Stop); }
+	static void SaveRestorePoint(App& app)
+	{
+#ifdef _DEBUG
+		const auto path = std::filesystem::absolute("x64/PhysicsTests/Debug/app-restore.scene");
+#else
+		const auto path = std::filesystem::absolute("x64/PhysicsTests/Release/app-restore.scene");
+#endif
+		app.ShowSceneDialog(SceneDialog::SaveAs, path);
+		app.RequestSceneCommand(SceneCommand::ChoosePath, path); app.ProcessSceneCommands();
+		if (app.sceneEditor.dialog == SceneDialog::Overwrite) { app.RequestSceneCommand(SceneCommand::ConfirmOverwrite); app.ProcessSceneCommands(); }
+		app.RequestSceneCommand(SceneCommand::Play); app.ProcessSceneCommands();
+		// Timing-only fixtures are installed after the authored scene was saved.
+		app.isPlayMode = false; app.sceneTimingReset = false; app.previousPlayMode = false;
+	}
+	static void Start(App& app) { app.RequestSceneCommand(SceneCommand::Play); app.ProcessSceneCommands(); }
+	static bool IsEditing(const App& app) { return !app.isPlayMode && !app.isPaused && app.pendingSceneCommand == SceneCommand::None; }
 	static void Input(App& app) { app.HandleInput(app.dt); }
 	static Scene& SceneOf(App& app) { return app.scene; }
 	static double Alpha(const App& app) { return app.fixedClock.GetAlpha(); }
@@ -336,6 +351,7 @@ void TestApp()
 		Check(b3World_GetCounters(World()).bodyCount == 0, "Production scene starts with an empty world");
 		TestDebugRendering(app);
 		TestSettings(app);
+		AppPhysicsTestAccess::SaveRestorePoint(app);
 		auto& scene = AppPhysicsTestAccess::SceneOf(app);
 		auto& object = scene.CreateGameObject("Physics lifecycle fixture");
 		auto& owner = object.AddComponent<BodyOwner>(resetDestroyedWithWorld);
@@ -389,7 +405,7 @@ void TestApp()
 		Check(PhysicsTestAccess::DebugShapeCount(Physics::GetInstance()) != 0, "Stop fixture owns live debug caches");
 		AppPhysicsTestAccess::Stop(app);
 		AppPhysicsTestAccess::Frame(app, 10.0f);
-		Check(resetDestroyedWithWorld && !b3World_IsValid(stoppedWorld), "Stop clears components before replacing their world");
+		Check(resetDestroyedWithWorld && b3World_IsValid(stoppedWorld), "Stop releases simulation components while retaining their world");
 		Check(!b3Body_IsValid(simulatedBody), "Stop releases real Rigidbody and Collider resources");
 		Check(PhysicsTestAccess::DebugShapeCount(Physics::GetInstance()) == 0 && debugSettings.drawDuringPlay && debugSettings.idleColor.x == 0.2f,
 			"Stop releases debug caches and preserves session preferences");
@@ -398,7 +414,7 @@ void TestApp()
 		Check(b3GetWorldCount() == baseline + 1 && b3World_GetCounters(World()).bodyCount == 0, "Stop restores an empty world without leaks");
 		AppPhysicsTestAccess::Render(app);
 
-		AppPhysicsTestAccess::Mode(app, true, false);
+		AppPhysicsTestAccess::Start(app);
 		AppPhysicsTestAccess::Frame(app, 0);
 		auto& escapeObject = scene.CreateGameObject("Escape fixture");
 		escapeObject.AddComponent<BodyOwner>(escapeDestroyedWithWorld);
@@ -410,7 +426,7 @@ void TestApp()
 		AppPhysicsTestAccess::Input(app);
 		SendMessageA(window, WM_KEYUP, VK_ESCAPE, 0);
 		AppPhysicsTestAccess::Frame(app, 2.0f);
-		Check(AppPhysicsTestAccess::IsEditing(app) && escapeDestroyedWithWorld && !b3World_IsValid(escapedWorld),
+		Check(AppPhysicsTestAccess::IsEditing(app) && escapeDestroyedWithWorld && b3World_IsValid(escapedWorld),
 			"Escape uses the same safe reset as Stop");
 		Check(AppPhysicsTestAccess::Alpha(app) == 0, "Escape discards pre-reset frame time");
 		Check(PhysicsTestAccess::DebugShapeCount(Physics::GetInstance()) == 0 && debugSettings.drawDuringPlay, "Escape releases debug caches and preserves preferences");

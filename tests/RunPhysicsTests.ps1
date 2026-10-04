@@ -36,7 +36,7 @@ try {
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
-            if ($name -ne 'WinMain' -and ($engineSuite -eq 'App' -or $name -ne 'App')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+            if ($name -ne 'WinMain' -and ($engineSuite -eq 'App' -or $name -notin @('App','SceneCommands'))) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
         })
         foreach ($object in $objects) {
             if (!(Test-Path -LiteralPath $object)) { throw "Build the engine in $Configuration x64 before running $engineSuite tests (missing $object)." }

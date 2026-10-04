@@ -44,7 +44,7 @@ try {
         [xml]$project = Get-Content -LiteralPath "$repo/TapiEngine.vcxproj"
         $objects = @($project.Project.ItemGroup.ClCompile | Where-Object { $_.Include } | ForEach-Object {
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.Include)
-            if ($name -notin @('App','WinMain')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
+            if ($name -notin @('App','SceneCommands','WinMain')) { Join-Path $repo "TapiEngine/x64/$Configuration/$name.obj" }
         })
         if (!$objects.Count) { throw "Build the engine in $Configuration x64 before running integration tests." }
         $defines = if ($Configuration -eq 'Debug') { @('/D_DEBUG','/DIS_DEBUG=true') } else { @('/DNDEBUG','/DIS_DEBUG=false') }
