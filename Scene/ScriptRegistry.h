@@ -5,6 +5,8 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <typeindex>
+#include <vector>
 
 class CustomBehaviour;
 class GameObject;
@@ -37,9 +39,11 @@ public:
 			},
 			lifecycleMask
 		};
+		typeNames.insert_or_assign(std::type_index(typeid(T)), name);
 	}
 
-	CustomBehaviour* Create(const std::string& name, GameObject* owner) const noexcept;
+	CustomBehaviour* Create(const std::string& name, GameObject* owner) const;
+	std::string GetRegisteredName(const CustomBehaviour& script) const;
 	bool IsRegistered(const std::string& name) const noexcept;
 
 	// utility method to get a list of all registered script names, useful for inspector dropdowns and debugging
@@ -55,4 +59,5 @@ public:
 	}
 private:
 	std::unordered_map<std::string, ScriptEntry> registry;
+	std::unordered_map<std::type_index, std::string> typeNames;
 };

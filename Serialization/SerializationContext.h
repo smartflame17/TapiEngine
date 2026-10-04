@@ -3,6 +3,8 @@
 #include "Guid.h"
 #include <filesystem>
 #include <unordered_map>
+#include <functional>
+#include <string>
 
 class Graphics;
 class GameObject;
@@ -26,4 +28,7 @@ struct LoadContext
 	AssetLoader* assets = nullptr;
 	const ComponentRegistry* registry = nullptr;
 	AssetLoader& GetAssetLoader() const;
+	bool deferScriptRegistration = false;
+	// Component-relative field paths are expanded by SceneSerializer.
+	std::function<void(std::string, std::string)> reportWarning;
 };

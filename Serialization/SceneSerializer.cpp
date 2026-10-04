@@ -209,6 +209,8 @@ LoadResult SceneSerializer::Deserialize(const json& document, Scene& scene, Load
 		// registrations while the original hierarchy and identity maps stay intact.
 		LoadContext prepared{ context.graphics, context.projectRoot };
 		prepared.assets = context.assets; prepared.registry = context.registry;
+		prepared.deferScriptRegistration = true;
+		LoadResult result;
 		std::vector<std::unique_ptr<GameObject>> roots;
 		std::vector<ComponentTask> tasks;
 		for (std::size_t i = 0; i < objects.size(); ++i)
@@ -216,6 +218,11 @@ LoadResult SceneSerializer::Deserialize(const json& document, Scene& scene, Load
 		std::stable_sort(tasks.begin(), tasks.end(), [](const auto& lhs, const auto& rhs) { return lhs.registration->loadOrder < rhs.registration->loadOrder; });
 		for (const auto& task : tasks)
 			At(task.diagnostic, ".data", [&] {
+				prepared.reportWarning = [&](std::string field, std::string message) {
+					auto warning = task.diagnostic;
+					warning.jsonPath += ".data" + field; warning.message = std::move(message);
+					result.warnings.push_back(std::move(warning));
+				};
 				auto& component = Registry(prepared.registry).Create(task.diagnostic.componentType, *task.owner, task.document->at("data"), prepared);
 				component.SetId(*task.diagnostic.componentId);
 				prepared.components.emplace(component.GetId(), &component);
@@ -228,12 +235,19 @@ LoadResult SceneSerializer::Deserialize(const json& document, Scene& scene, Load
 			std::stable_sort(object->components.begin(), object->components.end(), [&](const auto& lhs, const auto& rhs) { return order.at(lhs->GetId()) < order.at(rhs->GetId()); });
 		}
 
+		// The skybox is currently a fixed editor environment, not scene metadata.
+		auto skybox = std::move(scene.skybox);
 		scene.Clear();
+		scene.skybox = std::move(skybox);
 		scene.SetName(std::move(name)); scene.rootObjects = std::move(roots);
 		for (const auto& task : tasks)
-			if (auto* drawable = dynamic_cast<DrawableComponent*>(prepared.components.at(*task.diagnostic.componentId))) scene.RegisterDrawable(drawable);
+		{
+			auto* component = prepared.components.at(*task.diagnostic.componentId);
+			if (auto* drawable = dynamic_cast<DrawableComponent*>(component)) scene.RegisterDrawable(drawable);
+			if (auto* script = dynamic_cast<CustomBehaviour*>(component)) scene.RegisterScript(*script);
+		}
 		context.gameObjects.swap(prepared.gameObjects); context.components.swap(prepared.components);
-		return {};
+		return result;
 	}
 	catch (const std::exception& error) { return Failure(error); }
 }

@@ -1,7 +1,7 @@
 #include "ScriptRegistry.h"
 #include "../Components/CustomBehaviour.h"
 
-CustomBehaviour* ScriptRegistry::Create(const std::string& name, GameObject* owner) const noexcept
+CustomBehaviour* ScriptRegistry::Create(const std::string& name, GameObject* owner) const
 {
 	const auto it = registry.find(name);
 	if (it == registry.end())
@@ -15,6 +15,12 @@ CustomBehaviour* ScriptRegistry::Create(const std::string& name, GameObject* own
 		script->ConfigureLifecycle(it->second.lifecycleMask);
 	}
 	return script;
+}
+
+std::string ScriptRegistry::GetRegisteredName(const CustomBehaviour& script) const
+{
+	const auto it = typeNames.find(std::type_index(typeid(script)));
+	return it == typeNames.end() ? std::string{} : it->second;
 }
 
 bool ScriptRegistry::IsRegistered(const std::string& name) const noexcept

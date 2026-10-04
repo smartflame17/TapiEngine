@@ -200,10 +200,11 @@ void RegisterBuiltinComponents(ComponentRegistry& registry)
 	// Retain existing editor functionality without silently exporting unsupported payloads.
 	registry.Register({ "tapi.audio_clip", ComponentType::AudioClip, 10, false, false,
 		[](GameObject& owner, const json&, LoadContext&) -> Component& { return owner.AddComponent<AudioClip>(); }, {} });
-	registry.Register({ "tapi.script", ComponentType::CustomBehaviour, 50, false, false,
-		[](GameObject& owner, const json& data, LoadContext&) -> Component& {
-			auto* script = owner.AddScript(data.at("className").get<std::string>());
+	registry.Register({ "tapi.script", ComponentType::CustomBehaviour, 50, false, true,
+		[](GameObject& owner, const json& data, LoadContext& context) -> Component& {
+			auto* script = owner.AddScript(data.at("className").get<std::string>(), !context.deferScriptRegistration);
 			if (!script) throw std::runtime_error("Script factory returned no component.");
+			script->DeserializeData(data, context);
 			return *script;
-		}, {} });
+		}, CustomBehaviour::ValidateSerializedData });
 }

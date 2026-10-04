@@ -5,7 +5,7 @@
 
 void ScriptManager::RegisterScript(CustomBehaviour& script) noexcept
 {
-	if (!Contains(pendingRegistration, script))
+	if (registeredScripts.insert(&script).second)
 	{
 		pendingRegistration.push_back(&script);
 	}
@@ -13,12 +13,14 @@ void ScriptManager::RegisterScript(CustomBehaviour& script) noexcept
 
 void ScriptManager::UnregisterScript(CustomBehaviour& script) noexcept
 {
+	registeredScripts.erase(&script);
 	RemoveFromActiveLists(script);
 	auto removePending = [&](auto& scripts)
 	{
 		scripts.erase(std::remove(scripts.begin(), scripts.end(), &script), scripts.end());
 	};
 	removePending(pendingRegistration);
+	removePending(pendingEnableChanges);
 	removePending(pendingImmediateActivation);
 	removePending(awakeQueue);
 	removePending(startQueue);
@@ -40,32 +42,10 @@ void ScriptManager::UnregisterScript(CustomBehaviour& script) noexcept
 
 void ScriptManager::HandleEnableStateChanged(CustomBehaviour& script) noexcept
 {
-	// Early exit for invalid scipts
-	if (script.GetGameObject().IsPendingKill())
-	{
-		return;
-	}
-
-	if (!script.IsEnabled())
-	{
-		RemoveFromActiveLists(script);
-		if (script.WasEnableNotified() && script.SupportsOnDisable())
-		{
-			script.OnDisable();
-		}
-		script.MarkEnableNotified(false);
-		return;
-	}
-
-	NotifyEnableIfNeeded(script);
-	if (script.HasStarted())
-	{
-		AddToActiveLists(script);
-	}
-	else if (!Contains(pendingImmediateActivation, script) && !script.SupportsStart())
-	{
-		pendingImmediateActivation.push_back(&script);
-	}
+	// Constructors may set enabled state before ownership/registration is complete.
+	if (!registeredScripts.contains(&script) || script.GetGameObject().IsPendingKill()) return;
+	if (!script.IsEnabled()) RemoveFromActiveLists(script);
+	if (!Contains(pendingEnableChanges, script)) pendingEnableChanges.push_back(&script);
 }
 
 void ScriptManager::QueueDestroy(GameObject& object) noexcept
@@ -86,6 +66,7 @@ void ScriptManager::QueueDestroy(GameObject& object) noexcept
 		};
 
 		removeQueued(pendingRegistration);
+		removeQueued(pendingEnableChanges);
 		removeQueued(pendingImmediateActivation);
 		removeQueued(awakeQueue);
 		removeQueued(startQueue);
@@ -96,52 +77,69 @@ void ScriptManager::QueueDestroy(GameObject& object) noexcept
 
 void ScriptManager::ProcessAwakeAndStart() noexcept
 {
+	auto changes = std::move(pendingEnableChanges);
+	pendingEnableChanges.clear();
+	for (auto* script : changes)
+	{
+		if (!script || script->GetGameObject().IsPendingKill()) continue;
+		if (!script->IsEnabled())
+		{
+			if (script->WasEnableNotified() && script->SupportsOnDisable()) script->OnDisable();
+			script->MarkEnableNotified(false);
+		}
+		else if (script->HasStarted()) { NotifyEnableIfNeeded(*script); AddToActiveLists(*script); }
+	}
 	ActivatePendingScripts();
 
-	for (CustomBehaviour* script : awakeQueue)
+	auto awake = std::move(awakeQueue); awakeQueue.clear();
+	for (CustomBehaviour* script : awake)
 	{
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
+			if (script && !script->GetGameObject().IsPendingKill()) awakeQueue.push_back(script);
 			continue;
 		}
 
 		script->Awake();
 		NotifyEnableIfNeeded(*script);
 	}
-	awakeQueue.clear();
 
-	for (CustomBehaviour* script : pendingImmediateActivation)
+	auto immediate = std::move(pendingImmediateActivation); pendingImmediateActivation.clear();
+	for (CustomBehaviour* script : immediate)
 	{
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
+			if (script && !script->GetGameObject().IsPendingKill()) pendingImmediateActivation.push_back(script);
 			continue;
 		}
 
 		NotifyEnableIfNeeded(*script);
+		script->MarkStarted();
 		AddToActiveLists(*script);
 	}
-	pendingImmediateActivation.clear();
 
-	for (CustomBehaviour* script : startQueue)
+	auto starts = std::move(startQueue); startQueue.clear();
+	for (CustomBehaviour* script : starts)
 	{
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
+			if (script && !script->GetGameObject().IsPendingKill()) startQueue.push_back(script);
 			continue;
 		}
 
 		NotifyEnableIfNeeded(*script);
+		if (!IsScriptRunnable(*script)) { startQueue.push_back(script); continue; }
 		script->Start();
 		script->MarkStarted();
 		AddToActiveLists(*script);
 	}
-	startQueue.clear();
 }
 
 void ScriptManager::FixedUpdate() noexcept
 {
-	for (auto it = fixedUpdateList.begin(); it != fixedUpdateList.end(); ++it)
+	const std::vector<CustomBehaviour*> scripts(fixedUpdateList.begin(), fixedUpdateList.end());
+	for (auto* script : scripts)
 	{
-		CustomBehaviour* script = *it;
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
 			continue;
@@ -153,9 +151,9 @@ void ScriptManager::FixedUpdate() noexcept
 
 void ScriptManager::Update(float dt) noexcept
 {
-	for (auto it = updateList.begin(); it != updateList.end(); ++it)
+	const std::vector<CustomBehaviour*> scripts(updateList.begin(), updateList.end());
+	for (auto* script : scripts)
 	{
-		CustomBehaviour* script = *it;
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
 			continue;
@@ -167,9 +165,9 @@ void ScriptManager::Update(float dt) noexcept
 
 void ScriptManager::LateUpdate(float dt) noexcept
 {
-	for (auto it = lateUpdateList.begin(); it != lateUpdateList.end(); ++it)
+	const std::vector<CustomBehaviour*> scripts(lateUpdateList.begin(), lateUpdateList.end());
+	for (auto* script : scripts)
 	{
-		CustomBehaviour* script = *it;
 		if (script == nullptr || !IsScriptRunnable(*script))
 		{
 			continue;
@@ -200,6 +198,7 @@ void ScriptManager::Cleanup() noexcept
 
 		script->MarkEnableNotified(false);
 		script->MarkQueuedForDestroy(false);
+		registeredScripts.erase(script);
 	}
 	destroyQueue.clear();
 }
@@ -207,6 +206,8 @@ void ScriptManager::Cleanup() noexcept
 void ScriptManager::Clear() noexcept
 {
 	pendingRegistration.clear();
+	registeredScripts.clear();
+	pendingEnableChanges.clear();
 	pendingImmediateActivation.clear();
 	awakeQueue.clear();
 	startQueue.clear();
@@ -218,12 +219,14 @@ void ScriptManager::Clear() noexcept
 
 void ScriptManager::ActivatePendingScripts() noexcept
 {
-	for (CustomBehaviour* script : pendingRegistration)
+	auto registrations = std::move(pendingRegistration); pendingRegistration.clear();
+	for (CustomBehaviour* script : registrations)
 	{
 		if (script == nullptr || script->GetGameObject().IsPendingKill())
 		{
 			continue;
 		}
+		if (!script->IsEnabled()) { pendingRegistration.push_back(script); continue; }
 
 		if (script->SupportsAwake())
 		{
@@ -243,18 +246,17 @@ void ScriptManager::ActivatePendingScripts() noexcept
 			pendingImmediateActivation.push_back(script);
 		}
 	}
-	pendingRegistration.clear();
 }
 
 void ScriptManager::NotifyEnableIfNeeded(CustomBehaviour& script) noexcept
 {
-	if (!script.IsEnabled() || script.WasEnableNotified() || !script.SupportsOnEnable())
+	if (!script.IsEnabled() || script.WasEnableNotified())
 	{
 		return;
 	}
 
-	script.OnEnable();
 	script.MarkEnableNotified(true);
+	if (script.SupportsOnEnable()) script.OnEnable();
 }
 
 void ScriptManager::AddToActiveLists(CustomBehaviour& script) noexcept

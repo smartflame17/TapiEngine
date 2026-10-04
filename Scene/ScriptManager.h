@@ -2,6 +2,7 @@
 
 #include <list>
 #include <vector>
+#include <unordered_set>
 
 class CustomBehaviour;
 class GameObject;
@@ -32,6 +33,8 @@ private:
 
 private:
 	std::vector<CustomBehaviour*> pendingRegistration;
+	std::unordered_set<CustomBehaviour*> registeredScripts;
+	std::vector<CustomBehaviour*> pendingEnableChanges;
 	std::vector<CustomBehaviour*> pendingImmediateActivation;
 	std::vector<CustomBehaviour*> awakeQueue;
 	std::vector<CustomBehaviour*> startQueue;
